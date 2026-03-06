@@ -18,7 +18,7 @@ Use this matrix to select the minimum acceptable verification set for `ams` mode
 | AMS tier/farm routing changes | `validate({"config":"<dispatcher.any/farm content>","type":"ams"})`, `lint`, `sdk(action="check-files")` | `trace_request` with representative host/path per affected tier | tier routing evidence + no cross-tier leakage |
 | Flush/invalidation ACL changes | `validate`, `lint`, `sdk(action="check-files")` | `trace_request` deny proof for non-allowlisted source (or documented limitation) | deny-first `/allowedClients` evidence + explicit allowlist entries |
 | Rewrite/redirect changes | `validate`, `lint` | `trace_request` + `tail_logs` for rewrite evaluation | deterministic redirect outcome evidence |
-| Header/security hardening | `validate`, `lint` | `inspect_cache(show_metadata=true)` + optional `trace_request` live probe | static header directives + cache metadata + optional live probe output |
+| Header/security hardening | `validate`, `lint` | `inspect_cache(show_metadata=true)` + optional external HTTP header probe (for example `curl -sI`) | static header directives + cache metadata + optional live probe output |
 | Incident triage (4xx/5xx spike) | `validate`, `lint` | `monitor_metrics`, `tail_logs`, `trace_request`, `inspect_cache` | incident window + correlated evidence |
 | AMS readiness | `validate({"config":"<dispatcher.any content>","type":"ams"})`, `lint`, `sdk(action="check-files")`, `sdk(action="diff-baseline")` | runtime checks in AMS host-path context if available | readiness findings + risk table |
 
