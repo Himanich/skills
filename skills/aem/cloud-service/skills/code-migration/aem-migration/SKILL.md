@@ -33,7 +33,7 @@ BPA (Best Practices Analyzer) findings tell you which files need migration and w
 ### Source priority
 
 1. **User provided a BPA CSV path** → Read and parse the CSV directly
-2. **MCP server available** → Call `fetch-cam-bpa-findings` with the target pattern
+2. **MCP server available** → Call `fetch-cam-bpa-findings` with the target pattern. **If MCP returns an error, STOP. Do NOT proceed to Manual Flow.**
 3. **User points to specific files** → Skip BPA, use Manual Flow
 4. **Nothing available** → Ask the user for a BPA CSV path or specific Java files
 
@@ -406,6 +406,8 @@ Follow the source priority chain described in the **BPA Findings** section above
    - If authentication fails, don't retry — ask for CSV or credentials
    - If network/timeout error, retry once after 2 seconds, then fallback to CSV/Manual Flow
 
+**CRITICAL — MCP Error Handling:** If MCP is used and returns `result.success === false`, **STOP immediately**. Do NOT proceed to Manual Flow, CSV fallback, or any code changes. Report the MCP error to the user verbatim and terminate the migration workflow.
+
 3. **If neither works:** Ask the user: *"Could you provide the path to your BPA CSV report? Or point me to the specific Java files you want to migrate."* If the user provides specific files, proceed with the Manual Flow instead.
 
 ### Step 4: Read the pattern module
@@ -484,6 +486,7 @@ If the file matches multiple patterns, ask the user which one to fix. If no patt
 - **DO NOT** rename classes unless the pattern module explicitly says to
 - **DO NOT** invent values — extract from existing code
 - **DO NOT** edit files not identified by BPA or the user
+- **STOP ON MCP ERROR** — When `fetch-cam-bpa-findings` returns `success: false`, stop immediately. Do NOT fallback to Manual Flow or CSV. Report the error to the user and do not proceed.
 
 ## Quick Reference
 
