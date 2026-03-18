@@ -441,6 +441,7 @@ If `result.success` is `false` and no BPA path was provided, ask: *"Could you pr
   2. **Present the project list to the user and ask them to confirm which project to use.** Display each project's name, ID, and description. Wait for the user's selection before proceeding. **NEVER skip this confirmation step, even if there is only one project.**
   3. Once the user confirms a project, call `fetch-cam-bpa-findings` with the confirmed `projectId` and the specific `pattern` ID from the table above.
 - **Error handling:** Follow the error handling flow documented in the **Error Handling and Retry Strategy** section below.
+**CRITICAL — MCP Error Handling:** If MCP is used and returns `result.success === false`, **STOP immediately**. Do NOT proceed to Manual Flow, CSV fallback, or any code changes. Report the MCP error to the user verbatim and terminate the migration workflow.
 
 ### Step 4: Read the pattern module
 
@@ -518,6 +519,7 @@ If the file matches multiple patterns, ask the user which one to fix. If no patt
 - **DO NOT** rename classes unless the pattern module explicitly says to
 - **DO NOT** invent values — extract from existing code
 - **DO NOT** edit files not identified by BPA or the user
+- **STOP ON MCP ERROR** — When `fetch-cam-bpa-findings` returns `success: false`, stop immediately. Do NOT fallback to Manual Flow or CSV. Report the error to the user and do not proceed.
 
 ## Quick Reference
 
