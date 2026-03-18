@@ -34,7 +34,7 @@ The skill handles BPA data automatically. You never need to run scripts manually
 
 1. **Collection already exists?** → Use it directly. Inform user: *"Using existing BPA collection (N findings, created X ago)"*
 2. **No collection, but user provided BPA CSV path?** → Parse the CSV, create the collection, then use it. Inform user: *"Processing your BPA report... Created collection with N findings."*
-3. **No collection, no BPA path, but MCP available?** → Fetch from MCP server.
+3. **No collection, no BPA path, but MCP available?** → Fetch from MCP server. **If MCP returns an error, STOP. Do NOT proceed to Manual Flow.**
 4. **Nothing available?** → Ask user for a BPA CSV file path, or proceed with manual flow on specific files.
 
 ### What the user provides
@@ -116,12 +116,15 @@ const result = await getBpaFindings(pattern, {
 **What happens inside (you do NOT need to run these manually):**
 1. Existing collection found → uses it, tells user *"Using existing BPA collection…"*
 2. No collection + BPA CSV path given → parses CSV, creates collection, tells user *"Processing your BPA report…"*
-3. No collection + no CSV → tries MCP server (`mcp_aem-migration-mcp_fetch-cam-bpa-findings`)
-4. Nothing available → returns error; proceed to Manual Flow
+3. No collection + no CSV → tries MCP server (`fetch-cam-bpa-findings`)
+4. **If MCP returns error (success: false)** → **STOP. Do NOT proceed to Manual Flow.** Report the error to the user and terminate.
+5. Nothing available (no MCP attempted) → returns error; proceed to Manual Flow
 
 **Important:** If the user provides a BPA CSV path AND a collection already exists, ask the user whether to use the existing collection or re-process the new file.
 
-If `result.success` is `false` and no BPA path was provided, ask: *"Could you provide the path to your BPA CSV report? Or point me to the specific Java files you want to migrate."*
+**CRITICAL — MCP Error Handling:** If MCP is used and returns `result.success === false`, **STOP immediately**. Do NOT proceed to Manual Flow, CSV fallback, or any code changes. Report the MCP error to the user verbatim and terminate the migration workflow.
+
+If `result.success` is `false` and no BPA path was provided (and MCP was not attempted), ask: *"Could you provide the path to your BPA CSV report? Or point me to the specific Java files you want to migrate."*
 
 ### Step 4: Read the pattern module
 
@@ -199,6 +202,7 @@ If the file matches multiple patterns, ask the user which one to fix. If no patt
 - **DO NOT** rename classes unless the pattern module explicitly says to
 - **DO NOT** invent values — extract from existing code
 - **DO NOT** edit files not identified by BPA or the user
+- **STOP ON MCP ERROR** — When `fetch-cam-bpa-findings` returns `success: false`, stop immediately. Do NOT fallback to Manual Flow or CSV. Report the error to the user and do not proceed.
 
 ## Quick Reference
 
