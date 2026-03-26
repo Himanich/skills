@@ -37,6 +37,8 @@ If org is not saved, prompt user:
 Save the org name:
 ```bash
 mkdir -p .claude-plugin
+# Ensure .claude-plugin is in .gitignore (contains auth tokens)
+grep -qxF '.claude-plugin/' .gitignore 2>/dev/null || echo '.claude-plugin/' >> .gitignore
 echo "{\"org\": \"${ORG}\"}" > .claude-plugin/project-config.json
 ```
 

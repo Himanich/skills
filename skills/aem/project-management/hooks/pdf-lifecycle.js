@@ -64,13 +64,22 @@ function debugLog(message, data = null) {
 }
 
 /**
- * Check if file is a markdown file in content/
+ * Check if file is a trackable handover guide markdown file
+ * Only tracks specific guide files created by this plugin
  */
 function isTrackableMarkdownFile(filePath) {
   if (!filePath || !filePath.endsWith('.md')) return false;
+
+  // Only track specific handover guide files
+  const basename = path.basename(filePath);
+  const allowedFiles = ['AUTHOR-GUIDE.md', 'DEVELOPER-GUIDE.md', 'ADMIN-GUIDE.md'];
+  if (!allowedFiles.includes(basename)) return false;
+
+  // Only match project-guides/ at project root (first or second segment)
   const normalized = path.normalize(filePath);
   const segments = normalized.split(path.sep);
-  return segments.includes('content');
+  const guidesIndex = segments.indexOf('project-guides');
+  return guidesIndex !== -1 && guidesIndex <= 1;
 }
 
 /**
@@ -133,6 +142,27 @@ function handlePostToolUse(filePath) {
 }
 
 /**
+ * Clean up auth token from project config (security: don't leave credentials behind)
+ */
+function cleanupAuthToken() {
+  const configPath = path.join(process.cwd(), '.claude-plugin/project-config.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      if (config.authToken) {
+        delete config.authToken;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        debugLog('Removed auth token from project config');
+        return true;
+      }
+    } catch (err) {
+      debugLog(`Error cleaning auth token: ${err.message}`);
+    }
+  }
+  return false;
+}
+
+/**
  * Handle Stop - check for pending PDF conversions
  */
 function handleStop() {
@@ -160,24 +190,23 @@ function handleStop() {
   if (pendingFiles.length === 0) {
     debugLog('All tracked files have been converted to PDF');
     clearTrackedFiles();
+    const tokenCleaned = cleanupAuthToken();
     console.log(JSON.stringify({
-      reason: 'All markdown files converted to PDF'
+      reason: 'All markdown files converted to PDF' + (tokenCleaned ? '. Auth token cleaned up.' : '')
     }));
     return;
   }
 
-  // Block and remind to convert
-  let msg = `${pendingFiles.length} markdown file(s) need PDF conversion before stopping.\n\n`;
-  msg += 'Please invoke the whitepaper skill for each:\n\n';
+  // Warn about pending conversions (but allow stop)
+  let msg = `${pendingFiles.length} markdown file(s) have not been converted to PDF yet:\n\n`;
   for (const mdFile of pendingFiles) {
-    const pdfFile = mdFile.replace(/\.md$/, '.pdf');
-    msg += `  Skill({ skill: "project-management:whitepaper", args: "${mdFile} ${pdfFile}" })\n`;
+    msg += `  - ${mdFile}\n`;
   }
-  msg += '\nAfter all PDFs are generated, you may stop.';
+  msg += '\nTo generate PDFs, invoke the whitepaper skill for each file.';
 
-  debugLog(`Blocking stop - pending files: ${pendingFiles.join(', ')}`);
+  debugLog(`Warning - pending files: ${pendingFiles.join(', ')}`);
   console.log(JSON.stringify({
-    decision: 'block',
+    decision: 'warn',
     reason: msg
   }));
 }
@@ -224,11 +253,13 @@ function handleSessionEnd() {
   }
 
   clearTrackedFiles();
-  debugLog(`SessionEnd cleanup complete: ${cleanedCount} file(s) cleaned`);
+  const tokenCleaned = cleanupAuthToken();
+  debugLog(`SessionEnd cleanup complete: ${cleanedCount} file(s) cleaned, token cleaned: ${tokenCleaned}`);
 
   console.log(JSON.stringify({
     success: true,
-    cleaned: cleanedCount
+    cleaned: cleanedCount,
+    tokenCleaned
   }));
 }
 

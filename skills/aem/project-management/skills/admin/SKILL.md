@@ -43,31 +43,31 @@ Generate comprehensive documentation for administrators taking over an AEM Edge 
 **YOU MUST SAVE THE FILE TO THIS EXACT PATH:**
 
 ```
-content/ADMIN-GUIDE.md
+project-guides/ADMIN-GUIDE.md
 ```
 
 **BEFORE WRITING ANY FILE:**
-1. First, create the directory: `mkdir -p content`
-2. Then write to: `content/ADMIN-GUIDE.md`
+1. First, create the directory: `mkdir -p project-guides`
+2. Then write to: `project-guides/ADMIN-GUIDE.md`
 
-**WHY THIS MATTERS:** Files must be in `content/` for proper organization and PDF conversion.
+**WHY THIS MATTERS:** Files must be in `project-guides/` for proper organization and PDF conversion.
 
 ❌ **WRONG:** `ADMIN-GUIDE.md` (root)
 ❌ **WRONG:** `docs/ADMIN-GUIDE.md`
 ❌ **WRONG:** `/workspace/ADMIN-GUIDE.md`
-✅ **CORRECT:** `content/ADMIN-GUIDE.md`
+✅ **CORRECT:** `project-guides/ADMIN-GUIDE.md`
 
 ---
 
 ## Output Format
 
-**MANDATORY OUTPUT:** `content/ADMIN-GUIDE.pdf`
+**MANDATORY OUTPUT:** `project-guides/ADMIN-GUIDE.pdf`
 
 **STRICTLY FORBIDDEN:**
 - ❌ Do NOT create `.plain.html` files
 - ❌ Do NOT use `convert_markdown_to_html` tool — this converts the FULL guide to HTML with raw frontmatter visible, which is NOT what we want
 - ❌ Do NOT tell user to "convert markdown to PDF manually"
-- ❌ Do NOT save markdown to root directory or any path other than `content/`
+- ❌ Do NOT save markdown to root directory or any path other than `project-guides/`
 - ❌ Do NOT say "PDF will be generated later" or "at session end" — generate it NOW
 
 **The HTML output must be a SHORT summary page** (created with Write tool) containing:
@@ -77,12 +77,12 @@ content/ADMIN-GUIDE.md
 NOT the full guide content converted to HTML.
 
 **REQUIRED WORKFLOW:**
-1. Run `mkdir -p content` to ensure directory exists
+1. Run `mkdir -p project-guides` to ensure directory exists
 2. Generate markdown content with YAML frontmatter (title, date)
-3. Save to `content/ADMIN-GUIDE.md` (EXACT PATH - no exceptions)
+3. Save to `project-guides/ADMIN-GUIDE.md` (EXACT PATH - no exceptions)
 4. **IMMEDIATELY** invoke PDF conversion (see Phase 4.1)
 5. Clean up all source files (only PDF remains)
-6. Final output: `content/ADMIN-GUIDE.pdf`
+6. Final output: `project-guides/ADMIN-GUIDE.pdf`
 
 ---
 
@@ -116,6 +116,8 @@ Once you have the org name (either from saved config or user input), save it for
 ```bash
 # Create config directory if needed
 mkdir -p .claude-plugin
+# Ensure .claude-plugin is in .gitignore (contains auth tokens)
+grep -qxF '.claude-plugin/' .gitignore 2>/dev/null || echo '.claude-plugin/' >> .gitignore
 
 # Save org name to config file (create or update)
 if [ -f .claude-plugin/project-config.json ]; then
@@ -294,7 +296,7 @@ Admin Context:
 
 ## Phase 2: Generate Admin Guide
 
-### Output File: `content/ADMIN-GUIDE.md`
+### Output File: `project-guides/ADMIN-GUIDE.md`
 
 Generate the admin handover document with the following structure:
 
@@ -458,7 +460,7 @@ Check for and document:
 
 **THIS STEP IS NOT OPTIONAL. YOU MUST GENERATE THE PDF NOW.**
 
-1. Save markdown to: `content/ADMIN-GUIDE.md`
+1. Save markdown to: `project-guides/ADMIN-GUIDE.md`
    - File MUST start with YAML frontmatter:
      ```yaml
      ---
@@ -471,7 +473,7 @@ Check for and document:
 2. **IMMEDIATELY after saving the markdown**, invoke the PDF conversion skill:
 
    ```
-   Skill({ skill: "project-management:whitepaper", args: "content/ADMIN-GUIDE.md content/ADMIN-GUIDE.pdf" })
+   Skill({ skill: "project-management:whitepaper", args: "project-guides/ADMIN-GUIDE.md project-guides/ADMIN-GUIDE.pdf" })
    ```
 
 3. Wait for PDF generation to complete (whitepaper skill auto-cleans source files)
@@ -485,18 +487,18 @@ Check for and document:
 After PDF is generated, inform the user:
 
 ```
-"✓ Admin guide complete: content/ADMIN-GUIDE.pdf"
+"✓ Admin guide complete: project-guides/ADMIN-GUIDE.pdf"
 ```
 
 ---
 
 ## Output
 
-**FINAL OUTPUT:** `content/ADMIN-GUIDE.pdf`
+**FINAL OUTPUT:** `project-guides/ADMIN-GUIDE.pdf`
 
 All source files (.md, .html, .plain.html) are deleted after PDF generation. Only the PDF remains.
 
-**Location:** `content/` folder
+**Location:** `project-guides/` folder
 
 ---
 

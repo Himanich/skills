@@ -102,7 +102,7 @@ PLUGIN_ROOT=$([ -d ".claude/plugins/project-management" ] && echo ".claude/plugi
 cp "$PLUGIN_ROOT/templates/whitepaper.typ" <output-directory>/whitepaper.typ
 ```
 
-Replace `<output-directory>` with the directory where the PDF will be generated (e.g., `content/`).
+Replace `<output-directory>` with the directory where the PDF will be generated (e.g., `project-guides/`).
 
 ### 4. Run Pandoc
 
@@ -110,7 +110,7 @@ Execute the conversion with these exact flags. Run from the output directory so 
 
 ```bash
 cd <output-directory> && \
-PLUGIN_ROOT=$([ -d "../.claude/plugins/project-management" ] && echo "../.claude/plugins/project-management" || [ -d ".claude/plugins/project-management" ] && echo ".claude/plugins/project-management" || echo "$CLAUDE_PLUGIN_ROOT") && \
+PLUGIN_ROOT=$(if [ -d "../.claude/plugins/project-management" ]; then echo "../.claude/plugins/project-management"; elif [ -d ".claude/plugins/project-management" ]; then echo ".claude/plugins/project-management"; else echo "$CLAUDE_PLUGIN_ROOT"; fi) && \
 TYPST_FONT_PATHS="$PLUGIN_ROOT/fonts" pandoc <input.md> \
   -o <output.pdf> \
   --pdf-engine=typst \
@@ -120,7 +120,7 @@ TYPST_FONT_PATHS="$PLUGIN_ROOT/fonts" pandoc <input.md> \
   -V papersize=a4
 ```
 
-**Example for `content/ADMIN-GUIDE.md`:**
+**Example for `project-guides/ADMIN-GUIDE.md`:**
 ```bash
 cd content && \
 PLUGIN_ROOT=$([ -d "../.claude/plugins/project-management" ] && echo "../.claude/plugins/project-management" || echo "$CLAUDE_PLUGIN_ROOT") && \
@@ -147,11 +147,11 @@ rm -f <input-without-extension>.plain.html
 rm -f <input-without-extension>.html
 ```
 
-**Example cleanup for `content/AUTHOR-GUIDE.md`:**
+**Example cleanup for `project-guides/AUTHOR-GUIDE.md`:**
 ```bash
-rm -f content/whitepaper.typ
-rm -f content/AUTHOR-GUIDE.md content/AUTHOR-GUIDE.plain.html content/AUTHOR-GUIDE.html
-# Keep: content/AUTHOR-GUIDE.pdf (deliverable)
+rm -f project-guides/whitepaper.typ
+rm -f project-guides/AUTHOR-GUIDE.md project-guides/AUTHOR-GUIDE.plain.html project-guides/AUTHOR-GUIDE.html
+# Keep: project-guides/AUTHOR-GUIDE.pdf (deliverable)
 ```
 
 ### 6. Report Result

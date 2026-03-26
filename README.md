@@ -12,6 +12,9 @@ Repository of Adobe skills for AI coding agents.
 
 # Install AEM Edge Delivery Services plugin (all 17 skills)
 /plugin install aem-edge-delivery-services@adobe-skills
+
+# Install AEM Project Management plugin (6 skills)
+/plugin install aem-project-management@adobe-skills
 ```
 
 ### Vercel Skills (npx skills)
@@ -85,18 +88,61 @@ gh upskill adobe/skills --path skills/aem/edge-delivery-services --list
 | `generate-import-html` | Generate structured HTML |
 | `preview-import` | Preview imported content |
 
+### AEM Project Management
+
+Project lifecycle management for AEM Edge Delivery Services including handover documentation, PDF generation, and authentication.
+
+> **Usage Note:** This plugin is designed to run at the root of an AEM Edge Delivery Services project in an isolated workspace. Clone your Edge Delivery Services repository and run the plugin from the project root to ensure the PDF lifecycle hooks correctly track only your project's documentation files.
+
+**Quick Start:**
+```bash
+cd your-eds-project
+# Say: "generate handover docs"
+```
+
+**Setup:** You will be prompted for your Config Service organization name (the `{org}` in `https://main--site--{org}.aem.page`). A browser window will then open for authentication - sign in and **close the browser window** to continue. The org name and auth token are saved locally for guide generation.
+
+**Output:** Professional PDFs generated in `project-guides/` folder:
+- `project-guides/AUTHOR-GUIDE.pdf` - For content authors
+- `project-guides/DEVELOPER-GUIDE.pdf` - For developers
+- `project-guides/ADMIN-GUIDE.pdf` - For administrators
+
+| Skill | Description |
+|-------|-------------|
+| `handover` | Orchestrates project handover documentation generation |
+| `authoring` | Generate comprehensive authoring guide for content authors |
+| `development` | Generate technical documentation for developers |
+| `admin` | Generate admin guide for site administrators |
+| `whitepaper` | Create professional PDF whitepapers from Markdown |
+| `auth` | Authenticate with AEM Config Service API |
+
 ## Repository Structure
 
 ```
 skills/
 └── aem/
-    └── edge-delivery-services/
+    ├── edge-delivery-services/
+    │   ├── .claude-plugin/
+    │   │   └── plugin.json
+    │   └── skills/
+    │       ├── content-driven-development/
+    │       ├── building-blocks/
+    │       └── ...
+    └── project-management/
         ├── .claude-plugin/
         │   └── plugin.json
+        ├── fonts/
+        ├── hooks/
+        │   └── pdf-lifecycle.js
+        ├── templates/
+        │   └── whitepaper.typ
         └── skills/
-            ├── content-driven-development/
-            ├── building-blocks/
-            └── ...
+            ├── handover/
+            ├── authoring/
+            ├── development/
+            ├── admin/
+            ├── whitepaper/
+            └── auth/
 ```
 
 ## Contributing

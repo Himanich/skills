@@ -82,6 +82,8 @@ Once you have the org name, save it so sub-skills can use it:
 ```bash
 # Create config directory if needed
 mkdir -p .claude-plugin
+# Ensure .claude-plugin is in .gitignore (contains auth tokens)
+grep -qxF '.claude-plugin/' .gitignore 2>/dev/null || echo '.claude-plugin/' >> .gitignore
 
 # Save org name to config file
 echo '{"org": "{ORG_NAME}"}' > .claude-plugin/project-config.json
@@ -220,7 +222,7 @@ Task({
 ```
 "Handover documentation complete:
 
-content/
+project-guides/
 ├── AUTHOR-GUIDE.pdf (full guide for content authors)
 ├── DEVELOPER-GUIDE.pdf (full guide for developers)
 └── ADMIN-GUIDE.pdf (full guide for administrators)
@@ -239,10 +241,10 @@ All PDFs generated. Source files cleaned up."
 
 | Selection | Output Files |
 |-----------|--------------|
-| All | `content/AUTHOR-GUIDE.pdf`, `content/DEVELOPER-GUIDE.pdf`, `content/ADMIN-GUIDE.pdf` |
-| Authoring Guide | `content/AUTHOR-GUIDE.pdf` |
-| Developer Guide | `content/DEVELOPER-GUIDE.pdf` |
-| Admin Guide | `content/ADMIN-GUIDE.pdf` |
+| All | `project-guides/AUTHOR-GUIDE.pdf`, `project-guides/DEVELOPER-GUIDE.pdf`, `project-guides/ADMIN-GUIDE.pdf` |
+| Authoring Guide | `project-guides/AUTHOR-GUIDE.pdf` |
+| Developer Guide | `project-guides/DEVELOPER-GUIDE.pdf` |
+| Admin Guide | `project-guides/ADMIN-GUIDE.pdf` |
 
 **Note:** Each sub-skill generates a PDF only. All source files (.md, .html, .plain.html) are cleaned up after PDF generation.
 
@@ -250,17 +252,17 @@ All PDFs generated. Source files cleaned up."
 
 ## ⚠️ CRITICAL PATH REQUIREMENT
 
-**ALL FILES MUST BE SAVED TO `content/` FOLDER:**
+**ALL FILES MUST BE SAVED TO `project-guides/` FOLDER:**
 
 ```
-content/AUTHOR-GUIDE.md
-content/DEVELOPER-GUIDE.md
-content/ADMIN-GUIDE.md
+project-guides/AUTHOR-GUIDE.md
+project-guides/DEVELOPER-GUIDE.md
+project-guides/ADMIN-GUIDE.md
 ```
 
-**WHY THIS MATTERS:** Files must be in `content/` for proper organization and PDF conversion.
+**WHY THIS MATTERS:** Files must be in `project-guides/` for proper organization and PDF conversion.
 
-**BEFORE WRITING ANY FILE:** Run `mkdir -p content` first.
+**BEFORE WRITING ANY FILE:** Run `mkdir -p project-guides` first.
 
 ---
 
@@ -271,15 +273,15 @@ content/ADMIN-GUIDE.md
 - ❌ Do NOT use `convert_markdown_to_html` tool
 - ❌ Do NOT tell user to "convert markdown to PDF manually"
 - ❌ Do NOT say "PDF will be generated later" — each sub-skill generates PDF immediately
-- ❌ Do NOT save markdown to root directory or any path other than `content/`
+- ❌ Do NOT save markdown to root directory or any path other than `project-guides/`
 
 **REQUIRED:**
-- ✅ Run `mkdir -p content` before writing any files
-- ✅ Each sub-skill MUST save markdown to `content/` folder (EXACT PATH)
+- ✅ Run `mkdir -p project-guides` before writing any files
+- ✅ Each sub-skill MUST save markdown to `project-guides/` folder (EXACT PATH)
 - ✅ Markdown files MUST have `title` and `date` fields in frontmatter
 - ✅ Each sub-skill MUST invoke `project-management:whitepaper` to generate PDF immediately after saving markdown
 - ✅ Each sub-skill MUST cleanup ALL source files (.md, .html, .plain.html) after PDF generation
-- ✅ Final output is `.pdf` files ONLY in `content/` folder
+- ✅ Final output is `.pdf` files ONLY in `project-guides/` folder
 
 ---
 

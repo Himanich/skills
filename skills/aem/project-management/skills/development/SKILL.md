@@ -30,40 +30,40 @@ Generate a complete technical guide for developers. This skill analyzes the code
 **YOU MUST SAVE THE FILE TO THIS EXACT PATH:**
 
 ```
-content/DEVELOPER-GUIDE.md
+project-guides/DEVELOPER-GUIDE.md
 ```
 
 **BEFORE WRITING ANY FILE:**
-1. First, create the directory: `mkdir -p content`
-2. Then write to: `content/DEVELOPER-GUIDE.md`
+1. First, create the directory: `mkdir -p project-guides`
+2. Then write to: `project-guides/DEVELOPER-GUIDE.md`
 
-**WHY THIS MATTERS:** Files must be in `content/` for proper organization and PDF conversion.
+**WHY THIS MATTERS:** Files must be in `project-guides/` for proper organization and PDF conversion.
 
 ❌ **WRONG:** `DEVELOPER-GUIDE.md` (root)
 ❌ **WRONG:** `docs/DEVELOPER-GUIDE.md`
 ❌ **WRONG:** `/workspace/DEVELOPER-GUIDE.md`
-✅ **CORRECT:** `content/DEVELOPER-GUIDE.md`
+✅ **CORRECT:** `project-guides/DEVELOPER-GUIDE.md`
 
 ---
 
 ## Output Format
 
-**MANDATORY OUTPUT:** `content/DEVELOPER-GUIDE.pdf`
+**MANDATORY OUTPUT:** `project-guides/DEVELOPER-GUIDE.pdf`
 
 **STRICTLY FORBIDDEN:**
 - ❌ Do NOT create `.plain.html` files
 - ❌ Do NOT use `convert_markdown_to_html` tool — this converts the FULL guide to HTML with raw frontmatter visible, which is NOT what we want
 - ❌ Do NOT tell user to "convert markdown to PDF manually"
-- ❌ Do NOT save markdown to root directory or any path other than `content/`
+- ❌ Do NOT save markdown to root directory or any path other than `project-guides/`
 - ❌ Do NOT say "PDF will be generated later" or "at session end" — generate it NOW
 
 **REQUIRED WORKFLOW:**
-1. Run `mkdir -p content` to ensure directory exists
+1. Run `mkdir -p project-guides` to ensure directory exists
 2. Generate markdown content with YAML frontmatter (title, date)
-3. Save to `content/DEVELOPER-GUIDE.md` (EXACT PATH - no exceptions)
+3. Save to `project-guides/DEVELOPER-GUIDE.md` (EXACT PATH - no exceptions)
 4. **IMMEDIATELY** invoke PDF conversion (see Phase 5.1)
 5. Clean up all source files (only PDF remains)
-6. Final output: `content/DEVELOPER-GUIDE.pdf`
+6. Final output: `project-guides/DEVELOPER-GUIDE.pdf`
 
 ---
 
@@ -109,6 +109,8 @@ Once you have the org name (either from saved config or user input), save it for
 ```bash
 # Create config directory if needed
 mkdir -p .claude-plugin
+# Ensure .claude-plugin is in .gitignore (contains auth tokens)
+grep -qxF '.claude-plugin/' .gitignore 2>/dev/null || echo '.claude-plugin/' >> .gitignore
 
 # Save org name to config file (create or update)
 if [ -f .claude-plugin/project-config.json ]; then
@@ -438,7 +440,7 @@ Apply the same boilerplate filtering to `templates/*/`. For each customized temp
 
 ## Phase 5: Generate Developer Guide
 
-### Output File: `content/DEVELOPER-GUIDE.md`
+### Output File: `project-guides/DEVELOPER-GUIDE.md`
 
 Generate a markdown document with the following structure:
 
@@ -696,7 +698,7 @@ npm run lint
 
 **THIS STEP IS NOT OPTIONAL. YOU MUST GENERATE THE PDF NOW.**
 
-1. Save markdown to: `content/DEVELOPER-GUIDE.md`
+1. Save markdown to: `project-guides/DEVELOPER-GUIDE.md`
    - File MUST start with YAML frontmatter:
      ```yaml
      ---
@@ -709,7 +711,7 @@ npm run lint
 2. **IMMEDIATELY after saving the markdown**, invoke the PDF conversion skill:
 
    ```
-   Skill({ skill: "project-management:whitepaper", args: "content/DEVELOPER-GUIDE.md content/DEVELOPER-GUIDE.pdf" })
+   Skill({ skill: "project-management:whitepaper", args: "project-guides/DEVELOPER-GUIDE.md project-guides/DEVELOPER-GUIDE.pdf" })
    ```
 
 3. Wait for PDF generation to complete (whitepaper skill auto-cleans source files)
@@ -723,18 +725,18 @@ npm run lint
 After PDF is generated, inform the user:
 
 ```
-"✓ Developer guide complete: content/DEVELOPER-GUIDE.pdf"
+"✓ Developer guide complete: project-guides/DEVELOPER-GUIDE.pdf"
 ```
 
 ---
 
 ## Output
 
-**FINAL OUTPUT:** `content/DEVELOPER-GUIDE.pdf`
+**FINAL OUTPUT:** `project-guides/DEVELOPER-GUIDE.pdf`
 
 All source files (.md, .html, .plain.html) are deleted after PDF generation. Only the PDF remains.
 
-**Location:** `content/` folder
+**Location:** `project-guides/` folder
 
 ---
 

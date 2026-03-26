@@ -30,40 +30,40 @@ Generate a complete authoring guide for content authors and content managers. Th
 **YOU MUST SAVE THE FILE TO THIS EXACT PATH:**
 
 ```
-content/AUTHOR-GUIDE.md
+project-guides/AUTHOR-GUIDE.md
 ```
 
 **BEFORE WRITING ANY FILE:**
-1. First, create the directory: `mkdir -p content`
-2. Then write to: `content/AUTHOR-GUIDE.md`
+1. First, create the directory: `mkdir -p project-guides`
+2. Then write to: `project-guides/AUTHOR-GUIDE.md`
 
-**WHY THIS MATTERS:** Files must be in `content/` for proper organization and PDF conversion.
+**WHY THIS MATTERS:** Files must be in `project-guides/` for proper organization and PDF conversion.
 
 ❌ **WRONG:** `AUTHOR-GUIDE.md` (root)
 ❌ **WRONG:** `docs/AUTHOR-GUIDE.md`
 ❌ **WRONG:** `/workspace/AUTHOR-GUIDE.md`
-✅ **CORRECT:** `content/AUTHOR-GUIDE.md`
+✅ **CORRECT:** `project-guides/AUTHOR-GUIDE.md`
 
 ---
 
 ## Output Format
 
-**MANDATORY OUTPUT:** `content/AUTHOR-GUIDE.pdf`
+**MANDATORY OUTPUT:** `project-guides/AUTHOR-GUIDE.pdf`
 
 **STRICTLY FORBIDDEN:**
 - ❌ Do NOT create `.plain.html` files
 - ❌ Do NOT use `convert_markdown_to_html` tool — this converts the FULL guide to HTML with raw frontmatter visible, which is NOT what we want
 - ❌ Do NOT tell user to "convert markdown to PDF manually"
-- ❌ Do NOT save markdown to root directory or any path other than `content/`
+- ❌ Do NOT save markdown to root directory or any path other than `project-guides/`
 - ❌ Do NOT say "PDF will be generated later" or "at session end" — generate it NOW
 
 **REQUIRED WORKFLOW:**
-1. Run `mkdir -p content` to ensure directory exists
+1. Run `mkdir -p project-guides` to ensure directory exists
 2. Generate markdown content with YAML frontmatter (title, date)
-3. Save to `content/AUTHOR-GUIDE.md` (EXACT PATH - no exceptions)
+3. Save to `project-guides/AUTHOR-GUIDE.md` (EXACT PATH - no exceptions)
 4. **IMMEDIATELY** invoke PDF conversion (see Phase 5.2)
 5. Clean up all source files (only PDF remains)
-6. Final output: `content/AUTHOR-GUIDE.pdf`
+6. Final output: `project-guides/AUTHOR-GUIDE.pdf`
 
 ---
 
@@ -109,6 +109,8 @@ Once you have the org name (either from saved config or user input), save it for
 ```bash
 # Create config directory if needed
 mkdir -p .claude-plugin
+# Ensure .claude-plugin is in .gitignore (contains auth tokens)
+grep -qxF '.claude-plugin/' .gitignore 2>/dev/null || echo '.claude-plugin/' >> .gitignore
 
 # Save org name to config file (create or update)
 if [ -f .claude-plugin/project-config.json ]; then
@@ -295,7 +297,7 @@ ls -la *.xlsx *.json 2>/dev/null | grep -v package
 
 ## Phase 5: Generate Author Guide
 
-### 5.1 Output File: `content/AUTHOR-GUIDE.md`
+### 5.1 Output File: `project-guides/AUTHOR-GUIDE.md`
 
 ```markdown
 # [Project Name] - Author Guide
@@ -461,7 +463,7 @@ When creating or editing a page, use the Library sidebar to add blocks instead o
 
 **THIS STEP IS NOT OPTIONAL. YOU MUST GENERATE THE PDF NOW.**
 
-1. Save markdown to: `content/AUTHOR-GUIDE.md`
+1. Save markdown to: `project-guides/AUTHOR-GUIDE.md`
    - File MUST start with YAML frontmatter:
      ```yaml
      ---
@@ -474,7 +476,7 @@ When creating or editing a page, use the Library sidebar to add blocks instead o
 2. **IMMEDIATELY after saving the markdown**, invoke the PDF conversion skill:
 
    ```
-   Skill({ skill: "project-management:whitepaper", args: "content/AUTHOR-GUIDE.md content/AUTHOR-GUIDE.pdf" })
+   Skill({ skill: "project-management:whitepaper", args: "project-guides/AUTHOR-GUIDE.md project-guides/AUTHOR-GUIDE.pdf" })
    ```
 
 3. Wait for PDF generation to complete (whitepaper skill auto-cleans source files)
@@ -488,18 +490,18 @@ When creating or editing a page, use the Library sidebar to add blocks instead o
 After PDF is generated, inform the user:
 
 ```
-"✓ Author guide complete: content/AUTHOR-GUIDE.pdf"
+"✓ Author guide complete: project-guides/AUTHOR-GUIDE.pdf"
 ```
 
 ---
 
 ## Output
 
-**FINAL OUTPUT:** `content/AUTHOR-GUIDE.pdf`
+**FINAL OUTPUT:** `project-guides/AUTHOR-GUIDE.pdf`
 
 All source files (.md, .html, .plain.html) are deleted after PDF generation. Only the PDF remains.
 
-**Location:** `content/` folder
+**Location:** `project-guides/` folder
 
 ---
 
