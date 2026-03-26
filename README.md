@@ -97,7 +97,7 @@ Project lifecycle management for AEM Edge Delivery Services including handover d
 **Quick Start:**
 ```bash
 cd your-eds-project
-# Say: "generate handover docs"
+# Say: "create documentation or guides for this project"
 ```
 
 **Setup:** You will be prompted for your Config Service organization name (the `{org}` in `https://main--site--{org}.aem.page`). A browser window will then open for authentication - sign in and **close the browser window** to continue. The org name and auth token are saved locally for guide generation.
