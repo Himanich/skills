@@ -1,6 +1,6 @@
 ---
 name: aem-cloud-service-best-practices
-description: AEM as a Cloud Service best practices for Java/OSGi and HTL (Sightly). Use for Cloud Service–correct bundles, deprecated APIs, schedulers, ResourceChangeListener, replication, Replicator, JCR observation (EventListener), OSGi EventHandler, DAM AssetManager, BPA-style fixes, HTL lint warnings (data-sly-test redundant constant comparison, Sightly), or any time you need the detailed reference modules under this skill.
+description: AEM as a Cloud Service best practices for Java/OSGi and HTL (Sightly). Use for Cloud Service–correct bundles, deprecated APIs, schedulers, ResourceChangeListener, replication, Replicator, JCR observation (EventListener), OSGi EventHandler, DAM AssetManager, BPA-style fixes, HTL lint warnings (data-sly-test redundant constant comparison, Sightly), proactive ripgrep discovery of likely redundant data-sly-test patterns, or any time you need the detailed reference modules under this skill.
 ---
 
 # AEM as a Cloud Service — Best Practices
@@ -19,6 +19,7 @@ Use this skill when you need to:
 - Refactor **legacy Java patterns** into supported APIs (same modules migration uses)
 - Follow **consistent rules** across schedulers, replication, **JCR observation listeners** (`eventListener`), **OSGi event handlers** (`eventHandler`), and DAM assets
 - Fix **HTL (Sightly)** issues from the **AEM Cloud SDK build**, especially `data-sly-test: redundant constant value comparison`
+- **Find** likely HTL problem files **without a build** using the **Proactive discovery** `rg` patterns below, then fix via the same reference module
 - Read **step-by-step transformation** and validation checklists for a specific pattern
 
 For **BPA/CAM orchestration** (collections, CSV, MCP project selection), use **`aem-cloud-service-migration`** at `skills/aem/cloud-service/skills/migration/`.
@@ -53,6 +54,30 @@ When the user pastes **HTL lint warnings** or asks to fix **`data-sly-test`** is
 3. **Read that module** before editing `.html` files.
 4. **Preserve logical intent** — only fix expression shape, not authoring behavior.
 
+### Proactive discovery (find candidates without Maven)
+
+When the user wants to **find and fix** redundant `data-sly-test` issues but has **no build log yet**, run a **heuristic scan** on HTL templates, then fix hits using the same reference module.
+
+**Limits:** Grep is **not** the HTL compiler. It can **miss** issues (multiline attributes, unusual quoting) and **false-positive** on expressions that are fine. After edits, **`mvn … generate-sources`** (or the Cloud Manager build) is still the **authoritative** check.
+
+**Scope:** Prefer `ui.apps/**/jcr_root/**/*.html` and any other content packages that ship component HTL.
+
+From the **repository root**, use **ripgrep** (`rg`). Each pattern targets one class from [`references/data-sly-test-redundant-constant.md`](references/data-sly-test-redundant-constant.md):
+
+| Pattern class | What to search | Example `rg` (run from repo root) |
+|---------------|----------------|-------------------------------------|
+| Boolean literal | `== true`, `== false`, `!= true`, `!= false` inside `data-sly-test` | `rg -n 'data-sly-test="[^"]*==\s*(true|false)' --glob '*.html' ui.apps` and `rg -n 'data-sly-test="[^"]*!=\s*(true|false)' --glob '*.html' ui.apps` |
+| Raw `/apps/…` string as test | HTL string literal starting with `/apps/` inside the attribute (common anti-pattern) | `rg -n "data-sly-test=.*'/apps/" --glob '*.html' ui.apps` (then confirm it is a useless string-as-test, not a legitimate comparison) |
+| Split `\|\|` / `&&` across `${}` | Literal `} || ${` or `} && ${` in one attribute | `rg -n 'data-sly-test="[^"]*\}\s*\|\|\s*\$\{' --glob '*.html' ui.apps` and the same pattern with `&&` instead of `\|\|` |
+| Numeric literal comparison | `== <digits>` inside a `data-sly-test` line (review each hit) | `rg -n 'data-sly-test="[^"]*==\s*[0-9]+\s*}' --glob '*.html' ui.apps` |
+
+**Agent workflow:**
+
+1. Run the `rg` lines above (adjust `ui.apps` to the user’s module paths if different).
+2. Open each file at the reported lines; confirm the match is really a `data-sly-test` problem per the reference (skip unrelated `== 1` in other attributes if any).
+3. Apply fixes from [`references/data-sly-test-redundant-constant.md`](references/data-sly-test-redundant-constant.md).
+4. Tell the user to run **HTL validate** / full module build so compiler warnings confirm nothing was missed.
+
 ## Java / OSGi baseline (same skill; no separate installables)
 
 SCR→DS and `ResourceResolver`/logging are **reference modules** under `references/` — not separate skills. Read them when relevant **instead of** re-embedding the same steps inside each pattern file.
@@ -86,7 +111,7 @@ When no BPA list exists, scan imports and types to pick a module:
 | `com.day.cq.dam.api.AssetManager` create/remove asset APIs | `assetApi` |
 | `org.apache.felix.scr.annotations` | read `references/scr-to-osgi-ds.md` (often combined with a BPA pattern) |
 | `getAdministrativeResourceResolver`, `System.out` / `printStackTrace` | read `references/resource-resolver-logging.md` |
-| **HTL:** build warning `data-sly-test: redundant constant value comparison`, or `.html` under `ui.apps` / `jcr_root` with bad `data-sly-test` | read `references/data-sly-test-redundant-constant.md` |
+| **HTL:** build warning `data-sly-test: redundant constant value comparison`, proactive `rg` hits (see **Proactive discovery**), or `.html` under `ui.apps` / `jcr_root` with bad `data-sly-test` | read `references/data-sly-test-redundant-constant.md` |
 
 If multiple patterns match, ask which to fix first.
 
