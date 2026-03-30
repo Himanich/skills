@@ -20,10 +20,10 @@ Repository of Adobe skills for AI coding agents.
 /plugin install aem-6-5-lts-dispatcher@adobe-skills
 
 # Install AEM Cloud Service best practices (platform + pattern modules)
-/plugin install aem-cloud-service-best-practices@adobe-skills
+/plugin install aem-best-practices@adobe-skills
 
 # Install AEM Cloud Service code migration (BPA/CAM orchestration)
-/plugin install aem-cloud-service-migration@adobe-skills
+/plugin install aem-migration@adobe-skills
 ```
 
 ### Vercel Skills (npx skills)
@@ -39,7 +39,7 @@ npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-servic
 npx skills add https://github.com/adobe/skills/tree/main/skills/aem/6.5-lts/skills/dispatcher --all
 
 # Install all AEM Cloud Service best-practices skills (pattern modules + SCR→DS + resource/logging)
-npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/aem-cloud-service-best-practices --all
+npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/best-practices --all
 
 # Install all AEM Cloud Service migration skills
 npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/migration --all
@@ -88,7 +88,7 @@ gh upskill adobe/skills --path skills/aem/cloud-service/skills/dispatcher --all
 gh upskill adobe/skills --path skills/aem/6.5-lts/skills/dispatcher --all
 
 # Install only AEM Cloud Service best-practices skills
-gh upskill adobe/skills --path skills/aem/cloud-service/skills/aem-cloud-service-best-practices --all
+gh upskill adobe/skills --path skills/aem/cloud-service/skills/best-practices --all
 
 # Install only AEM Cloud Service migration skills
 gh upskill adobe/skills --path skills/aem/cloud-service/skills/migration --all
@@ -129,16 +129,11 @@ Shared advisory logic is centralized under each flavor's `dispatcher/shared/refe
 
 ### AEM as a Cloud Service — Best Practices & Migration
 
-Two plugin roots under `skills/aem/cloud-service/skills/`: **best-practices** (one skill: patterns + Java baseline refs) and **migration** (BPA/CAM orchestration). Migration targets **legacy AEM → AEM as a Cloud Service** (not Edge Delivery or 6.5 LTS).
-
-| Plugin | Description |
-|--------|-------------|
-| `aem-cloud-service-best-practices` | Plugin folder `aem-cloud-service-best-practices/`; single skill with `references/` (patterns plus `scr-to-osgi-ds.md`, `resource-resolver-logging.md`, prerequisites hub) |
-| `aem-cloud-service-migration` | Folder `migration/`: BPA/CAM/MCP orchestration; delegates transformations to the best-practices plugin |
+Packages under `skills/aem/cloud-service/skills/`: **`aem-best-practices`** (source `best-practices/`, pattern modules + Java baseline refs) and **`aem-migration`** (source `migration/`, BPA/CAM orchestration). Scope is **legacy AEM → AEM as a Cloud Service** (not Edge Delivery or 6.5 LTS). **`aem-migration`** delegates transformations to **`aem-best-practices`** (`references/`).
 
 **Key features:**
 - One install for patterns, SCR→OSGi DS, and resolver/logging (all under the same skill)
-- Migration stays orchestration-only; pattern content lives in the best-practices plugin
+- Migration stays orchestration-only; pattern content lives in the **`aem-best-practices`** plugin
 
 ## Repository Structure
 
@@ -163,13 +158,12 @@ skills/
     |       |   |       \-- ...
     |       |   |-- technical-advisory/
     |       |   \-- ...
-    |       |-- aem-cloud-service-best-practices/
+    |       |-- best-practices/
     |       |   |-- .claude-plugin/
     |       |   |   \-- plugin.json
     |       |   |-- README.md
-    |       |   \-- aem-cloud-service-best-practices/
-    |       |       |-- SKILL.md
-    |       |       |-- references/
+    |       |   |-- SKILL.md
+    |       |   \-- references/
     |       |       |   |-- scheduler.md
     |       |       |   |-- replication.md
     |       |       |   |-- scr-to-osgi-ds.md
@@ -179,9 +173,9 @@ skills/
     |           |-- .claude-plugin/
     |           |   \-- plugin.json
     |           |-- README.md
-    |           \-- aem-cloud-service-migration/
-    |               |-- SKILL.md
-    |               \-- scripts/
+    |           |-- SKILL.md
+    |           |-- references/
+    |           \-- scripts/
     |-- 6.5-lts/
     |   \-- skills/
     |       \-- dispatcher/
