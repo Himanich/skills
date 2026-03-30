@@ -1,6 +1,6 @@
 # ResourceResolver & logging (AEM as a Cloud Service)
 
-**Part of `aem-cloud-service-best-practices`.** Read this module when fixing Sling resource access or logging; pattern files link here instead of repeating the same rules.
+**Part of `aem-best-practices`.** Read this module when fixing Sling resource access or logging; pattern files link here instead of repeating the same rules.
 
 **Expectations** for backend Java on **AEM as a Cloud Service**:
 

@@ -1,6 +1,6 @@
 ---
-name: aem-cloud-service-best-practices
-description: AEM as a Cloud Service best practices for Java/OSGi and HTL (Sightly). Use for Cloud Service–correct bundles, deprecated APIs, schedulers, ResourceChangeListener, replication, Replicator, JCR observation (EventListener), OSGi EventHandler, DAM AssetManager, BPA-style fixes, HTL lint warnings (data-sly-test redundant constant comparison, Sightly), proactive ripgrep discovery of likely redundant data-sly-test patterns, or any time you need the detailed reference modules under this skill.
+name: aem-best-practices
+description: AEM as a Cloud Service Java/OSGi best practices, guardrails, and legacy-to-cloud pattern transformations. Use for Cloud Service–correct bundles, deprecated APIs, schedulers, ResourceChangeListener, replication, Replicator, JCR observation (javax.jcr.observation.EventListener), OSGi Event Admin (org.osgi.service.event.EventHandler), DAM AssetManager, BPA-style fixes, HTL (Sightly) lint including data-sly-test redundant constant comparison, proactive ripgrep discovery of likely redundant data-sly-test patterns, or any time you need the detailed pattern reference modules under this skill.
 ---
 
 # AEM as a Cloud Service — Best Practices
@@ -22,7 +22,7 @@ Use this skill when you need to:
 - **Find** likely HTL problem files **without a build** using the **Proactive discovery** `rg` patterns below, then fix via the same reference module
 - Read **step-by-step transformation** and validation checklists for a specific pattern
 
-For **BPA/CAM orchestration** (collections, CSV, MCP project selection), use **`aem-cloud-service-migration`** at `skills/aem/cloud-service/skills/migration/`.
+For **BPA/CAM orchestration** (collections, CSV, MCP project selection), use **`aem-migration`** (`skills/aem/cloud-service/skills/migration/`).
 
 ## Pattern Reference Modules
 
@@ -96,6 +96,7 @@ SCR→DS and `ResourceResolver`/logging are **reference modules** under `referen
 - **DO NOT** rename classes unless the pattern module explicitly says to
 - **DO NOT** invent values — extract from existing code
 - **DO NOT** edit files outside the scope agreed with the user (e.g. only BPA targets or paths they named)
+- **DO** keep **searches, discovery, and edits** for the customer’s AEM sources inside the **IDE workspace root(s)** currently open; **DO NOT** grep or walk directories outside that boundary to find Java unless the user explicitly points there
 
 ## Manual Pattern Hints (Classification)
 
@@ -117,4 +118,4 @@ If multiple patterns match, ask which to fix first.
 
 ## Relationship to Migration
 
-The **migration** skill (`aem-cloud-service-migration`) defines **one-pattern-per-session** workflow, BPA/CAM/MCP flows, and user messaging. It **delegates** all detailed transformation steps to this skill’s `references/` modules. It uses a **`{best-practices}`** repo-root path alias to this folder (see its `SKILL.md`). Keep platform truth here; keep orchestration there.
+The **`aem-migration`** skill defines **one-pattern-per-session** workflow, BPA/CAM/MCP flows, and user messaging. It **delegates** all detailed transformation steps to this skill’s `references/` modules. It uses a **`{best-practices}`** repo-root path alias to this folder (see its `SKILL.md`). Keep platform truth here; keep orchestration there.

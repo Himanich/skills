@@ -9,8 +9,8 @@ Before **pattern-specific** steps in other `references/*.md` pattern files, appl
 
 **Repository-root paths** (workspace resolution):
 
-- `skills/aem/cloud-service/skills/aem-cloud-service-best-practices/aem-cloud-service-best-practices/references/scr-to-osgi-ds.md`
-- `skills/aem/cloud-service/skills/aem-cloud-service-best-practices/aem-cloud-service-best-practices/references/resource-resolver-logging.md`
+- `skills/aem/cloud-service/skills/best-practices/references/scr-to-osgi-ds.md`
+- `skills/aem/cloud-service/skills/best-practices/references/resource-resolver-logging.md`
 
 Main skill hub: [`../SKILL.md`](../SKILL.md).
 

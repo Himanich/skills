@@ -1,15 +1,15 @@
 ---
-name: aem-cloud-service-migration
-description: Orchestrates legacy AEM Java (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, JCR observation EventListener, OSGi EventHandler, DAM AssetManager. Transformation steps are not defined here—read the aem-cloud-service-best-practices skill and its references/ modules in the same repository before editing code.
+name: aem-migration
+description: Orchestrates legacy AEM Java (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, JCR observation EventListener, OSGi EventHandler, DAM AssetManager. Transformation steps are not defined here—read the aem-best-practices skill and its references/ modules in the same repository before editing code.
 ---
 
 # AEM as a Cloud Service — Code Migration
 
 **Source → target:** Legacy **AEM 6.x / AMS / on-prem** → **AEM as a Cloud Service**. Scoped under `cloud-service/migration` so this is not confused with Edge Delivery or 6.5 LTS.
 
-This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**, and target discovery. **Transformation rules and steps** live in **aem-cloud-service-best-practices** — read that skill and the right `references/*.md` before editing code.
+This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**, and target discovery. **Transformation rules and steps** live in **`aem-best-practices`** — read that skill and the right `references/*.md` before editing code.
 
-**Setup:** Install **`aem-cloud-service-best-practices`** alongside this skill when using marketplace or plugin installs, so the agent can load pattern modules. Skip the extra install only if those files are already available (e.g. full `adobe/skills` checkout with resolvable `{best-practices}` paths). See the migration plugin **README** for install commands for both plugins.
+**Setup:** Install **`aem-best-practices`** alongside this skill when needed so the agent can load pattern modules. Skip the extra install only if those files are already available (e.g. full `adobe/skills` checkout with resolvable `{best-practices}` paths). See this plugin’s **README** for install commands for both plugins.
 
 ## Quick start (for the person driving the agent)
 
@@ -34,7 +34,7 @@ From the **repository root** (parent of the `skills/` directory):
 
 | Symbol | Path |
 |--------|------|
-| **`{best-practices}`** | `skills/aem/cloud-service/skills/aem-cloud-service-best-practices/aem-cloud-service-best-practices/` |
+| **`{best-practices}`** | `skills/aem/cloud-service/skills/best-practices/` |
 
 Examples: `{best-practices}/SKILL.md`, `{best-practices}/references/scheduler.md`.
 

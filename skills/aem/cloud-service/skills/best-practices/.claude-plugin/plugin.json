@@ -1,0 +1,11 @@
+{
+  "name": "aem-best-practices",
+  "description": "AEM as a Cloud Service Java/OSGi: pattern modules and baseline refs (SCR→OSGi DS, ResourceResolver/logging) under references/; HTL (Sightly) Cloud SDK lint (data-sly-test redundant constant) and proactive ripgrep discovery. Plugin root: skills/aem/cloud-service/skills/best-practices/.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Adobe"
+  },
+  "repository": "https://github.com/adobe/skills",
+  "license": "Apache-2.0",
+  "keywords": ["aem", "aemaacs", "cloud-service", "best-practices", "osgi", "java", "htl", "sightly", "migration", "adobe"]
+}
