@@ -60,6 +60,7 @@ SCR→DS and `ResourceResolver`/logging are **reference modules** under `referen
 - **DO NOT** rename classes unless the pattern module explicitly says to
 - **DO NOT** invent values — extract from existing code
 - **DO NOT** edit files outside the scope agreed with the user (e.g. only BPA targets or paths they named)
+- **DO** keep **searches, discovery, and edits** for the customer’s AEM sources inside the **IDE workspace root(s)** currently open; **DO NOT** grep or walk directories outside that boundary to find Java unless the user explicitly points there
 
 ## Manual Pattern Hints (Classification)
 
