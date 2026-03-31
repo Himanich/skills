@@ -22,8 +22,10 @@ Repository of Adobe skills for AI coding agents.
 # Install AEM Cloud Service best practices (platform + pattern modules)
 /plugin install aem-best-practices@adobe-skills
 
-# Install AEM Cloud Service code migration (BPA/CAM orchestration)
+# For migrations — install migration and best-practices (patterns / refactors live in best-practices; migration delegates to them):
 /plugin install aem-migration@adobe-skills
+/plugin install aem-best-practices@adobe-skills
+
 # Install all AEM 6.5 LTS skills (workflow + dispatcher) in one command
 /plugin install aem-6-5-lts@adobe-skills
 ```
@@ -43,8 +45,9 @@ npx skills add https://github.com/adobe/skills/tree/beta/skills/aem/6.5-lts --al
 # Install all AEM Cloud Service best-practices skills (pattern modules + SCR→DS + resource/logging)
 npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/best-practices --all
 
-# Install all AEM Cloud Service migration skills
+# For migrations — install migration and best-practices (patterns / refactors live in best-practices; migration delegates to them):
 npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/migration --all
+npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/best-practices --all
 
 # Install dispatcher skills for a single agent (pick ONE mode only)
 # AEM as a Cloud Service mode:
@@ -82,8 +85,9 @@ gh upskill adobe/skills --path skills/aem/6.5-lts --all
 # Install only AEM Cloud Service best-practices skills
 gh upskill adobe/skills --path skills/aem/cloud-service/skills/best-practices --all
 
-# Install only AEM Cloud Service migration skills
+# For migrations — install migration and best-practices (patterns / refactors live in best-practices; migration delegates to them):
 gh upskill adobe/skills --path skills/aem/cloud-service/skills/migration --all
+gh upskill adobe/skills --path skills/aem/cloud-service/skills/best-practices --all
 
 # Install a specific skill
 gh upskill adobe/skills --path skills/aem/edge-delivery-services --skill content-driven-development
@@ -166,11 +170,11 @@ Shared advisory logic is centralized under each flavor's `dispatcher/shared/refe
 
 ### AEM as a Cloud Service — Best Practices & Migration
 
-Packages under `skills/aem/cloud-service/skills/`: **`aem-best-practices`** (source `best-practices/`, pattern modules + Java baseline refs) and **`aem-migration`** (source `migration/`, BPA/CAM orchestration). Scope is **legacy AEM → AEM as a Cloud Service** (not Edge Delivery or 6.5 LTS). **`aem-migration`** delegates transformations to **`aem-best-practices`** (`references/`).
+Under `skills/aem/cloud-service/skills/`, **`aem-best-practices`** (source `best-practices/`) is the **general-purpose** Cloud Service skill: pattern modules, Java baseline references (SCR→OSGi DS, resolver/logging, and related refs), and day-to-day Cloud Service alignment. Use it **on its own** for greenfield or maintainability work on AEM as a Cloud Service. **`aem-migration`** (source `migration/`, BPA/CAM orchestration) is **scoped to legacy AEM → AEM as a Cloud Service** (not Edge Delivery or 6.5 LTS); it **delegates** concrete refactors to **`aem-best-practices`** (`references/`). **For BPA- or CAM-driven bulk migration, install both** (see Installation); use **`aem-migration`** alone only when the agent already has the same best-practices material (for example the full repo open).
 
 **Key features:**
-- One install for patterns, SCR→OSGi DS, and resolver/logging (all under the same skill)
-- Migration stays orchestration-only; pattern content lives in the **`aem-best-practices`** plugin
+- **Best practices:** one skill for patterns, SCR→OSGi DS, and resolver/logging — applicable to Cloud Service projects generally, not only migration
+- **Migration:** orchestration-only; pattern and transformation content lives in **`aem-best-practices`**
 
 ## Repository Structure
 
