@@ -379,6 +379,7 @@ import java.util.Map;
 
 ## Replication/Distribution Checklist
 
+- [ ] **POM:** SCR→DS POM cleanup applied (Step 0 in [scr-to-osgi-ds.md](scr-to-osgi-ds.md)) — no `maven-scr-plugin`, no Felix SCR dependencies
 - [ ] No `ReplicationAgent`, `Replicator`, `ReplicationAction`, or `ReplicationResult` remains
 - [ ] Uses `DistributionAgent` with `@Reference(target = "(name=agent-name)")`
 - [ ] Uses `DistributionRequest` / `SimpleDistributionRequest` with `DistributionRequestType`

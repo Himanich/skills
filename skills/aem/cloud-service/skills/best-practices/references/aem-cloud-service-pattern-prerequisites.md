@@ -4,8 +4,10 @@ Before **pattern-specific** steps in other `references/*.md` pattern files, appl
 
 | Topic | Module |
 |-------|--------|
-| Felix SCR → OSGi Declarative Services | [scr-to-osgi-ds.md](scr-to-osgi-ds.md) |
+| Felix SCR → OSGi Declarative Services (includes **POM cleanup**: remove deprecated deps & plugins) | [scr-to-osgi-ds.md](scr-to-osgi-ds.md) |
 | `ResourceResolver` + SLF4J logging | [resource-resolver-logging.md](resource-resolver-logging.md) |
+
+**POM cleanup is part of SCR→DS.** When migrating any pattern, the agent must also remove deprecated dependencies and plugins from the module `pom.xml` — see **Step 0** in [scr-to-osgi-ds.md](scr-to-osgi-ds.md).
 
 **Repository-root paths** (workspace resolution):
 

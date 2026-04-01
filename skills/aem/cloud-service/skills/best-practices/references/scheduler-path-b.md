@@ -546,6 +546,10 @@ protected void deactivate() {
 
 # Validation Checklist
 
+**POM (module-level `pom.xml`):**
+- [ ] SCR→DS POM cleanup applied (Step 0 in [scr-to-osgi-ds.md](scr-to-osgi-ds.md)) — no `maven-scr-plugin`, no Felix SCR dependencies
+- [ ] No `org.apache.sling.commons.osgi` dependency if only used for `PropertiesUtil`
+
 **Scheduler class:**
 - [ ] No `import org.apache.sling.commons.scheduler.Scheduler;` remains
 - [ ] No `implements Runnable` or `implements Job` remains
