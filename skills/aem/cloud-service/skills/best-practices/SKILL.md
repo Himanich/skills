@@ -7,7 +7,7 @@ description: AEM as a Cloud Service Java/OSGi best practices, guardrails, and le
 
 Platform guidance for **AEM as a Cloud Service** backend code: what to use, what to avoid, and **how to refactor** known legacy patterns into Cloud-compatible implementations.
 
-This skill holds the **pattern transformation modules** (`references/*.md`). It is intended to be **installable on its own** so Cloud Service guidance is not locked behind a migration-only package.
+This skill holds the **pattern transformation modules** (`references/*.md`). They ship with the **`aem-cloud-service`** plugin; use this skill **without** the **migration** skill for greenfield or maintenance work that only needs these references. Use **migration** when you need BPA/CAM orchestration on top.
 
 **Quick pick:** Open the **Pattern Reference Modules** table below → jump to the matching `references/<file>.md` → read it fully before editing Java. For Felix SCR, resolvers, or logging, use **Java / OSGi baseline** links in this file first when those appear in the same change set.
 
@@ -20,7 +20,7 @@ Use this skill when you need to:
 - Follow **consistent rules** across schedulers, replication, **JCR observation listeners** (`eventListener`), **OSGi event handlers** (`eventHandler`), and DAM assets
 - Read **step-by-step transformation** and validation checklists for a specific pattern
 
-For **BPA/CAM orchestration** (collections, CSV, MCP project selection), use **`aem-migration`** (`skills/aem/cloud-service/skills/migration/`).
+For **BPA/CAM orchestration** (collections, CSV, MCP project selection), use the **`migration`** skill (`skills/aem/cloud-service/skills/migration/`).
 
 ## Pattern Reference Modules
 
@@ -81,4 +81,4 @@ If multiple patterns match, ask which to fix first.
 
 ## Relationship to Migration
 
-The **`aem-migration`** skill defines **one-pattern-per-session** workflow, BPA/CAM/MCP flows, and user messaging. It **delegates** all detailed transformation steps to this skill’s `references/` modules. It uses a **`{best-practices}`** repo-root path alias to this folder (see its `SKILL.md`). Keep platform truth here; keep orchestration there.
+The **`migration`** skill defines **one-pattern-per-session** workflow, BPA/CAM/MCP flows, and user messaging. It **delegates** all detailed transformation steps to this skill’s `references/` modules. It uses a **`{best-practices}`** repo-root path alias to this folder (see its `SKILL.md`). Keep platform truth here; keep orchestration there.
