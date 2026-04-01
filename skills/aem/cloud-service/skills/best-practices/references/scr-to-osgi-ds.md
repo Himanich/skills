@@ -38,6 +38,13 @@ Remove **all** of these `<dependency>` entries if present (they are no longer ne
 
 **Important:** Only remove the dependencies that correspond to APIs you actually migrated away from. Do **not** remove unrelated dependencies (e.g. `org.osgi.core`, `org.osgi.compendium`) and do **not** add new dependencies proactively.
 
+**Pre-deletion guard — never remove a POM dependency or plugin whose API is still used in source code.** Before deleting any entry above, run the appropriate search and only proceed when the result is empty:
+
+- `rg 'import org\.apache\.felix\.scr' <module>/src` → 0 matches → safe to remove `org.apache.felix.scr.annotations` dependency and `maven-scr-plugin`
+- `rg 'import aQute\.bnd\.annotation' <module>/src` → 0 matches → safe to remove `biz.aQute:bndlib` dependency
+- `rg 'org\.apache\.sling\.commons\.osgi\.PropertiesUtil' <module>/src` → 0 matches → safe to remove `org.apache.sling.commons.osgi` dependency (if present)
+- **If any matches remain the dependency MUST stay in the POM.** Do not delete it. Migrate those files first (Steps 1–5), re-run the search, and only remove the dependency once the count reaches zero.
+
 ### 0c — Verify the build
 
 After POM changes, run `mvn clean compile` to confirm no compile errors from removed dependencies.
