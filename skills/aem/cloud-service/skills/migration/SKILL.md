@@ -7,9 +7,9 @@ description: Orchestrates legacy AEM Java (6.x, AMS, on-prem) to AEM as a Cloud 
 
 **Source → target:** Legacy **AEM 6.x / AMS / on-prem** → **AEM as a Cloud Service**. Scoped under `skills/aem/cloud-service/skills/migration/` so this is not confused with Edge Delivery or 6.5 LTS.
 
-This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**, and target discovery. **Transformation rules and steps** live in **`aem-best-practices`** — read that skill and the right `references/*.md` before editing code.
+This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**, and target discovery. **Transformation rules and steps** live in the **`best-practices`** skill — read that skill and the right `references/*.md` before editing code.
 
-**Setup:** Install **`aem-best-practices`** alongside this skill when needed so the agent can load pattern modules. Skip the extra install only if those files are already available (e.g. full `adobe/skills` checkout with resolvable `{best-practices}` paths). See this plugin’s **README** for install commands for both plugins.
+**Setup:** Use the **`aem-cloud-service`** install (see repository root **README**) so both **migration** and **best-practices** paths are available. If you already have the monorepo open with resolvable `{best-practices}` paths, no separate install step is required.
 
 ## Quick start (for the person driving the agent)
 

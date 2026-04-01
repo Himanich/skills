@@ -1,29 +1,15 @@
-# AEM as a Cloud Service — Best practices (plugin)
+# AEM as a Cloud Service — Best practices
 
-Source: `skills/aem/cloud-service/skills/best-practices/`. Plugin **`aem-best-practices`**: `SKILL.md` and `references/` (patterns: scheduler, replication, events, assets; Java baseline: `scr-to-osgi-ds.md`, `resource-resolver-logging.md`, prerequisites hub; **HTL:** `data-sly-test-redundant-constant.md` and proactive `rg` discovery in `SKILL.md`).
+Source: `skills/aem/cloud-service/skills/best-practices/`. **`SKILL.md`** and **`references/`** (patterns: scheduler, replication, events, assets; Java baseline: `scr-to-osgi-ds.md`, `resource-resolver-logging.md`, prerequisites hub; **HTL:** `data-sly-test-redundant-constant.md` and proactive `rg` discovery in `SKILL.md`).
 
-For **BPA- or CAM-driven bulk migration**, install **`aem-migration`** as well (`skills/aem/cloud-service/skills/migration/`); it supplies targets, this plugin supplies transformation modules.
+These files ship with the **AEM as a Cloud Service** plugin (`aem-cloud-service` in the marketplace). Install that umbrella package once; the agent selects this skill when the task matches.
+
+For **BPA- or CAM-driven bulk migration**, use the **`migration`** skill under the same plugin (`skills/aem/cloud-service/skills/migration/`); it supplies targets and orchestration, while this folder supplies transformation modules.
 
 ## Installation
 
-### Claude Code Plugins
-
-```bash
-/plugin install aem-best-practices@adobe-skills
-```
-
-### Vercel Skills
-
-```bash
-npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/best-practices --all
-```
-
-### upskill
-
-```bash
-gh upskill adobe/skills --path skills/aem/cloud-service/skills/best-practices --all
-```
+Use the root [Adobe Skills README](https://github.com/adobe/skills/blob/main/README.md): install **`aem-cloud-service`** (Claude `/plugin`), or add **`skills/aem/cloud-service`** with `npx skills` / `gh upskill --path` — not this subfolder alone.
 
 ## Related
 
-For **BPA/CAM-driven bulk migration**, install **`aem-migration`** (`skills/aem/cloud-service/skills/migration`).
+For **BPA/CAM-driven bulk migration**, see **`migration/`** (`skills/aem/cloud-service/skills/migration`).

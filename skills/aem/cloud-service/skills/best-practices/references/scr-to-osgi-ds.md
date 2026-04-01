@@ -1,6 +1,6 @@
 # Felix SCR → OSGi Declarative Services (AEM as a Cloud Service)
 
-**Part of `aem-best-practices`.** Read this module when converting components; do not duplicate these steps inside scheduler, replication, event, or asset pattern files.
+**Part of the `best-practices` skill.** Read this module when converting components; do not duplicate these steps inside scheduler, replication, event, or asset pattern files.
 
 **Explicit guideline:** AEM as a Cloud Service expects **OSGi Declarative Services** with `org.osgi.service.component.annotations` (and metatype where configuration applies). **Felix SCR** (`org.apache.felix.scr.annotations`) is legacy.
 

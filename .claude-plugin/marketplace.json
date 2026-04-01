@@ -18,19 +18,6 @@
       "description": "All AEM as a Cloud Service skills: component development and Dispatcher, workflows"
     },
     {
-      "name": "aem-best-practices",
-      "source": "./skills/aem/cloud-service/skills/best-practices",
-      "description": "AEM Cloud Service Java/OSGi: pattern modules, Felix SCR→OSGi DS, and ResourceResolver/logging skills (single plugin)"
-    },
-    {
-      "name": "aem-migration",
-      "source": "./skills/aem/cloud-service/skills/migration",
-      "description": "Migrate legacy AEM code to Cloud Service: BPA/CAM workflows; delegates to aem-best-practices plugin"
-    },
-    {
-      "name": "aem-6-5-lts-dispatcher",
-      "source": "./skills/aem/6.5-lts/skills/dispatcher",
-      "description": "Mode-specific Dispatcher skills for AEM 6.5 LTS and AMS workflows"
       "name": "aem-6-5-lts",
       "source": "./skills/aem/6.5-lts",
       "description": "All AEM 6.5 LTS skills: Dispatcher, workflows for AEM 6.5 LTS and AMS environment"

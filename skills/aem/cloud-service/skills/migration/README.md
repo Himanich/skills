@@ -1,45 +1,29 @@
 # AEM as a Cloud Service — Code Migration
 
-This plugin orchestrates migration **from legacy AEM (6.x, AMS, or on-prem) to AEM as a Cloud Service**: Best Practices Analyzer (BPA) data, Cloud Acceleration Manager (CAM) via MCP when available, and a one-pattern-per-session workflow.
+This skill orchestrates migration **from legacy AEM (6.x, AMS, or on-prem) to AEM as a Cloud Service**: Best Practices Analyzer (BPA) data, Cloud Acceleration Manager (CAM) via MCP when available, and a one-pattern-per-session workflow.
 
 **Target platform** is always **AEM as a Cloud Service**. Source is legacy AEM; ambiguous top-level “migration” is avoided by scoping this under `skills/aem/cloud-service/skills/migration/`.
 
-Transformation rules and pattern modules live in **`aem-best-practices`** (folder `skills/aem/cloud-service/skills/best-practices/`) — read its main `SKILL.md` and `references/` before editing code.
+## Requires `best-practices`
 
-**Install both plugins for typical migrations:** **`aem-migration`** handles BPA/CAM orchestration and target lists; it does **not** ship the step-by-step pattern refactors. **`aem-best-practices`** holds those modules (`references/*.md`). Install **only** **`aem-migration`** if your agent already has access to the same files (for example you have the full `adobe/skills` repo open and paths like `{best-practices}` resolve).
+**This skill is not standalone.** It orchestrates BPA/CAM and target discovery; **step-by-step refactors and pattern modules live only in the [`best-practices`](../best-practices/) skill** (`SKILL.md` and `references/*.md`). For any code change, the agent must read that material—**migration does not copy those procedures** here.
 
-**First run:** In chat, name **one BPA pattern** (e.g. scheduler) and either a **CSV path**, **CAM/MCP**, or **concrete Java files**. See **Quick start** in `SKILL.md` for copy-paste prompts and the CAM happy path in `references/cam-mcp.md`.
+- **You need both:** use **migration** for workflow and targets; use **best-practices** for how to edit Java/OSGi and apply each pattern.
+- **Install once, get both:** the umbrella **`aem-cloud-service`** plugin (path `skills/aem/cloud-service`) includes `migration/` and `best-practices/` together. Do not rely on migration alone unless the same `best-practices` files are already on disk (for example full `adobe/skills` checkout with working `{best-practices}` links).
 
 ## Skills
 
-### aem-migration
+### migration
 
 - BPA collection, CSV, and CAM/MCP flows (CAM tool schemas and retries: `references/cam-mcp.md`)
 - Manual flow and pattern auto-detection
-- Delegates detailed transformations to **`aem-best-practices`**
+- Delegates detailed transformations to **`best-practices`**
+
+**First run:** In chat, name **one BPA pattern** (e.g. scheduler) and either a **CSV path**, **CAM/MCP**, or **concrete Java files**. See **Quick start** in `SKILL.md` for copy-paste prompts and the CAM happy path in `references/cam-mcp.md`.
 
 ## Installation
 
-### Claude Code Plugins
-
-```bash
-/plugin install aem-migration@adobe-skills
-/plugin install aem-best-practices@adobe-skills
-```
-
-### Vercel Skills
-
-```bash
-npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/migration --all
-npx skills add https://github.com/adobe/skills/tree/main/skills/aem/cloud-service/skills/best-practices --all
-```
-
-### upskill
-
-```bash
-gh upskill adobe/skills --path skills/aem/cloud-service/skills/migration --all
-gh upskill adobe/skills --path skills/aem/cloud-service/skills/best-practices --all
-```
+Use the root [Adobe Skills README](https://github.com/adobe/skills/blob/main/README.md): install **`aem-cloud-service`** (Claude `/plugin`), or add **`skills/aem/cloud-service`** with `npx skills` / `gh upskill --path` — not the `migration/` or `best-practices/` subfolders alone.
 
 ## Prerequisites
 
