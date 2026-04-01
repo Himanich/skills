@@ -36,35 +36,9 @@ Remove **all** of these `<dependency>` entries if present (they are no longer ne
 | `biz.aQute` | `bndlib` | Legacy bnd library — `maven-bundle-plugin` / `bnd-maven-plugin` bundles its own version |
 | `org.apache.sling.commons.osgi` | *(if only used for `PropertiesUtil`)* | `PropertiesUtil` is replaced by `@ObjectClassDefinition` metatype config |
 
-Also remove the **monolithic OSGi compendium JARs** when `aem-sdk-api` is on the dependency list (it already provides these APIs):
+**Important:** Only remove the dependencies that correspond to APIs you actually migrated away from. Do **not** remove unrelated dependencies (e.g. `org.osgi.core`, `org.osgi.compendium`) and do **not** add new dependencies proactively.
 
-| groupId | artifactId | Why remove |
-|---------|-----------|------------|
-| `org.osgi` | `org.osgi.core` | Provided by `aem-sdk-api` |
-| `org.osgi` | `org.osgi.compendium` | Provided by `aem-sdk-api` |
-
-### 0c — Ensure DS annotation dependencies are present
-
-If the project uses `aem-sdk-api` (recommended), DS annotations are already on the classpath — no extra dependency needed. Otherwise, add:
-
-```xml
-<dependency>
-    <groupId>org.osgi</groupId>
-    <artifactId>org.osgi.service.component.annotations</artifactId>
-    <version>1.5.1</version>
-    <scope>provided</scope>
-</dependency>
-<dependency>
-    <groupId>org.osgi</groupId>
-    <artifactId>org.osgi.service.metatype.annotations</artifactId>
-    <version>1.4.1</version>
-    <scope>provided</scope>
-</dependency>
-```
-
-Align versions with the AEM SDK BOM when available.
-
-### 0d — Verify the build
+### 0c — Verify the build
 
 After POM changes, run `mvn clean compile` to confirm no compile errors from removed dependencies.
 
@@ -201,8 +175,6 @@ For rare `property = { "key=value" }` only (no metatype), you may keep inline `p
 - [ ] **POM:** No `org.apache.felix:org.apache.felix.scr` dependency
 - [ ] **POM:** No `org.apache.felix:org.apache.felix.scr.annotations` dependency
 - [ ] **POM:** No `biz.aQute:bndlib` dependency (unless required by another non-SCR use)
-- [ ] **POM:** No `org.osgi:org.osgi.core` or `org.osgi:org.osgi.compendium` when `aem-sdk-api` is present
-- [ ] **POM:** DS annotation dependencies available (via `aem-sdk-api` or explicit `org.osgi.service.component.annotations`)
 - [ ] No `import org.apache.felix.scr.annotations.*` remains
 - [ ] `@Component` uses `org.osgi.service.component.annotations`
 - [ ] Services declared via `@Component(service = ...)` (not Felix `@Service`)
