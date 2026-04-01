@@ -1,11 +1,11 @@
 ---
-name: aem-migration
-description: Orchestrates legacy AEM Java (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, JCR observation EventListener, OSGi EventHandler, DAM AssetManager. Transformation steps are not defined here—read the aem-best-practices skill and its references/ modules in the same repository before editing code.
+name: migration
+description: Orchestrates legacy AEM Java (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, EventListener, OSGi EventHandler, DAM AssetManager. Java transformation steps live in the best-practices skill—read it and the right references/ modules before editing code.
 ---
 
 # AEM as a Cloud Service — Code Migration
 
-**Source → target:** Legacy **AEM 6.x / AMS / on-prem** → **AEM as a Cloud Service**. Scoped under `cloud-service/migration` so this is not confused with Edge Delivery or 6.5 LTS.
+**Source → target:** Legacy **AEM 6.x / AMS / on-prem** → **AEM as a Cloud Service**. Scoped under `skills/aem/cloud-service/skills/migration/` so this is not confused with Edge Delivery or 6.5 LTS.
 
 This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**, and target discovery. **Transformation rules and steps** live in **`aem-best-practices`** — read that skill and the right `references/*.md` before editing code.
 
@@ -38,6 +38,15 @@ From the **repository root** (parent of the `skills/` directory):
 
 Examples: `{best-practices}/SKILL.md`, `{best-practices}/references/scheduler.md`.
 
+## Workspace scope (IDE) — user code only
+
+Applies to **finding and editing the user’s AEM project** (Java, bundles, config), not to reading installed skill files under `{best-practices}`.
+
+- Treat the **current IDE workspace root folder(s)** (single- or multi-root) as the **only** boundary for searches, globs, `grep`, and file reads/writes for migration targets.
+- **Do not** search parent directories, sibling folders on disk, `~`, other clones, or arbitrary absolute paths to “discover” sources unless the user **explicitly** names those paths or asks you to include them.
+- **BPA CSV / CAM targets:** If a `filePath` or class-to-file mapping does not resolve under a workspace root, **stop** and tell the user which paths are missing — do not hunt elsewhere on the filesystem. Ask them to open the correct project in the IDE or adjust paths.
+- **Manual flow:** Only migrate files the user named that live under the workspace (or paths they explicitly provided). Do not expand scope by searching outside the workspace.
+
 ## Required delegation (do this first)
 
 1. Read **`{best-practices}/SKILL.md`** — critical rules, Java baseline links, **Pattern Reference Modules** table, **Manual Pattern Hints**.
@@ -68,7 +77,7 @@ Scripts run via **`getBpaFindings`** (see **Calling the helper**); do not reimpl
 
 ### CAM via MCP (summary)
 
-Use **`fetch-cam-bpa-findings`** with `projectId` or `projectName` per server behavior; pass the session’s **`pattern`** or `all` (then filter to the chosen pattern). **Full tool schemas, REST notes, retries, and error handling:** [references/cam-mcp.md](references/cam-mcp.md).
+Use **`fetch-cam-bpa-findings`** only after **`list-projects`** and **explicit user confirmation** of which project row to use (prefer **`projectId`** from that list). Do not pass an unconfirmed project name string. **Full tool schemas, REST notes, retries, and error handling:** [references/cam-mcp.md](references/cam-mcp.md).
 
 ### What the user might say
 
@@ -103,9 +112,15 @@ Filter rows where **`pattern`** matches the session pattern. Typical columns: `p
 
 ### MCP errors and fallback
 
-If MCP fails, use the error/retry guidance in [references/cam-mcp.md](references/cam-mcp.md), then **CSV**, then **manual file paths**. Never hide tool errors from the user.
+**Critical:** On MCP failure, **stop the workflow immediately** and give the user the **exact tool error message** (verbatim), including “not found” / 404-style project errors. **Do not** continue with migration steps, infer a different CAM project from the workspace, or switch to manual/local migration on your own.
 
-**Fallback prompt:** *"Could you provide the path to your BPA CSV report, or the specific Java files to migrate?"*
+**Exception:** enablement restriction errors (prefix documented in [references/cam-mcp.md](references/cam-mcp.md)) must be shown **verbatim** with no paraphrase and no automatic fallback until the user addresses them.
+
+After stopping, you may summarize what failed in plain language and, if helpful, re-show projects from **`list-projects`**. **Only** continue when the user **explicitly** directs the next step (e.g. correct project id/name from the list, BPA CSV path, or specific Java files for manual flow).
+
+For retries, error categories, and when user-directed CSV/manual paths are allowed, follow [references/cam-mcp.md](references/cam-mcp.md); still **no silent fallback**. Never hide tool errors from the user.
+
+**Optional prompt after stop (user must reply):** *"Reply with the CAM project to use (id or name from the list), a path to your BPA CSV, or the Java files for a manual migration."*
 
 ## Pattern modules
 
@@ -127,7 +142,7 @@ If the id is missing from the best-practices table, say the pattern is not suppo
 
 ### Step 3: BPA targets
 
-Run **`getBpaFindings`** (with `bpaFilePath` when provided). Internally: cache → CSV → MCP → manual. For MCP details, [references/cam-mcp.md](references/cam-mcp.md).
+Run **`getBpaFindings`** (with `bpaFilePath` when provided). Internally: cache → CSV → MCP → manual **only when each step is applicable and succeeds**; if MCP fails, obey **MCP errors and fallback** (stop; no silent chain). For MCP details, [references/cam-mcp.md](references/cam-mcp.md).
 
 ### Step 4: Read before edits
 
@@ -135,7 +150,7 @@ Run **`getBpaFindings`** (with `bpaFilePath` when provided). Internally: cache �
 
 ### Step 5: Process each file
 
-Read source → classify with the module → apply steps **in order** → check lints → next file.
+Resolve each target **only inside the IDE workspace** (see **Workspace scope (IDE)**). Read source → classify with the module → apply steps **in order** → check lints → next file.
 
 ### Step 6: Report
 
@@ -147,9 +162,9 @@ User-named files → classify (best-practices hints or ask) → confirm module e
 
 ## Quick reference
 
-**Source priority:** unified collection → BPA CSV → MCP → manual paths.
+**Source priority (when choosing how to obtain targets):** unified collection → BPA CSV → MCP → manual paths. **Not** an automatic cascade after MCP errors — if MCP fails, stop and wait for user direction (see **MCP errors and fallback**).
 
-**User-facing snippets:** *"Using existing BPA collection (N findings)…"* / *"Processing your BPA report…"* / *"Fetched findings from CAM."* / fallback prompt above.
+**User-facing snippets:** *"Using existing BPA collection (N findings)…"* / *"Processing your BPA report…"* / *"Fetched findings from CAM."* / optional prompt after MCP stop above.
 
 ### CLI (development only)
 

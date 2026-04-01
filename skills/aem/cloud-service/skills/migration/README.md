@@ -2,7 +2,7 @@
 
 This plugin orchestrates migration **from legacy AEM (6.x, AMS, or on-prem) to AEM as a Cloud Service**: Best Practices Analyzer (BPA) data, Cloud Acceleration Manager (CAM) via MCP when available, and a one-pattern-per-session workflow.
 
-**Target platform** is always **AEM as a Cloud Service**. Source is legacy AEM; ambiguous top-level “migration” is avoided by scoping under `cloud-service/migration`.
+**Target platform** is always **AEM as a Cloud Service**. Source is legacy AEM; ambiguous top-level “migration” is avoided by scoping this under `skills/aem/cloud-service/skills/migration/`.
 
 Transformation rules and pattern modules live in **`aem-best-practices`** (folder `skills/aem/cloud-service/skills/best-practices/`) — read its main `SKILL.md` and `references/` before editing code.
 
