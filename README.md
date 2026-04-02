@@ -139,6 +139,14 @@ Current dispatcher flavors:
 Each flavor contains parallel capability groups (workflow orchestration, config authoring, technical advisory, incident response, performance tuning, and security hardening).
 Shared advisory logic is centralized under each flavor's `dispatcher/shared/references/` to reduce duplication and drift.
 
+### AEM as a Cloud Service — Best Practices & Migration
+
+Under `skills/aem/cloud-service/skills/`, **`best-practices/`** is the **general-purpose** Cloud Service skill: pattern modules, Java baseline references (SCR→OSGi DS, resolver/logging, and related refs), and day-to-day Cloud Service alignment. Use it **without** loading **migration** for greenfield or maintainability work. **`migration/`** (BPA/CAM orchestration) is **scoped to legacy AEM → AEM as a Cloud Service** (not Edge Delivery or 6.5 LTS); it **delegates** concrete refactors to **`best-practices`** (`references/`). **Installing the AEM as a Cloud Service plugin** (`aem-cloud-service`, or the `skills/aem/cloud-service` path with `npx skills` / `gh upskill`) **includes both**; the agent should load the appropriate `SKILL.md` for the task. Use **`gh upskill` / `npx skills` with `--skill`** when you need a specific bundled skill (see **Installation** above).
+
+**Key features:**
+- **Best practices:** one skill for patterns, SCR→OSGi DS, and resolver/logging — applicable to Cloud Service projects generally, not only migration
+- **Migration:** orchestration-only; pattern and transformation content lives in **`best-practices`**
+
 ## Repository Structure
 
 ```
@@ -155,6 +163,20 @@ skills/
     |   |-- .claude-plugin/
     |   |   \-- plugin.json
     |   \-- skills/
+    |       |-- best-practices/
+    |       |   |-- README.md
+    |       |   |-- SKILL.md
+    |       |   \-- references/
+    |       |       |   |-- scheduler.md
+    |       |       |   |-- replication.md
+    |       |       |   |-- scr-to-osgi-ds.md
+    |       |       |   |-- resource-resolver-logging.md
+    |       |       |   \-- ...
+    |       \-- migration/
+    |           |-- README.md
+    |           |-- SKILL.md
+    |           |-- references/
+    |           \-- scripts/
     |       |-- ensure-agents-md/
     |       |   |-- SKILL.md          <-- bootstrap: creates AGENTS.md + CLAUDE.md if missing
     |       |   \-- references/
