@@ -36,6 +36,7 @@ Each supported pattern has a dedicated module under `references/` relative to th
 | Asset Manager | `assetApi` | `references/asset-manager.md` | Ready |
 | Felix SCR → OSGi DS | — | `references/scr-to-osgi-ds.md` | Ready |
 | ResourceResolver + SLF4J | — | `references/resource-resolver-logging.md` | Ready |
+| Pre-migration JUnit testing | — | `references/pre-migration-testing.md` | Ready |
 | *(Prerequisites hub)* | — | `references/aem-cloud-service-pattern-prerequisites.md` | — |
 
 **Event listener vs event handler (not the same):** **`eventListener`** is **JCR observation** — the JCR API for repository change callbacks (`javax.jcr.observation.EventListener`, `onEvent`). **`eventHandler`** is **OSGi Event Admin** — whiteboard-style OSGi events (`org.osgi.service.event.EventHandler`, `handleEvent`). Both migrate via **`references/event-migration.md`** (Path A vs Path B). **`resourceChangeListener`** is separate: Sling **`ResourceChangeListener`**, module **`references/resource-change-listener.md`**.
@@ -47,7 +48,7 @@ Each supported pattern has a dedicated module under `references/` relative to th
 SCR→DS and `ResourceResolver`/logging are **reference modules** under `references/` — not separate skills. Read them when relevant **instead of** re-embedding the same steps inside each pattern file.
 
 - **Hub:** [`references/aem-cloud-service-pattern-prerequisites.md`](references/aem-cloud-service-pattern-prerequisites.md)
-- **Modules:** [`references/scr-to-osgi-ds.md`](references/scr-to-osgi-ds.md), [`references/resource-resolver-logging.md`](references/resource-resolver-logging.md)
+- **Modules:** [`references/scr-to-osgi-ds.md`](references/scr-to-osgi-ds.md), [`references/resource-resolver-logging.md`](references/resource-resolver-logging.md), [`references/pre-migration-testing.md`](references/pre-migration-testing.md)
 
 ## Critical Rules (All Patterns)
 
@@ -55,6 +56,8 @@ SCR→DS and `ResourceResolver`/logging are **reference modules** under `referen
 
 - **READ THE PATTERN MODULE FIRST** — never transform code without reading the module
 - **READ** [`scr-to-osgi-ds.md`](references/scr-to-osgi-ds.md) and [`resource-resolver-logging.md`](references/resource-resolver-logging.md) when SCR, `ResourceResolver`, or logging are in scope (pattern modules link via the [prerequisites hub](references/aem-cloud-service-pattern-prerequisites.md); do not duplicate long guides inline)
+- **READ** [`pre-migration-testing.md`](references/pre-migration-testing.md) and generate JUnit tests for business logic **before** transforming each file — tests must pass pre- and post-migration
+- **DO NOT** migrate while pre-migration tests are red, or relax assertions after migration to force green — follow [**When tests fail**](references/pre-migration-testing.md#when-tests-fail) (user opt-out is the only skip)
 - **DO** preserve environment-specific guards (e.g. `isAuthor()` run mode checks)
 - **DO NOT** change business logic inside methods
 - **DO NOT** rename classes unless the pattern module explicitly says to

@@ -462,4 +462,5 @@ import java.util.Collections;
 - [ ] Business logic from original `onEvent()` is preserved
 - [ ] Returns `JobResult.OK` or `JobResult.FAILED`
 - [ ] Resolver + logging per [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md)
-- [ ] Code compiles: `mvn clean compile`
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
+- [ ] Code compiles and tests pass: `mvn clean compile test`

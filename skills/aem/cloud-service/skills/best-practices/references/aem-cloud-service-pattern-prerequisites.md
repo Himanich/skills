@@ -6,6 +6,7 @@ Before **pattern-specific** steps in other `references/*.md` pattern files, appl
 |-------|--------|
 | Felix SCR → OSGi Declarative Services | [scr-to-osgi-ds.md](scr-to-osgi-ds.md) |
 | `ResourceResolver` + SLF4J logging | [resource-resolver-logging.md](resource-resolver-logging.md) |
+| Pre-migration JUnit testing | [pre-migration-testing.md](pre-migration-testing.md) |
 
 **Repository-root paths** (workspace resolution):
 

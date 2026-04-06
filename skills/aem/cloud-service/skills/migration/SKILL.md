@@ -51,9 +51,10 @@ Applies to **finding and editing the user’s AEM project** (Java, bundles, conf
 
 1. Read **`{best-practices}/SKILL.md`** — critical rules, Java baseline links, **Pattern Reference Modules** table, **Manual Pattern Hints**.
 2. Read **`{best-practices}/references/<module>.md`** for the **single** active BPA pattern (see table in that `SKILL.md`).
-3. When code uses SCR, `ResourceResolver`, or console logging, read **`{best-practices}/references/scr-to-osgi-ds.md`** and **`{best-practices}/references/resource-resolver-logging.md`** (or the hub **`{best-practices}/references/aem-cloud-service-pattern-prerequisites.md`**).
+3. Read **`{best-practices}/references/pre-migration-testing.md`** — test generation strategy, template, and per-pattern hints.
+4. When code uses SCR, `ResourceResolver`, or console logging, read **`{best-practices}/references/scr-to-osgi-ds.md`** and **`{best-practices}/references/resource-resolver-logging.md`** (or the hub **`{best-practices}/references/aem-cloud-service-pattern-prerequisites.md`**).
 
-Do not transform code until the pattern module is read.
+Do not transform code until the pattern module and test module are read.
 
 ## When to Use This Skill
 
@@ -146,19 +147,27 @@ Run **`getBpaFindings`** (with `bpaFilePath` when provided). Internally: cache �
 
 ### Step 4: Read before edits
 
-**STOP.** Read **`{best-practices}/SKILL.md`** and **`{best-practices}/references/<module>.md`** for the active pattern.
+**STOP.** Read **`{best-practices}/SKILL.md`** and **`{best-practices}/references/<module>.md`** for the active pattern. Also read **`{best-practices}/references/pre-migration-testing.md`** — it defines how to generate lightweight JUnit tests that lock business logic before and after transformation.
 
 ### Step 5: Process each file
 
-Resolve each target **only inside the IDE workspace** (see **Workspace scope (IDE)**). Read source → classify with the module → apply steps **in order** → check lints → next file.
+Resolve each target **only inside the IDE workspace** (see **Workspace scope (IDE)**). For each file:
 
-### Step 6: Report
+1. Read source → identify business-logic method(s) per the test module's table.
+2. Generate a JUnit 5 + Mockito test class for the business logic (or extend an existing test). Skip if the method is untestable (pure void + logging only).
+3. Run `mvn test -pl <module>` (or `-Dtest=…` when scoping) so tests **pass against the original code**. **If red:** stop transforming this file; follow **When tests fail** → *Pre-migration failure* in **`{best-practices}/references/pre-migration-testing.md`** (fix test harness, stop after two attempts, or user opt-out).
+4. Classify with the pattern module → apply transformation steps **in order**.
+5. Apply mechanical test updates if the transform renamed methods or split classes (assertions stay identical).
+6. Run `mvn test -pl <module>` again. **If red:** follow **When tests fail** → *Post-migration failure* in that file (fix mechanical test or migration; do not weaken assertions; revert file after two failed fixes if needed).
+7. Check lints → next file.
 
-Summarize files touched, sub-paths, failures.
+### Step 6: Validate and report
+
+Run `mvn clean compile test` once across affected module(s) as the final gate. **If red:** use *Post-migration failure* in **`{best-practices}/references/pre-migration-testing.md`**. Then summarize files touched, tests generated/updated, opt-outs, sub-paths, and failures.
 
 ### Manual flow (no BPA)
 
-User-named files → classify (best-practices hints or ask) → confirm module exists → read **`{best-practices}/SKILL.md`** + module → transform → report.
+User-named files → classify (best-practices hints or ask) → confirm module exists → read **`{best-practices}/SKILL.md`** + module + **`pre-migration-testing.md`** → same Step 5 loop (including test failure handling) → Step 6 report.
 
 ## Quick reference
 

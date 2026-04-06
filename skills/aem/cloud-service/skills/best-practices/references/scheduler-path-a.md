@@ -213,4 +213,5 @@ protected void deactivate() {
 - [ ] `@SlingScheduled(expression = "...")` is on `run()` method
 - [ ] `ResourceResolverFactory` injected via `@Reference` if `run()` uses a resolver
 - [ ] `@Deactivate` method is present
-- [ ] Code compiles: `mvn clean compile`
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
+- [ ] Code compiles and tests pass: `mvn clean compile test`

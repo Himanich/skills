@@ -239,4 +239,5 @@ import javax.servlet.Servlet;
 - [ ] HTTP Assets API `DELETE /api/assets{path}` used (client or server)
 - [ ] [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md) satisfied for SCR, resolver, logging
 - [ ] `@Reference` AssetManager removed if no longer needed for delete flows
-- [ ] Code compiles: `mvn clean compile`
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
+- [ ] Code compiles and tests pass: `mvn clean compile test`

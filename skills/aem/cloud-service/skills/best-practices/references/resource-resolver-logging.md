@@ -88,6 +88,7 @@ Log exceptions as the last argument: `LOG.error("msg", e)`.
 - [ ] `SUBSERVICE` / service user valid for the operation
 - [ ] `private static final Logger LOG = LoggerFactory.getLogger(...)` where logging is needed
 - [ ] No `System.out`, `System.err`, or `printStackTrace()` in production paths
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
 
 ## See also
 

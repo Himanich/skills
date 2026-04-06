@@ -384,4 +384,5 @@ import java.util.Map;
 - [ ] Uses `DistributionRequest` / `SimpleDistributionRequest` with `DistributionRequestType`
 - [ ] [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md) satisfied (SCR→DS, resolver/logging, auth maps)
 - [ ] `scheduler.concurrent=false` is set (if using scheduler)
-- [ ] Code compiles: `mvn clean compile`
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
+- [ ] Code compiles and tests pass: `mvn clean compile test`

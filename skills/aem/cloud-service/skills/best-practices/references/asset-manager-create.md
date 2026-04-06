@@ -235,4 +235,5 @@ import javax.servlet.Servlet;
 - [ ] [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md) satisfied for SCR, resolver, logging
 - [ ] InputStream resources closed in try-with-resources or `finally` (if any remain)
 - [ ] `@Reference` AssetManager removed if no longer needed for create flows
-- [ ] Code compiles: `mvn clean compile`
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
+- [ ] Code compiles and tests pass: `mvn clean compile test`

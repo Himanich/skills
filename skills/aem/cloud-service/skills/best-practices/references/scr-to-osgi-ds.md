@@ -148,7 +148,8 @@ For rare `property = { "key=value" }` only (no metatype), you may keep inline `p
 - [ ] Services declared via `@Component(service = ...)` (not Felix `@Service`)
 - [ ] `@Reference` / lifecycle annotations are OSGi DS packages
 - [ ] Metatype uses `@ObjectClassDefinition` / `@AttributeDefinition` / `@Designate` where configuration existed
-- [ ] Project still builds (`mvn clean compile`) and components start without SCR descriptor dependency
+- [ ] Pre-migration JUnit tests still pass: `mvn test -pl <module>` — per [pre-migration-testing.md](pre-migration-testing.md)
+- [ ] Project still builds and tests pass (`mvn clean compile test`) without SCR descriptor dependency
 
 ## See also
 
