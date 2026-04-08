@@ -1,6 +1,6 @@
 ---
 name: best-practices
-description: AEM as a Cloud Service Java/OSGi best practices, guardrails, and legacy-to-cloud pattern transformations. Use for Cloud Service–correct bundles, deprecated APIs, schedulers, ResourceChangeListener, replication, Replicator, JCR observation (javax.jcr.observation.EventListener), OSGi Event Admin (org.osgi.service.event.EventHandler), DAM AssetManager, BPA-style fixes, or any time you need the detailed pattern reference modules under this skill.
+description: AEM as a Cloud Service Java/OSGi best practices, guardrails, and legacy-to-cloud pattern transformations. Use for Cloud Service–correct bundles, deprecated APIs, schedulers, ResourceChangeListener, replication, Replicator, JCR observation (javax.jcr.observation.EventListener), OSGi Event Admin (org.osgi.service.event.EventHandler), DAM AssetManager, BPA-style fixes, HTL (Sightly) Cloud SDK lint warnings (data-sly-test redundant constant value comparison), or any time you need the detailed pattern reference modules under this skill.
 ---
 
 # AEM as a Cloud Service — Best Practices
