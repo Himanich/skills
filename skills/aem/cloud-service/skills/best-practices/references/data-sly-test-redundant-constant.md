@@ -6,6 +6,41 @@ Fixes for the AEM Cloud SDK HTL lint warning **"data-sly-test: redundant constan
 
 ---
 
+## Workflow
+
+When the user pastes **HTL lint warnings** or asks to fix **`data-sly-test`** issues:
+
+1. **Group warnings by file** (de-duplicate repeated lines from the build).
+2. **Classify** each warning using the flagged value (`true`/`false`, path string, number, split `${} || ${}`) — see patterns below.
+3. **Read the matching pattern section** before editing `.html` files.
+4. **Preserve logical intent** — only fix expression shape, not authoring behavior.
+
+## Proactive Discovery (find candidates without Maven)
+
+When the user wants to **find and fix** redundant `data-sly-test` issues but has **no build log yet**, run a **heuristic scan** on HTL templates, then fix hits using the patterns below.
+
+**Limits:** Grep is **not** the HTL compiler. It can **miss** issues (multiline attributes, unusual quoting) and **false-positive** on expressions that are fine. After edits, **`mvn … generate-sources`** (or the Cloud Manager build) is still the **authoritative** check.
+
+**Scope:** Prefer `ui.apps/**/jcr_root/**/*.html` and any other content packages that ship component HTL.
+
+From the **repository root**, use **ripgrep** (`rg`):
+
+| Pattern class | What to search | Example `rg` (run from repo root) |
+|---------------|----------------|-------------------------------------|
+| Boolean literal | `== true`, `== false`, `!= true`, `!= false` inside `data-sly-test` | `rg -n 'data-sly-test="[^"]*==\s*(true|false)' --glob '*.html' ui.apps` and `rg -n 'data-sly-test="[^"]*!=\s*(true|false)' --glob '*.html' ui.apps` |
+| Raw `/apps/…` string as test | HTL string literal starting with `/apps/` inside the attribute (common anti-pattern) | `rg -n "data-sly-test=.*'/apps/" --glob '*.html' ui.apps` (then confirm it is a useless string-as-test, not a legitimate comparison) |
+| Split `\|\|` / `&&` across `${}` | Literal `} || ${` or `} && ${` in one attribute | `rg -n 'data-sly-test="[^"]*\}\s*\|\|\s*\$\{' --glob '*.html' ui.apps` and the same pattern with `&&` instead of `\|\|` |
+| Numeric literal comparison | `== <digits>` inside a `data-sly-test` line (review each hit) | `rg -n 'data-sly-test="[^"]*==\s*[0-9]+\s*}' --glob '*.html' ui.apps` |
+
+**Agent workflow:**
+
+1. Run the `rg` lines above (adjust `ui.apps` to the user's module paths if different).
+2. Open each file at the reported lines; confirm the match is really a `data-sly-test` problem per the patterns below (skip unrelated `== 1` in other attributes if any).
+3. Apply fixes from the matching pattern section.
+4. Tell the user to run **HTL validate** / full module build so compiler warnings confirm nothing was missed.
+
+---
+
 ## Pattern 1: Boolean Constant Comparison (`== true` / `== false`)
 
 ### What the linter flags
