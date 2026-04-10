@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   tessl-eval:
     runs-on: ubuntu-latest
@@ -123,6 +127,7 @@ jobs:
           token: ${{ secrets.TESSL_TOKEN }}
 
       - name: Run evals
+        id: run-evals
         if: steps.trigger.outputs.skip != 'true' && steps.detect.outputs.skip != 'true'
         run: |
           PASS=0
@@ -131,7 +136,8 @@ jobs:
           ERRORS_FILE=$(mktemp)
           STDOUT_TMP=$(mktemp)
           STDERR_TMP=$(mktemp)
-          trap 'rm -f "$SUMMARY_FILE" "$ERRORS_FILE" "$STDOUT_TMP" "$STDERR_TMP"' EXIT
+          EVAL_URLS_FILE=$(mktemp)
+          trap 'rm -f "$SUMMARY_FILE" "$ERRORS_FILE" "$STDOUT_TMP" "$STDERR_TMP" "$EVAL_URLS_FILE"' EXIT
 
           POLL_INTERVAL=30
           TIMEOUT=900
@@ -164,6 +170,7 @@ jobs:
             fi
 
             echo "Eval run started for $TILE_NAME with run ID: $RUN_ID"
+            echo "- **$TILE_NAME**: [View results](https://tessl.io/eval-runs/$RUN_ID)" >> "$EVAL_URLS_FILE"
 
             # Poll for completion
             ELAPSED=0
@@ -248,8 +255,33 @@ jobs:
           fi
           echo "============================="
 
+          # Export eval URLs for PR comment step
+          if [ -s "$EVAL_URLS_FILE" ]; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+            {
+              echo 'eval_urls<<EVAL_URLS_EOF'
+              cat "$EVAL_URLS_FILE"
+              echo 'EVAL_URLS_EOF'
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          fi
+
           if [ "$FAIL" -gt 0 ]; then
             echo "::error::$FAIL tile(s) failed evaluation"
             exit 1
           fi
+
+      - name: Comment eval results on PR
+        if: always() && github.event_name == 'pull_request' && steps.run-evals.outputs.has_results == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVAL_URLS: ${{ steps.run-evals.outputs.eval_urls }}
+        run: |
+          COMMENT="## Tessl Eval Results"
+          COMMENT="$COMMENT"$'\n\n'
+          COMMENT="$COMMENT$EVAL_URLS"
+          COMMENT="$COMMENT"$'\n\n'
+          COMMENT="${COMMENT}_Triggered by commit $(git log -1 --format=%s)_"
+          gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
 
