@@ -21,7 +21,7 @@ npx skills add adobe/skills --all
 ### upskill (GitHub CLI Extension)
 
 ```bash
-gh extension install trieloff/gh-upskill
+gh extension install ai-ecoverse/gh-upskill
 gh upskill adobe/skills --all
 ```
 
