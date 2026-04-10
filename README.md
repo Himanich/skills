@@ -9,6 +9,7 @@ Repository of Adobe skills for AI coding agents.
 ```bash
 /plugin marketplace add adobe/skills
 /plugin install aem-edge-delivery-services@adobe-skills
+/plugin install aem-project-management@adobe-skills
 ```
 
 ### Vercel Skills (npx skills)
@@ -28,9 +29,9 @@ gh upskill adobe/skills --all
 
 ### For Business
 
-#### AEM Edge Delivery Services
+#### Adobe Experience Manager
 
-##### Core Development
+##### Developing with Edge Delivery Services
 
 | Skill | Description |
 |-------|-------------|
@@ -41,7 +42,7 @@ gh upskill adobe/skills --all
 | `content-modeling` | Design author-friendly content models |
 | `code-review` | Self-review and PR review |
 
-##### Discovery
+##### Discovering Blocks
 
 | Skill | Description |
 |-------|-------------|
@@ -50,7 +51,7 @@ gh upskill adobe/skills --all
 | `docs-search` | Search aem.live documentation |
 | `find-test-content` | Find existing content for testing |
 
-##### Migration
+##### Migrating Content
 
 | Skill | Description |
 |-------|-------------|
@@ -62,7 +63,7 @@ gh upskill adobe/skills --all
 | `generate-import-html` | Generate structured HTML |
 | `preview-import` | Preview imported content |
 
-#### AEM Project Management
+##### Managing Projects
 
 Handover documentation and PDF generation for AEM Edge Delivery Services projects.
 
@@ -83,12 +84,13 @@ _Coming soon._
 
 ```
 skills/
-└── {business-unit}/
-    └── {product}/
+└── aem/
+    ├── edge-delivery-services/
+    │   ├── .claude-plugin/
+    │   └── skills/
+    └── project-management/
         ├── .claude-plugin/
-        │   └── plugin.json
         └── skills/
-            └── {skill-name}/
 ```
 
 ## Contributing
