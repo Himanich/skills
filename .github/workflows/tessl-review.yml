@@ -96,12 +96,12 @@ jobs:
           THRESHOLD=50
           PASS=0
           FAIL=0
-          SUMMARY_ROWS=""
-          ERRORS=""
+          SUMMARY_FILE=$(mktemp)
+          ERRORS_FILE=$(mktemp)
 
           SKILL_DIRS_INPUT="${{ steps.detect.outputs.dirs }}"
           SKILL_LIST_FILE=$(mktemp)
-          trap 'rm -f "$SKILL_LIST_FILE"' EXIT
+          trap 'rm -f "$SKILL_LIST_FILE" "$SUMMARY_FILE" "$ERRORS_FILE"' EXIT
 
           if [ -z "$SKILL_DIRS_INPUT" ]; then
             # Push to main or no filter: review all skills
@@ -124,7 +124,7 @@ jobs:
             if [ "$EXIT_CODE" -ne 0 ]; then
               echo "::warning::tessl skill review failed for $SKILL_NAME (exit code $EXIT_CODE)"
               FAIL=$((FAIL + 1))
-              SUMMARY_ROWS="$SUMMARY_ROWS| $SKILL_NAME | error | ❌ |\n"
+              echo "| $SKILL_NAME | error | ❌ |" >> "$SUMMARY_FILE"
               continue
             fi
 
@@ -136,11 +136,11 @@ jobs:
 
             if [ "$SCORE" -lt "$THRESHOLD" ]; then
               FAIL=$((FAIL + 1))
-              ERRORS="$ERRORS\n  ❌ $SKILL_NAME: ${SCORE}% (below ${THRESHOLD}%)"
-              SUMMARY_ROWS="$SUMMARY_ROWS| $SKILL_NAME | ${SCORE}% | ❌ |\n"
+              echo "  ❌ $SKILL_NAME: ${SCORE}% (below ${THRESHOLD}%)" >> "$ERRORS_FILE"
+              echo "| $SKILL_NAME | ${SCORE}% | ❌ |" >> "$SUMMARY_FILE"
             else
               PASS=$((PASS + 1))
-              SUMMARY_ROWS="$SUMMARY_ROWS| $SKILL_NAME | ${SCORE}% | ✅ |\n"
+              echo "| $SKILL_NAME | ${SCORE}% | ✅ |" >> "$SUMMARY_FILE"
             fi
           done < "$SKILL_LIST_FILE"
 
@@ -158,7 +158,7 @@ jobs:
             echo ""
             echo "| Skill | Score | Status |"
             echo "|-------|-------|--------|"
-            echo -e "$SUMMARY_ROWS"
+            cat "$SUMMARY_FILE"
             echo "| **Total** | **$PASS/$TOTAL passed** | $([ "$FAIL" -eq 0 ] && echo '✅' || echo '❌') |"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -170,10 +170,10 @@ jobs:
           echo "  Total:  $TOTAL"
           echo "  Passed: $PASS"
           echo "  Failed: $FAIL"
-          if [ -n "$ERRORS" ]; then
+          if [ -s "$ERRORS_FILE" ]; then
             echo ""
             echo "  Failed skills:"
-            echo -e "$ERRORS"
+            cat "$ERRORS_FILE"
           fi
           echo "============================="
 
