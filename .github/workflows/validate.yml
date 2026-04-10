@@ -20,3 +20,35 @@ jobs:
       - run: npm ci
 
       - run: npm run validate
+
+  codeowners-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check CODEOWNERS covers all skill directories
+        run: |
+          codeowners=".github/CODEOWNERS"
+          if [ ! -f "$codeowners" ]; then
+            echo "::error::CODEOWNERS file not found at $codeowners"
+            exit 1
+          fi
+
+          missing=()
+          for dir in skills/*/*/; do
+            # Remove trailing slash for the lookup path
+            path="/${dir%/}"
+            if ! grep -q "^${path}[/ ]" "$codeowners"; then
+              missing+=("$path")
+            fi
+          done
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::The following skill directories are not covered in CODEOWNERS:"
+            for p in "${missing[@]}"; do
+              echo "  $p"
+            done
+            exit 1
+          fi
+
+          echo "All skill directories are covered in CODEOWNERS."
