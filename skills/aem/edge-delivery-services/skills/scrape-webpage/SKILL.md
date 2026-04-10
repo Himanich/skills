@@ -2,6 +2,8 @@
 name: scrape-webpage
 description: Scrape webpage content, extract metadata, download images, and prepare for import/migration to AEM Edge Delivery Services. Returns analysis JSON with paths, metadata, cleaned HTML, and local images.
 license: Apache-2.0
+metadata:
+  version: "1.0.0"
 ---
 
 # Scrape Webpage

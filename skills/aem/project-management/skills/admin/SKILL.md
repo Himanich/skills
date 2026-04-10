@@ -3,6 +3,8 @@ name: admin
 description: Generate comprehensive admin documentation for AEM Edge Delivery Services project handover. Creates admin guide covering Config Service setup, permissions, access control, Admin API operations, cache management, and code sync. Use for "admin guide", "admin documentation", "admin handover".
 license: Apache-2.0
 allowed-tools: Read, Write, Edit, Bash, AskUserQuestion, Skill
+metadata:
+  version: "1.0.0"
 ---
 
 # Project Handover - Admin Guide

@@ -3,6 +3,8 @@ name: handover
 description: Generate project handover documentation for AEM Edge Delivery Services projects. Creates comprehensive guides for content authors, developers, and administrators. Use for "handover docs", "project documentation", "generate handover", "create guides".
 license: Apache-2.0
 allowed-tools: Read, Write, Edit, Bash, AskUserQuestion, Skill, Agent
+metadata:
+  version: "1.0.0"
 ---
 
 # Project Handover Documentation
