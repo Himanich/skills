@@ -276,10 +276,11 @@ jobs:
         if: always() && github.event_name == 'pull_request' && steps.run-evals.outputs.has_results == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          EVAL_URLS: ${{ steps.run-evals.outputs.eval_urls }}
         run: |
           COMMENT="## Tessl Eval Results"
           COMMENT="$COMMENT"$'\n\n'
-          COMMENT="$COMMENT${{ steps.run-evals.outputs.eval_urls }}"
+          COMMENT="$COMMENT$EVAL_URLS"
           COMMENT="$COMMENT"$'\n\n'
           COMMENT="${COMMENT}_Triggered by commit $(git log -1 --format=%s)_"
           gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
