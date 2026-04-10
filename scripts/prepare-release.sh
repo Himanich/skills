@@ -62,7 +62,7 @@ in_frontmatter && /^metadata:/ {
   print
   next
 }
-in_frontmatter && has_metadata && !has_version && /^  version:/ {
+in_frontmatter && has_metadata && !has_version && /^[ \t]+version:/ {
   # Case a: update existing version
   has_version=1
   print "  version: \"" version "\""
@@ -99,7 +99,7 @@ rm -f "$SKILL_ZIP"
 
 # Zip the skill directory contents, excluding the .skill file itself and release artifacts
 SKILL_PARENT=$(dirname "$SKILL_DIR")
-(cd "$SKILL_PARENT" && zip -r - "$SKILL_NAME" -x "${SKILL_NAME}/*.skill" -x "${SKILL_NAME}/node_modules/*") > "$SKILL_ZIP"
+(cd "$SKILL_PARENT" && zip -r - "$SKILL_NAME" -x "${SKILL_NAME}/*.skill" -x "${SKILL_NAME}/node_modules/*" -x "${SKILL_NAME}/package.json" -x "${SKILL_NAME}/.releaserc.json" -x "${SKILL_NAME}/CHANGELOG.md") > "$SKILL_ZIP"
 
 echo "Created $SKILL_ZIP"
 
