@@ -11,17 +11,58 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - uses: tesslio/setup-tessl@v2
 
-      - name: Review all skills
+      - name: Detect changed skills
+        id: detect
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+            CHANGED_SKILLS=$(echo "$CHANGED_FILES" | grep -oE '^skills/[^/]+' | sort -u || true)
+            if [ -z "$CHANGED_SKILLS" ]; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "No skill files changed."
+            else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              DIRS=""
+              for skill_path in $CHANGED_SKILLS; do
+                if [ -f "$skill_path/SKILL.md" ]; then
+                  DIRS="$DIRS $skill_path"
+                fi
+              done
+              echo "dirs=$DIRS" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "dirs=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post skip summary
+        if: steps.detect.outputs.skip == 'true'
+        run: |
+          echo "## Skill Review" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "No skills changed — review skipped." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Review skills
+        if: steps.detect.outputs.skip != 'true'
         run: |
           THRESHOLD=50
           PASS=0
           FAIL=0
+          SUMMARY_ROWS=""
           ERRORS=""
 
-          for dir in $(find skills -name SKILL.md -exec dirname {} \;); do
+          SKILL_DIRS="${{ steps.detect.outputs.dirs }}"
+          if [ -z "$SKILL_DIRS" ]; then
+            # Push to main or no filter: review all skills
+            SKILL_DIRS=$(find skills -name SKILL.md -exec dirname {} \;)
+          fi
+
+          for dir in $SKILL_DIRS; do
             SKILL_NAME=$(basename "$dir")
             echo "::group::Reviewing $SKILL_NAME"
             OUTPUT=$(tessl skill review "$dir" 2>&1) || true
@@ -37,12 +78,26 @@ jobs:
             if [ "$SCORE" -lt "$THRESHOLD" ]; then
               FAIL=$((FAIL + 1))
               ERRORS="$ERRORS\n  ❌ $SKILL_NAME: ${SCORE}% (below ${THRESHOLD}%)"
+              SUMMARY_ROWS="$SUMMARY_ROWS| $SKILL_NAME | ${SCORE}% | ❌ |\n"
             else
               PASS=$((PASS + 1))
+              SUMMARY_ROWS="$SUMMARY_ROWS| $SKILL_NAME | ${SCORE}% | ✅ |\n"
             fi
           done
 
           TOTAL=$((PASS + FAIL))
+
+          # Write GitHub Step Summary
+          {
+            echo "## Skill Review"
+            echo ""
+            echo "| Skill | Score | Status |"
+            echo "|-------|-------|--------|"
+            echo -e "$SUMMARY_ROWS"
+            echo "| **Total** | **$PASS/$TOTAL passed** | $([ "$FAIL" -eq 0 ] && echo '✅' || echo '❌') |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Stdout summary for logs
           echo ""
           echo "============================="
           echo "  Skill Review Summary"
