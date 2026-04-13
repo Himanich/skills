@@ -1,5 +1,5 @@
 /**
- * Mock for @adobe/aio-lib-core-database — App Builder Database SDK
+ * Mock for @adobe/aio-lib-db — App Builder Database SDK (MongoDB-compatible)
  *
  * Usage: Copy the jest.mock() block below into your test file BEFORE requiring
  * the action under test.
@@ -11,33 +11,52 @@
 // --- In-memory store for stateful testing (optional) ---
 const memoryStore = new Map();
 
-// --- Mock instance (exported for assertion access) ---
-const mockDatabaseInstance = {
-  get: jest.fn().mockImplementation(async (key) => {
-    const value = memoryStore.get(key);
-    return value !== undefined ? { value, key } : undefined;
+// --- Mock collection (exported for assertion access) ---
+const mockCollection = {
+  insertOne: jest.fn().mockImplementation(async (doc) => {
+    const id = doc._id || `mock-${Date.now()}`;
+    memoryStore.set(id, { ...doc, _id: id });
+    return { insertedId: id };
   }),
-  put: jest.fn().mockImplementation(async (key, value, options) => {
-    memoryStore.set(key, value);
-    return key;
+  findOne: jest.fn().mockImplementation(async (filter) => {
+    if (filter && filter._id) {
+      const doc = memoryStore.get(filter._id);
+      return doc || null;
+    }
+    return null;
   }),
-  query: jest.fn().mockResolvedValue({
-    documents: [],
-    bookmark: null,
+  find: jest.fn().mockReturnValue({
+    toArray: jest.fn().mockResolvedValue([...memoryStore.values()]),
   }),
-  delete: jest.fn().mockImplementation(async (key) => {
-    memoryStore.delete(key);
-    return key;
+  updateOne: jest.fn().mockImplementation(async (filter, update) => {
+    if (filter && filter._id && memoryStore.has(filter._id)) {
+      const existing = memoryStore.get(filter._id);
+      const setFields = update.$set || {};
+      memoryStore.set(filter._id, { ...existing, ...setFields });
+      return { modifiedCount: 1 };
+    }
+    return { modifiedCount: 0 };
   }),
-  deleteAll: jest.fn().mockImplementation(async () => {
-    memoryStore.clear();
-    return true;
+  deleteOne: jest.fn().mockImplementation(async (filter) => {
+    if (filter && filter._id && memoryStore.has(filter._id)) {
+      memoryStore.delete(filter._id);
+      return { deletedCount: 1 };
+    }
+    return { deletedCount: 0 };
+  }),
+  aggregate: jest.fn().mockReturnValue({
+    toArray: jest.fn().mockResolvedValue([]),
   }),
 };
 
+// --- Mock database instance ---
+const mockDb = {
+  collection: jest.fn().mockReturnValue(mockCollection),
+};
+
 // --- Jest mock setup ---
-jest.mock('@adobe/aio-lib-core-database', () => ({
-  init: jest.fn().mockResolvedValue(mockDatabaseInstance),
+jest.mock('@adobe/aio-lib-db', () => ({
+  init: jest.fn().mockResolvedValue(mockDb),
 }));
 
 // --- Helper to reset store between tests ---
@@ -46,4 +65,4 @@ function resetMocks() {
   jest.clearAllMocks();
 }
 
-module.exports = { mockDatabaseInstance, resetMocks, memoryStore };
+module.exports = { mockCollection, mockDb, resetMocks, memoryStore };

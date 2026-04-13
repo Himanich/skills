@@ -139,21 +139,29 @@ Always test these error conditions for every action:
 
 ## Database Action Testing
 
-For actions using `@adobe/aio-lib-core-database`:
+For actions using `@adobe/aio-lib-db`:
 
 ```javascript
-jest.mock('@adobe/aio-lib-core-database', () => ({
-  init: jest.fn().mockResolvedValue({
-    createCollection: jest.fn().mockResolvedValue(true),
-    getCollection: jest.fn().mockResolvedValue({
-      insertOne: jest.fn().mockResolvedValue({ id: 'doc-1' }),
-      findOne: jest.fn().mockResolvedValue({ id: 'doc-1', data: {} }),
-      find: jest.fn().mockResolvedValue({ items: [], hasMore: false }),
-      replaceOne: jest.fn().mockResolvedValue({ id: 'doc-1' }),
-      deleteOne: jest.fn().mockResolvedValue(true),
-    }),
+const mockCollection = {
+  insertOne: jest.fn().mockResolvedValue({ insertedId: 'mock-id' }),
+  findOne: jest.fn().mockResolvedValue({ _id: 'mock-id', name: 'doc' }),
+  find: jest.fn().mockReturnValue({
+    toArray: jest.fn().mockResolvedValue([{ _id: '1', name: 'doc1' }])
   }),
+  updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+  deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+  aggregate: jest.fn().mockReturnValue({
+    toArray: jest.fn().mockResolvedValue([])
+  }),
+};
+
+const mockDb = {
+  collection: jest.fn().mockReturnValue(mockCollection),
+};
+
+jest.mock('@adobe/aio-lib-db', () => ({
+  init: jest.fn().mockResolvedValue(mockDb),
 }));
 ```
 
-Test pagination by varying the `find()` mock return to include `hasMore: true` and cursor values.
+Test pagination by mocking `find()` to return multiple pages using cursor-based iteration.

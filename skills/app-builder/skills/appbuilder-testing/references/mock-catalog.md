@@ -78,31 +78,41 @@ jest.mock('@adobe/aio-lib-events', () => ({
 - `init()` requires `orgId`, `apiKey`, `accessToken`, and `providerId` in production — all mocked away in tests.
 - Journal responses have `_page.next` for pagination — mock it as `null` for simple tests.
 
-## @adobe/aio-lib-core-database
+## @adobe/aio-lib-db
 
-Database SDK for document-oriented storage.
+Database SDK for MongoDB-compatible document storage.
 
 ```javascript
-const mockDatabaseInstance = {
-  get: jest.fn().mockResolvedValue({ value: { name: 'doc-1' }, key: 'doc-key' }),
-  put: jest.fn().mockResolvedValue('doc-key'),
-  query: jest.fn().mockResolvedValue({ documents: [], bookmark: null }),
-  delete: jest.fn().mockResolvedValue('doc-key'),
-  deleteAll: jest.fn().mockResolvedValue(true),
+const mockCollection = {
+  insertOne: jest.fn().mockResolvedValue({ insertedId: 'mock-id' }),
+  findOne: jest.fn().mockResolvedValue({ _id: 'mock-id', name: 'doc' }),
+  find: jest.fn().mockReturnValue({
+    toArray: jest.fn().mockResolvedValue([{ _id: '1', name: 'doc1' }])
+  }),
+  updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+  deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+  aggregate: jest.fn().mockReturnValue({
+    toArray: jest.fn().mockResolvedValue([])
+  }),
 };
-jest.mock('@adobe/aio-lib-core-database', () => ({
-  init: jest.fn().mockResolvedValue(mockDatabaseInstance),
+
+const mockDb = {
+  collection: jest.fn().mockReturnValue(mockCollection),
+};
+
+jest.mock('@adobe/aio-lib-db', () => ({
+  init: jest.fn().mockResolvedValue(mockDb),
 }));
 ```
 
 **Common assertions:**
-- `expect(mockDatabaseInstance.get).toHaveBeenCalledWith('expected-key')`
-- `expect(mockDatabaseInstance.put).toHaveBeenCalledWith('key', expect.objectContaining({ name: 'doc' }))`
-- `expect(mockDatabaseInstance.query).toHaveBeenCalledWith(expect.objectContaining({ selector: expect.any(Object) }))`
+- `expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: 'expected-id' })`
+- `expect(mockCollection.insertOne).toHaveBeenCalledWith(expect.objectContaining({ name: 'doc' }))`
+- `expect(mockCollection.find).toHaveBeenCalledWith(expect.objectContaining({ selector: expect.any(Object) }))`
 
 **Pitfalls:**
-- `get()` returns `{ value, key }`, not the raw value. Asserting against the raw object fails.
-- `query()` uses CouchDB-style selectors — mock the full response shape including `bookmark` for pagination.
+- `find()` and `aggregate()` return cursors — call `.toArray()` to get results. Mock both the cursor and `toArray()`.
+- `collection()` must be called to get a collection handle before any CRUD operation.
 - `init()` requires credentials in production — always mock it in unit tests.
 
 ## @adobe/aio-sdk (Combined Entry Point)
