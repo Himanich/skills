@@ -9,8 +9,8 @@ Migrates legacy replication code to Cloud Service compatible pattern: **Sling Di
 - CQ Replication API: `com.day.cq.replication.Replicator`, `ReplicationAction` — `replicator.replicate(resolver, new ReplicationAction(ReplicationActionType.ACTIVATE, path))`
 
 **Target pattern:**
-- Sling Distribution API: `DistributionAgent`, `DistributionRequest`, `SimpleDistributionRequest`
-- `distributionAgent.execute(new SimpleDistributionRequest(DistributionRequestType.ADD, path))`
+- Sling Distribution API: `DistributionAgent` ([`org.apache.sling.distribution.agent.spi`](https://developer.adobe.com/experience-manager/reference-materials/cloud-service/javadoc/org/apache/sling/distribution/agent/spi/DistributionAgent.html)), `DistributionRequest` / `SimpleDistributionRequest` / `DistributionRequestType` ([`org.apache.sling.distribution`](https://developer.adobe.com/experience-manager/reference-materials/cloud-service/javadoc/org/apache/sling/distribution/package-summary.html))
+- `distributionAgent.execute(resolver, new SimpleDistributionRequest(DistributionRequestType.ADD, path))` — `execute` takes a [`ResourceResolver`](https://developer.adobe.com/experience-manager/reference-materials/cloud-service/javadoc/org/apache/sling/api/resource/ResourceResolver.html) and throws [`DistributionException`](https://developer.adobe.com/experience-manager/reference-materials/cloud-service/javadoc/org/apache/sling/distribution/common/DistributionException.html) (not the legacy `org.apache.sling.distribution.agent.api.*` types, which are not in the Cloud Service Javadoc)
 - Uses `getServiceResourceResolver()` with SUBSERVICE; resolver lifecycle and logging per [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md)
 
 ## Classification
@@ -98,11 +98,11 @@ package com.example.replication;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.distribution.agent.api.DistributionAgent;
-import org.apache.sling.distribution.agent.api.DistributionAgentException;
-import org.apache.sling.distribution.agent.api.DistributionRequest;
-import org.apache.sling.distribution.agent.api.SimpleDistributionRequest;
-import org.apache.sling.distribution.agent.api.DistributionRequestType;
+import org.apache.sling.distribution.DistributionRequest;
+import org.apache.sling.distribution.DistributionRequestType;
+import org.apache.sling.distribution.SimpleDistributionRequest;
+import org.apache.sling.distribution.agent.spi.DistributionAgent;
+import org.apache.sling.distribution.common.DistributionException;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -134,12 +134,12 @@ public class PropertyNodeReplicationService {
                 DistributionRequestType.ADD, 
                 propertyNodePath
             );
-            distributionAgent.execute(request);
+            distributionAgent.execute(resolver, request);
             LOG.info("Property Node Distribution successful for path: {}", propertyNodePath);
 
         } catch (LoginException e) {
             LOG.error("Failed to get resource resolver", e);
-        } catch (DistributionAgentException e) {
+        } catch (DistributionException e) {
             LOG.error("Distribution failed for path: {}", propertyNodePath, e);
         } catch (Exception e) {
             LOG.error("Error during distribution", e);
@@ -207,11 +207,11 @@ package com.example.replication;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.distribution.agent.api.DistributionAgent;
-import org.apache.sling.distribution.agent.api.DistributionAgentException;
-import org.apache.sling.distribution.agent.api.DistributionRequest;
-import org.apache.sling.distribution.agent.api.SimpleDistributionRequest;
-import org.apache.sling.distribution.agent.api.DistributionRequestType;
+import org.apache.sling.distribution.DistributionRequest;
+import org.apache.sling.distribution.DistributionRequestType;
+import org.apache.sling.distribution.SimpleDistributionRequest;
+import org.apache.sling.distribution.agent.spi.DistributionAgent;
+import org.apache.sling.distribution.common.DistributionException;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -243,12 +243,12 @@ public class ContentReplicationService {
                 DistributionRequestType.ADD, 
                 contentPath
             );
-            distributionAgent.execute(request);
+            distributionAgent.execute(resolver, request);
             LOG.info("Forward Distribution successful for path: {}", contentPath);
 
         } catch (LoginException e) {
             LOG.error("Failed to get resource resolver", e);
-        } catch (DistributionAgentException e) {
+        } catch (DistributionException e) {
             LOG.error("Distribution failed for path: {}", contentPath, e);
         } catch (Exception e) {
             LOG.error("Error during distribution", e);
@@ -266,7 +266,7 @@ public class ContentReplicationService {
 - ✅ Removed USER/PASSWORD from authInfo (Cloud Service uses SUBSERVICE only)
 - ✅ Replaced `System.out/err` → SLF4J Logger
 - ✅ Used try-with-resources for ResourceResolver
-- ✅ `DistributionAgent.execute()` no longer requires ResourceResolver parameter (agent uses its own service user)
+- ✅ Pass the service-user `ResourceResolver` into `DistributionAgent.execute(resolver, request)` — the Cloud Service [`DistributionAgent`](https://developer.adobe.com/experience-manager/reference-materials/cloud-service/javadoc/org/apache/sling/distribution/agent/spi/DistributionAgent.html) API requires it for authorization of the request
 
 ---
 
@@ -297,7 +297,7 @@ if (result.isSuccessful()) {
 private DistributionAgent distributionAgent;
 
 DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, propertyNodePath);
-distributionAgent.execute(request);
+distributionAgent.execute(resolver, request);
 LOG.info("Property Node Distribution successful for path: {}", propertyNodePath);
 ```
 
@@ -317,7 +317,7 @@ System.out.println("Forward Replication successful for path: " + contentPath);
 private DistributionAgent distributionAgent;
 
 DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, contentPath);
-distributionAgent.execute(request);
+distributionAgent.execute(resolver, request);
 LOG.info("Forward Distribution successful for path: {}", contentPath);
 ```
 
@@ -330,7 +330,7 @@ LOG.info("Forward Distribution successful for path: {}", contentPath);
 | `ADD`                | `ADD`                   |
 | `DELETE`             | `DELETE`                |
 
-**Note:** `DistributionAgent.execute(request)` does not require a ResourceResolver parameter — the agent uses its own service user. If the resolver is needed for other logic, retain it per [resource-resolver-logging.md](resource-resolver-logging.md) (try-with-resources, service user).
+**Note:** `DistributionAgent.execute(resolver, request)` requires the `ResourceResolver` for authorizing the distribution request (see Cloud Service Javadoc). Retain try-with-resources and service user per [resource-resolver-logging.md](resource-resolver-logging.md).
 
 ## P2: Update imports
 
@@ -359,11 +359,11 @@ import org.apache.felix.scr.annotations.*;  // must be gone when done
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.distribution.agent.api.DistributionAgent;
-import org.apache.sling.distribution.agent.api.DistributionAgentException;
-import org.apache.sling.distribution.agent.api.DistributionRequest;
-import org.apache.sling.distribution.agent.api.SimpleDistributionRequest;
-import org.apache.sling.distribution.agent.api.DistributionRequestType;
+import org.apache.sling.distribution.DistributionRequest;
+import org.apache.sling.distribution.DistributionRequestType;
+import org.apache.sling.distribution.SimpleDistributionRequest;
+import org.apache.sling.distribution.agent.spi.DistributionAgent;
+import org.apache.sling.distribution.common.DistributionException;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -380,8 +380,9 @@ import java.util.Map;
 ## Replication/Distribution Checklist
 
 - [ ] No `ReplicationAgent`, `Replicator`, `ReplicationAction`, or `ReplicationResult` remains
-- [ ] Uses `DistributionAgent` with `@Reference(target = "(name=agent-name)")`
-- [ ] Uses `DistributionRequest` / `SimpleDistributionRequest` with `DistributionRequestType`
+- [ ] Uses `DistributionAgent` (`org.apache.sling.distribution.agent.spi`) with `@Reference(target = "(name=agent-name)")`
+- [ ] Uses `DistributionRequest` / `SimpleDistributionRequest` / `DistributionRequestType` from `org.apache.sling.distribution`; catches `DistributionException` (`org.apache.sling.distribution.common`)
+- [ ] Calls `distributionAgent.execute(resolver, request)` with the service-user resolver (not a single-argument `execute`)
 - [ ] [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md) satisfied (SCR→DS, resolver/logging, auth maps)
 - [ ] `scheduler.concurrent=false` is set (if using scheduler)
 - [ ] Code compiles: `mvn clean compile`

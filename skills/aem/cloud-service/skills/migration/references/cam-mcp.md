@@ -60,7 +60,7 @@ The MCP server calls **Adobe AEM Cloud Adoption Service**, for example:
 
 Auth headers typically include `Authorization: Bearer …`, `x-api-key`, and `x-gw-ims-org-id` (often `ident@AdobeOrg`). Subtype mapping is implemented in the MCP server.
 
-**Deeper docs:** `aemcs-migration-mcp/docs/cam-cloud-adoption-api-contract.md`; controllers `ProjectController`, `BpaReportCodeTransformerDataController` in `aem-cloud-adoption-service`.
+**Deeper docs:** Refer to the Cloud Acceleration Manager (CAM) documentation on Adobe Experience League for API details. Subtype mapping is implemented in the MCP server.
 
 ---
 
