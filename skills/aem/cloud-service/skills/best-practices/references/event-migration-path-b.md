@@ -448,6 +448,7 @@ import java.util.Collections;
 
 ## EventHandler Checklist
 
+- [ ] **POM:** SCR→DS POM cleanup applied (Step 0 in [scr-to-osgi-ds.md](scr-to-osgi-ds.md)) — no `maven-scr-plugin`, no Felix SCR dependencies
 - [ ] SCR→DS per [aem-cloud-service-pattern-prerequisites.md](aem-cloud-service-pattern-prerequisites.md)
 - [ ] `@Component(service = EventHandler.class, property = { EVENT_TOPIC... })` is present
 - [ ] No business logic in `handleEvent()` — only event data extraction + job creation

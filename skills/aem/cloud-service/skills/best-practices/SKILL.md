@@ -57,6 +57,7 @@ SCR→DS and `ResourceResolver`/logging are **reference modules** under `referen
 
 - **READ THE PATTERN MODULE FIRST** — never transform code without reading the module
 - **READ** [`scr-to-osgi-ds.md`](references/scr-to-osgi-ds.md) and [`resource-resolver-logging.md`](references/resource-resolver-logging.md) when SCR, `ResourceResolver`, or logging are in scope (pattern modules link via the [prerequisites hub](references/aem-cloud-service-pattern-prerequisites.md); do not duplicate long guides inline)
+- **CLEAN THE POM** — when migrating deprecated APIs, also remove the corresponding deprecated dependencies and plugins from the module `pom.xml` in the same change set (see **Step 0** in [`scr-to-osgi-ds.md`](references/scr-to-osgi-ds.md))
 - **DO** preserve environment-specific guards (e.g. `isAuthor()` run mode checks)
 - **DO NOT** change business logic inside methods (Java) or **logical show/hide intent** (HTL) unless the module explicitly allows it
 - **DO NOT** rename classes unless the pattern module explicitly says to

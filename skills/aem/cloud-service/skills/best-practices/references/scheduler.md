@@ -131,6 +131,7 @@ public class MyJobConsumer implements JobConsumer {
 - **DO NOT** invent cron expressions — extract from existing code or @Property annotations
 - **DO NOT** use `@SlingScheduled` with runtime config values — it requires compile-time constants
 - **DO** distribute `@Reference` fields correctly in Path B: business logic services (e.g., `ExampleService`, `ResourceResolverFactory`) go to JobConsumer, infrastructure services (e.g., `SlingSettingsService`, `JobManager`) stay in Scheduler class
+- **DO** clean up POM dependencies after migration — remove `org.apache.sling.commons.osgi` if it was only used for `PropertiesUtil` (replaced by `@ObjectClassDefinition` metatype). Also apply the SCR→DS POM cleanup from [scr-to-osgi-ds.md Step 0](scr-to-osgi-ds.md)
 
 ## IMPORTANT
 
