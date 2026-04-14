@@ -7,10 +7,7 @@ Repository of Adobe skills for AI coding agents.
 ### Claude Code Plugins
 
 ```bash
-# Add the Adobe Skills marketplace
 /plugin marketplace add adobe/skills
-
-# Install AEM Edge Delivery Services plugin (all 17 skills)
 /plugin install aem-edge-delivery-services@adobe-skills
 
 # Install AEM Project Management plugin (6 skills)
@@ -22,7 +19,7 @@ Repository of Adobe skills for AI coding agents.
 # Install all AEM as a Cloud Service skills (create-component + workflow + dispatcher) in one command
 /plugin install aem-cloud-service@adobe-skills
 
-# Install all AEM 6.5 LTS skills (workflow + dispatcher) in one command
+# Install all AEM 6.5 LTS skills (workflow + dispatcher + replication) in one command
 /plugin install aem-6-5-lts@adobe-skills
 ```
 
@@ -38,7 +35,7 @@ npx skills add https://github.com/adobe/skills/tree/main/skills/app-builder --al
 # Install all AEM as a Cloud Service skills (create-component + workflow + dispatcher) in one command
 npx skills add https://github.com/adobe/skills/tree/beta/skills/aem/cloud-service --all
 
-# Install all AEM 6.5 LTS skills (workflow + dispatcher) in one command
+# Install all AEM 6.5 LTS skills (workflow + dispatcher + replication) in one command
 npx skills add https://github.com/adobe/skills/tree/beta/skills/aem/6.5-lts --all
 
 # Install for a single agent (pick ONE flavor only)
@@ -58,7 +55,7 @@ npx skills add https://github.com/adobe/skills/tree/beta/skills/aem/6.5-lts --li
 ### upskill (GitHub CLI Extension)
 
 ```bash
-gh extension install trieloff/gh-upskill
+gh extension install ai-ecoverse/gh-upskill
 
 # Install all AEM Edge Delivery Services skills
 gh upskill adobe/skills --path skills/aem/edge-delivery-services --all
@@ -66,7 +63,7 @@ gh upskill adobe/skills --path skills/aem/edge-delivery-services --all
 # Install all AEM as a Cloud Service skills (create-component + workflow + dispatcher)
 gh upskill adobe/skills --path skills/aem/cloud-service --all
 
-# Install all AEM 6.5 LTS skills (workflow + dispatcher)
+# Install all AEM 6.5 LTS skills (workflow + dispatcher + replication)
 gh upskill adobe/skills --path skills/aem/6.5-lts --all
 
 # Install a specific skill
@@ -80,12 +77,11 @@ gh upskill adobe/skills --path skills/aem/6.5-lts --list
 
 ## Available Skills
 
-### AEM Edge Delivery Services
+### For Business
 
-This package provides three capability areas:
-- Core development workflow skills
-- Discovery and documentation lookup skills
-- Migration and import workflow skills
+#### Adobe Experience Manager
+
+##### Developing with Edge Delivery Services
 
 See `skills/aem/edge-delivery-services/skills/` for the current concrete skill set.
 
@@ -148,6 +144,28 @@ Current dispatcher flavors:
 Each flavor contains parallel capability groups (workflow orchestration, config authoring, technical advisory, incident response, performance tuning, and security hardening).
 Shared advisory logic is centralized under each flavor's `dispatcher/shared/references/` to reduce duplication and drift.
 
+### AEM Replication
+
+Replication skills for AEM 6.5 LTS cover the full content distribution lifecycle from agent configuration to troubleshooting.
+
+**Location:** `skills/aem/6.5-lts/skills/aem-replication`
+
+The aem-replication skill contains four specialist sub-skills:
+
+| Sub-Skill | Purpose |
+|---|---|
+| `configure-replication-agent` | Configure replication agents for publishing, dispatcher flush, and reverse replication |
+| `replicate-content` | Activate and deactivate content using UI, workflows, and package manager |
+| `replication-api` | Use the Replication API programmatically in custom code with complete Java examples |
+| `troubleshoot-replication` | Diagnose and fix blocked queues, connectivity failures, and distribution problems |
+
+**Key features:**
+- All skills based on official AEM 6.5 LTS documentation
+- Complete coverage of public Replication API (Replicator, ReplicationOptions, AgentManager, ReplicationQueue, etc.)
+- 49 Java code examples for OSGi services, servlets, and workflow steps
+- 12+ troubleshooting scenarios with step-by-step resolution
+- 3,575 lines of comprehensive documentation
+
 ### AEM as a Cloud Service — Best Practices & Migration
 
 Under `skills/aem/cloud-service/skills/`, **`best-practices/`** is the **general-purpose** Cloud Service skill: pattern modules, Java baseline references (SCR→OSGi DS, resolver/logging, and related refs), and day-to-day Cloud Service alignment. Use it **without** loading **migration** for greenfield or maintainability work. **`migration/`** (BPA/CAM orchestration) is **scoped to legacy AEM → AEM as a Cloud Service** (not Edge Delivery or 6.5 LTS); it **delegates** concrete refactors to **`best-practices`** (`references/`). **Installing the AEM as a Cloud Service plugin** (`aem-cloud-service`, or the `skills/aem/cloud-service` path with `npx skills` / `gh upskill`) **includes both**; the agent should load the appropriate `SKILL.md` for the task. Use **`gh upskill` / `npx skills` with `--skill`** when you need a specific bundled skill (see **Installation** above).
@@ -156,26 +174,9 @@ Under `skills/aem/cloud-service/skills/`, **`best-practices/`** is the **general
 - **Best practices:** one skill for patterns, SCR→OSGi DS, and resolver/logging — applicable to Cloud Service projects generally, not only migration
 - **Migration:** orchestration-only; pattern and transformation content lives in **`best-practices`**
 
-### AEM Project Management
+##### Managing Projects
 
-Project lifecycle management for AEM Edge Delivery Services including handover documentation, PDF generation, and authentication.
-
-> **Requirement:** This plugin is exclusively for AEM Edge Delivery Services projects. It validates projects by checking for `scripts/aem.js`. For non-Edge Delivery projects, the plugin exits early — use standard documentation approaches instead.
-
-**Quick Start:**
-```bash
-cd your-edge-delivery-project   # or any subdirectory within it
-# Say: "create handover documentation for this project"
-```
-
-**Setup:** You will be prompted for your Config Service organization name (the `{org}` in `https://main--site--{org}.aem.page`). A browser window will open for authentication — sign in and **close the browser window** to continue.
-
-**Permissions:** Admin access to the project organization is required. The plugin queries the Config Service API to gather project configuration, site settings, and access controls for comprehensive documentation.
-
-**Output:** Professional PDFs generated in `project-guides/` folder:
-- `project-guides/AUTHOR-GUIDE.pdf` - For content authors
-- `project-guides/DEVELOPER-GUIDE.pdf` - For developers
-- `project-guides/ADMIN-GUIDE.pdf` - For administrators
+Handover documentation and PDF generation for AEM Edge Delivery Services projects.
 
 | Skill | Description |
 |-------|-------------|
@@ -203,6 +204,10 @@ Development, customization, testing, and deployment skills for Adobe App Builder
 | `appbuilder-testing` | Generate and run Jest unit, integration, and contract tests for actions and UI components |
 | `appbuilder-e2e-testing` | Playwright browser E2E tests for ExC Shell SPAs and AEM extensions |
 | `appbuilder-cicd-pipeline` | Set up CI/CD pipelines for GitHub Actions, Azure DevOps, and GitLab CI |
+
+### Creativity & Design
+
+_Coming soon._
 
 ## Repository Structure
 
@@ -283,6 +288,13 @@ skills/
 │           │   ├── workflow-debugging/
 │           │   ├── workflow-triaging/
 │           │   └── workflow-orchestrator/
+│           ├── aem-replication/
+│           │   ├── README.md
+│           │   ├── SKILL.md
+│           │   ├── configure-replication-agent/
+│           │   ├── replicate-content/
+│           │   ├── replication-api/
+│           │   └── troubleshoot-replication/
 │           ├── ensure-agents-md/
 │           └── dispatcher/
 │               ├── SKILL.md
@@ -314,9 +326,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding or updating skil
 - [agentskills.io Specification](https://agentskills.io)
 - [Claude Code Plugins](https://code.claude.com/docs/en/discover-plugins)
 - [Vercel Skills](https://github.com/vercel-labs/skills)
-- [upskill GitHub Extension](https://github.com/trieloff/gh-upskill)
+- [upskill GitHub Extension](https://github.com/ai-ecoverse/gh-upskill)
 - [#agentskills Slack Channel](https://adobe.enterprise.slack.com/archives/C0APTKDNPEY)
 
 ## License
 
-Apache 2.0 - see [LICENSE](LICENSE) for details.
+Apache 2.0 — see [LICENSE](LICENSE) for details.

@@ -1,6 +1,9 @@
 ---
 name: identify-page-structure
 description: Identify section boundaries and content sequences within a scraped webpage for AEM Edge Delivery Services import. Performs two-level analysis (sections, then sequences per section) and surveys available blocks.
+license: Apache-2.0
+metadata:
+  version: "1.0.0"
 ---
 
 # Identify Page Structure

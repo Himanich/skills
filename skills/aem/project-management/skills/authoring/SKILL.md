@@ -1,7 +1,10 @@
 ---
 name: authoring
 description: Generate comprehensive documentation for content authors taking over an AEM Edge Delivery Services project. Analyzes the project structure and produces a complete authoring guide with blocks, templates, configurations, and publishing workflows.
+license: Apache-2.0
 allowed-tools: Read, Write, Edit, Bash, Skill, Glob, Grep
+metadata:
+  version: "1.0.0"
 ---
 
 # Project Handover - Authoring

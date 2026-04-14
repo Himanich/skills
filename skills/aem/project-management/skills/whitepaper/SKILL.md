@@ -1,6 +1,7 @@
 ---
 name: whitepaper
 description: Creates professional PDF whitepapers from Markdown files. Use when the user wants to create a whitepaper, technical document, or PDF with professional formatting and typography.
+license: Apache-2.0
 allowed-tools: Read, Write, Edit, Bash
 metadata:
   argument-hint: "[input.md] [output.pdf]"

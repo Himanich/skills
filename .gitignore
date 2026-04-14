@@ -11,3 +11,7 @@ node_modules/
 
 # Temporary files
 drafts/tmp/
+
+# Release artifacts
+*.skill
+dist/
