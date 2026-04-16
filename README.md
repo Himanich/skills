@@ -188,7 +188,9 @@ Development, customization, testing, and deployment skills for Adobe App Builder
 
 ### Creativity & Design
 
-_Coming soon._
+| Skill | Description |
+|-------|-------------|
+| TODO  | TODO        |
 
 ## Repository Structure
 
@@ -285,17 +287,24 @@ plugins/
 │               ├── performance-tuning/
 │               ├── security-hardening/
 │               └── workflow-orchestrator/
-└── app-builder/
-    ├── .claude-plugin/
-    │   └── plugin.json
-    └── skills/
-        ├── _shared/
-        ├── appbuilder-project-init/
-        ├── appbuilder-action-scaffolder/
-        ├── appbuilder-ui-scaffolder/
-        ├── appbuilder-testing/
-        ├── appbuilder-e2e-testing/
-        └── appbuilder-cicd-pipeline/
+├── app-builder/
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   └── skills/
+│       ├── _shared/
+│       ├── appbuilder-project-init/
+│       ├── appbuilder-action-scaffolder/
+│       ├── appbuilder-ui-scaffolder/
+│       ├── appbuilder-testing/
+│       ├── appbuilder-e2e-testing/
+│       └── appbuilder-cicd-pipeline/
+└── creative-cloud/
+    └── adobe-for-creativity/
+        ├── .claude-plugin/
+        │   └── plugin.json
+        ├── skills/
+        │   └── ...
+        └── .mcp.json
 ```
 
 ## Contributing
