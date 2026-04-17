@@ -1,6 +1,6 @@
 ---
 name: migration
-description: Orchestrates legacy AEM (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, EventListener, OSGi EventHandler, DAM AssetManager, HTL data-sly-test lint. Transformation steps live in the best-practices skill—read it and the right references/ modules before editing code.
+description: Orchestrates legacy AEM (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, EventListener, OSGi EventHandler, DAM AssetManager, HTL data-sly-test lint. OSGi configs → Cloud Manager — scan ui.config, .cfg.json, secrets, $[secret:]/$[env:] — agent follows references/osgi-cfg-json-cloud-manager.md when prompted. Transformation steps live in the best-practices skill—read it and the right references/ modules before editing code.
 license: Apache-2.0
 ---
 
@@ -21,6 +21,7 @@ This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**,
 | A **BPA CSV** | *"Fix **scheduler** findings using `./path/to/bpa.csv`"* | Fastest path: CSV → cached collection → files |
 | **CAM + MCP** only | *"Get **scheduler** findings from CAM; I'll pick the project when you list them."* | Agent lists projects → you confirm → MCP fetch ([cam-mcp.md](references/cam-mcp.md)) |
 | **Just a few files** | *"Migrate **scheduler** in `core/.../MyJob.java`"* | Manual flow: no BPA required |
+| **OSGi → Cloud Manager** | *"**Scan my config files and create Cloud Manager environment secrets or variables.**"* | Agent **auto-reads** [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) (full Adobe-aligned rules inlined there); no BPA pattern id |
 | **HTL lint warnings** | *"Fix **htlLint** issues in `ui.apps`"* | Proactive discovery via `rg` → fix per reference module |
 
 **Starter prompts (copy-paste):**
@@ -28,6 +29,7 @@ This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**,
 - *"Use the migration skill: **scheduler** only, BPA CSV at `./reports/bpa.csv`, then apply best-practices reference modules before editing."*
 - *"**Replication** only from CAM; list projects first, I'll pick one."*
 - *"**Manual:** **event listener** migration for `.../Listener.java` — read best-practices module first."*
+- *"Scan my config files and create Cloud Manager environment secrets or variables."*
 - *"Fix **htlLint** in `ui.apps` — scan for `data-sly-test` redundant constant warnings and fix them."*
 
 
@@ -52,11 +54,15 @@ Applies to **finding and editing the user's AEM project** (Java, bundles, config
 
 ## Required delegation (do this first)
 
+**Branch A — OSGi configs → Cloud Manager** (no Java BPA pattern this session): If the user asks to **scan config files**, **create / set up Cloud Manager environment secrets or variables**, move **passwords or secrets** out of **OSGi / `.cfg.json` / `ui.config`**, or mentions **`$[secret:]`** / **`$[env:]`** for AEM CS, then **read [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) immediately** and follow the **product rules and workflow** defined in that file (Adobe AEM as a Cloud Service OSGi + Cloud Manager behavior is reproduced there—no external doc URL required). Sleek prompts are enough — **no** need to name the reference file. **Skip** branch B for that work.
+
+**Branch B — Java / HTL / BPA pattern migration:**
+
 1. Read **`{best-practices}/SKILL.md`** — critical rules, Java baseline links, **Pattern Reference Modules** table, **Manual Pattern Hints**.
 2. Read **`{best-practices}/references/<module>.md`** for the **single** active pattern (see table in that `SKILL.md`).
 3. When code uses SCR, `ResourceResolver`, or console logging, read **`{best-practices}/references/scr-to-osgi-ds.md`** and **`{best-practices}/references/resource-resolver-logging.md`** (or the hub **`{best-practices}/references/aem-cloud-service-pattern-prerequisites.md`**).
 
-Do not transform code until the pattern module is read.
+Do not transform **Java or HTL** until the pattern module is read (branch B). Branch A does not require `{best-practices}` pattern modules.
 
 ## When to Use This Skill
 
@@ -64,6 +70,11 @@ Do not transform code until the pattern module is read.
 - Fix **HTL (Sightly)** lint warnings (`data-sly-test: redundant constant value comparison`) across component templates
 - Drive work from **BPA** (CSV or cached collection) or **CAM via MCP**
 - Enforce **one pattern type per session**
+- **OSGi → Cloud Manager:** **Branch A** — scan scoped **`.cfg.json`**, apply **`$[secret:…]`** / **`$[env:…]`** per rules in **[references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md)**; gitignored handoff; **no** secret values in chat.
+
+### OSGi configs and Cloud Manager (no BPA pattern id)
+
+Sleek user prompts are enough (see Quick start). **Agent:** **Branch A** → read the reference → **One-prompt workflow**; obey the **inlined Adobe AEM CS rules** in that file (value types, placeholders, CM API/CLI, custom-properties-only, repoinit, runmode context, local SDK secrets). Ambiguous or Adobe-owned PIDs → **`needs_user_review`**, not guesses.
 
 ## Prerequisites
 
@@ -142,7 +153,9 @@ If the user asks to fix everything or BPA mixes patterns, **ask which pattern fi
 
 ### Step 1: Pattern id
 
-Map the request to a pattern id: `scheduler`, `resourceChangeListener`, `replication`, `eventListener`, `eventHandler`, `assetApi`, `htlLint`. If unclear, use **Manual Pattern Hints** in **`{best-practices}/SKILL.md`** or ask the user to pick one of those.
+If the request is **OSGi configs → Cloud Manager** (see **Required delegation**, branch A), do **not** map to a BPA pattern — follow [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) instead.
+
+Otherwise map the request to a pattern id: `scheduler`, `resourceChangeListener`, `replication`, `eventListener`, `eventHandler`, `assetApi`, `htlLint`. If unclear, use **Manual Pattern Hints** in **`{best-practices}/SKILL.md`** or ask the user to pick one of those.
 
 ### Step 2: Availability
 
@@ -170,6 +183,10 @@ Summarize files touched, sub-paths, failures.
 
 User-named files → classify (best-practices hints or ask) → confirm module exists → read **`{best-practices}/SKILL.md`** + module → transform → report.
 
+### OSGi → Cloud Manager flow
+
+Does **not** use BPA CSV, CAM/MCP, or best-practices pattern modules for collection. Follow **Branch A** in **Required delegation** and the **One-prompt workflow** in [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md).
+
 ### htlLint flow
 
 `htlLint` does not use BPA CSV or CAM/MCP. Instead:
@@ -182,7 +199,7 @@ User-named files → classify (best-practices hints or ask) → confirm module e
 
 ## Quick reference
 
-**Source priority (when choosing how to obtain targets):** unified collection → BPA CSV → MCP → manual paths. **Not** an automatic cascade after MCP errors — if MCP fails, stop and wait for user direction (see **MCP errors and fallback**). For `htlLint`, use proactive `rg` discovery (no BPA/MCP).
+**Source priority (when choosing how to obtain targets):** unified collection → BPA CSV → MCP → manual paths. **Not** an automatic cascade after MCP errors — if MCP fails, stop and wait for user direction (see **MCP errors and fallback**). For `htlLint`, use proactive `rg` discovery (no BPA/MCP). For **OSGi → Cloud Manager**, use [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) only (no BPA/MCP).
 
 **User-facing snippets:** *"Using existing BPA collection (N findings)…"* / *"Processing your BPA report…"* / *"Fetched findings from CAM."* / *"Scanning HTL templates for data-sly-test lint issues…"* / optional prompt after MCP stop above.
 
