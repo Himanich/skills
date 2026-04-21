@@ -30,115 +30,27 @@
     {
       "name": "aem-edge-delivery-services",
       "source": "./plugins/aem/edge-delivery-services",
-      "description": "Skills for AEM Edge Delivery Services development",
-      "version": "1.0.0",
-      "category": "aem",
-      "keywords": [
-        "aem",
-        "edge-delivery-services",
-        "eds",
-        "adobe",
-        "blocks",
-        "development"
-      ],
-      "author": {
-        "name": "Adobe"
-      },
-      "homepage": "https://github.com/adobe/skills",
-      "repository": "https://github.com/adobe/skills",
-      "license": "Apache-2.0"
+      "description": "Skills for AEM Edge Delivery Services development"
     },
     {
       "name": "aem-cloud-service",
       "source": "./plugins/aem/cloud-service",
-      "description": "All AEM as a Cloud Service skills: component development and Dispatcher, workflows",
-      "version": "1.0.0",
-      "category": "aem",
-      "keywords": [
-        "aem",
-        "aemaacs",
-        "cloud-service",
-        "dispatcher",
-        "component",
-        "workflow",
-        "adobe"
-      ],
-      "author": {
-        "name": "Adobe"
-      },
-      "homepage": "https://github.com/adobe/skills",
-      "repository": "https://github.com/adobe/skills",
-      "license": "Apache-2.0"
+      "description": "All AEM as a Cloud Service skills: component development and Dispatcher, workflows"
     },
     {
       "name": "aem-6-5-lts",
       "source": "./plugins/aem/6.5-lts",
-      "description": "All AEM 6.5 LTS skills: Dispatcher, workflows for AEM 6.5 LTS and AMS environment",
-      "version": "1.0.0",
-      "category": "aem",
-      "keywords": [
-        "aem",
-        "aem6.5",
-        "6.5-lts",
-        "ams",
-        "dispatcher",
-        "httpd",
-        "apache",
-        "workflow",
-        "replication",
-        "adobe"
-      ],
-      "author": {
-        "name": "Adobe"
-      },
-      "homepage": "https://github.com/adobe/skills",
-      "repository": "https://github.com/adobe/skills",
-      "license": "Apache-2.0"
+      "description": "All AEM 6.5 LTS skills: Dispatcher, workflows for AEM 6.5 LTS and AMS environment"
     },
     {
       "name": "project-management",
       "source": "./plugins/aem/project-management",
-      "description": "Project lifecycle management for AEM Edge Delivery Services",
-      "version": "1.0.0",
-      "category": "aem",
-      "keywords": [
-        "adobe",
-        "aem",
-        "eds",
-        "edge-delivery-services",
-        "project",
-        "handover",
-        "documentation",
-        "whitepaper",
-        "pdf"
-      ],
-      "author": {
-        "name": "Adobe"
-      },
-      "homepage": "https://github.com/adobe/skills",
-      "repository": "https://github.com/adobe/skills",
-      "license": "Apache-2.0"
+      "description": "Project lifecycle management for AEM Edge Delivery Services"
     },
     {
       "name": "app-builder",
       "source": "./plugins/app-builder",
-      "description": "Development, customization, testing, and deployment skills for Adobe App Builder projects",
-      "version": "1.0.0",
-      "category": "app-builder",
-      "keywords": [
-        "app-builder",
-        "adobe",
-        "development",
-        "customization",
-        "testing",
-        "deployment"
-      ],
-      "author": {
-        "name": "Adobe"
-      },
-      "homepage": "https://github.com/adobe/skills",
-      "repository": "https://github.com/adobe/skills",
-      "license": "Apache-2.0"
+      "description": "Development, customization, testing, and deployment skills for Adobe App Builder projects"
     }
   ]
 }
