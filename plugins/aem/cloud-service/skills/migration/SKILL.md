@@ -1,6 +1,6 @@
 ---
 name: migration
-description: Orchestrates legacy AEM (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, EventListener, OSGi EventHandler, DAM AssetManager, HTL data-sly-test lint. OSGi configs → Cloud Manager — scan ui.config, .cfg.json, secrets, $[secret:]/$[env:] — agent follows references/osgi-cfg-json-cloud-manager.md when prompted. Editable template creation from static templates and AEM Modernization Rules (structure/component/policy rewrite rules) — agent follows references/editable-template-creation.md and references/aem-modernization.md. Transformation steps live in the best-practices skill—read it and the right references/ modules before editing code.
+description: Orchestrates legacy AEM (6.x, AMS, on-prem) to AEM as a Cloud Service migration using BPA CSV or cache, CAM/MCP target discovery, and one-pattern-per-session workflow. Use for BPA/CAM findings, Cloud Service blockers, or fixes for scheduler, ResourceChangeListener, replication, EventListener, OSGi EventHandler, DAM AssetManager, HTL data-sly-test lint. OSGi configs → Cloud Manager — scan ui.config, .cfg.json, secrets, $[secret:]/$[env:] — agent follows references/osgi-cfg-json-cloud-manager.md when prompted. Template modernization (static → editable templates + AEM Modernize Tools rules) runs a per-template pipeline: agent reads references/template-modernization-context.md (structured context), executes the per-template plan via references/editable-template-creation.md and references/aem-modernization.md, then validates via references/template-modernization-validation.md. Transformation steps live in the best-practices skill—read it and the right references/ modules before editing code.
 license: Apache-2.0
 ---
 
@@ -23,8 +23,7 @@ This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**,
 | **Just a few files** | *"Migrate **scheduler** in `core/.../MyJob.java`"* | Manual flow: no BPA required |
 | **OSGi → Cloud Manager** | *"**Scan my config files and create Cloud Manager environment secrets or variables.**"* | Agent **auto-reads** [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) (full Adobe-aligned rules inlined there); no BPA pattern id |
 | **HTL lint warnings** | *"Fix **htlLint** issues in `ui.apps`"* | Proactive discovery via `rg` → fix per reference module |
-| **Modernization rules** | *"**Generate AEM Modernize Tools structure/component/policy rules.**"* | Agent **auto-reads** [references/aem-modernization.md](references/aem-modernization.md); no BPA pattern id |
-| **Editable templates** | *"**Create editable templates from my static templates.**"* | Agent **auto-reads** [references/editable-template-creation.md](references/editable-template-creation.md); discovers app ID, structure components, allowed paths before writing |
+| **Template modernization** | *"**Migrate my static templates to editable templates and generate Modernize Tools rules.**"* / *"Create editable templates from my static templates."* / *"Generate AEM Modernize Tools structure/component/policy rules."* | Agent **auto-reads** [references/template-modernization-context.md](references/template-modernization-context.md) (shared discovery + structured context), produces a **per-template plan table**, then executes the plan using [editable-template-creation.md](references/editable-template-creation.md) and [aem-modernization.md](references/aem-modernization.md), and validates via [template-modernization-validation.md](references/template-modernization-validation.md). No BPA pattern id. |
 
 **Starter prompts (copy-paste):**
 
@@ -33,8 +32,7 @@ This skill is **orchestration**: BPA data, CAM/MCP, **one pattern per session**,
 - *"**Manual:** **event listener** migration for `.../Listener.java` — read best-practices module first."*
 - *"Scan my config files and create Cloud Manager environment secrets or variables."*
 - *"Fix **htlLint** in `ui.apps` — scan for `data-sly-test` redundant constant warnings and fix them."*
-- *"Generate AEM Modernize Tools structure rewrite rules for all my converted templates."*
-- *"Create editable templates from my static templates under `/apps/<appId>/templates/`."*
+- *"Migrate my static templates to editable templates and generate the Modernize Tools rewrite rules — run discovery first and show me the per-template plan before writing any files."*
 
 
 ## Path convention (Adobe Skills monorepo)
@@ -68,9 +66,14 @@ Applies to **finding and editing the user's AEM project** (Java, bundles, config
 
 Do not transform **Java or HTL** until the pattern module is read (branch B). Branch A does not require `{best-practices}` pattern modules.
 
-**Branch C — Editable Template Creation**: If the user asks to **create editable templates**, **generate `/conf` templates from static templates**, or **set up the template structure under `/conf`**, then **read [references/editable-template-creation.md](references/editable-template-creation.md) immediately** and complete the **discovery checklist** before generating any files. This is a **prerequisite for Branch D**. **Skip** branch B for that work.
+**Branch C — Template Modernization** (no Java BPA pattern this session): If the user asks to **create editable templates**, **convert static templates to editable templates**, **generate `/conf` templates**, **create modernization rules**, **generate parsys-to-container rules**, **create structure/component/policy rewrite rules**, or mentions **AEM Modernize Tools**, follow this three-phase pipeline. **Skip** branch B for that work. No BPA pattern ID required.
 
-**Branch D — AEM Modernization Rules** (no Java BPA pattern this session): If the user asks to **create modernization rules**, **convert static templates to editable templates**, **generate parsys-to-container rules**, **create structure/component/policy rewrite rules**, or mentions **AEM Modernize Tools**, then **read [references/aem-modernization.md](references/aem-modernization.md) immediately** and follow the **discovery checklist and workflow** defined in that file before creating any files. No BPA pattern ID required. **Skip** branch B for that work. **Prerequisite:** editable templates must already exist under `/conf` — if they are missing, run Branch C first.
+1. **Discovery → context.** Read [references/template-modernization-context.md](references/template-modernization-context.md) **first**. Execute all nine discovery steps, emit the structured context YAML to `.migration/template-context.yml`, and get the user's `confirmed` reply on both the context block and the **per-template plan table**. Do not skip to file generation.
+2. **Per-template execute.** For each plan row, run only the generators whose column is `true`:
+   - **Create editable?** → [references/editable-template-creation.md](references/editable-template-creation.md) — consume the context, emit the 4-file editable template.
+   - **Create structure rule? / Create component rule? / Create policy rule?** → [references/aem-modernization.md](references/aem-modernization.md) — consume the context, emit the corresponding rule + OSGi config.
+   Independent templates do not block each other. A missing editable template for template X is resolved in the same pass (plan fires "Create editable?" first for that row).
+3. **Validate.** Run every applicable assertion in [references/template-modernization-validation.md](references/template-modernization-validation.md). Do not commit files that fail validation.
 
 ## When to Use This Skill
 
@@ -79,8 +82,7 @@ Do not transform **Java or HTL** until the pattern module is read (branch B). Br
 - Drive work from **BPA** (CSV or cached collection) or **CAM via MCP**
 - Enforce **one pattern type per session**
 - **OSGi → Cloud Manager:** **Branch A** — scan scoped **`.cfg.json`**, apply **`$[secret:…]`** / **`$[env:…]`** per rules in **[references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md)**; gitignored handoff; **no** secret values in chat.
-- **Editable Template Creation:** **Branch C** — read **[references/editable-template-creation.md](references/editable-template-creation.md)**; generate `structure`, `initial`, `policies`, and template root nodes under `/conf/<appId>/settings/wcm/templates/` from existing static templates; no BPA id.
-- **AEM Modernization Rules:** **Branch D** — read **[references/aem-modernization.md](references/aem-modernization.md)**; generate structure rewrite rules, component rewrite rules, and policy import rules for AEM Modernize Tools; no BPA id. Run Branch C first if editable templates don't exist yet.
+- **Template Modernization:** **Branch C** — three-phase pipeline (context → per-template execute → validate). Discovery and the structured context block live in **[references/template-modernization-context.md](references/template-modernization-context.md)**; generation mechanics in **[editable-template-creation.md](references/editable-template-creation.md)** and **[aem-modernization.md](references/aem-modernization.md)**; post-generation assertions in **[template-modernization-validation.md](references/template-modernization-validation.md)**. No BPA id. Editable templates, structure rules, component rules, and policy rules are chosen **per template** via the plan table — there is no branch-level ordering between them.
 
 ### OSGi configs and Cloud Manager (no BPA pattern id)
 
@@ -206,9 +208,7 @@ If the user asks to fix everything or BPA mixes patterns, **ask which pattern fi
 
 If the request is **OSGi configs → Cloud Manager** (see **Required delegation**, branch A), do **not** map to a BPA pattern — follow [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) instead.
 
-If the request is **editable template creation** ("create editable templates", "generate conf templates", "static to editable template") — follow **Branch C** → [references/editable-template-creation.md](references/editable-template-creation.md). No pattern id, no BPA.
-
-If the request is **AEM modernization rules** ("structure rewrite rules", "component rewrite rules", "policy import rules", "parsys to container", "AEM Modernize Tools") — follow **Branch D** → [references/aem-modernization.md](references/aem-modernization.md). No pattern id, no BPA.
+If the request is **template modernization** — including "create editable templates", "generate `/conf` templates", "static to editable template", "structure rewrite rules", "component rewrite rules", "policy import rules", "parsys to container", or "AEM Modernize Tools" — follow **Branch C** → start with [references/template-modernization-context.md](references/template-modernization-context.md) (discovery + plan table), then execute per-template via the generators, then validate. No pattern id, no BPA.
 
 Otherwise map the request to a pattern id: `scheduler`, `resourceChangeListener`, `replication`, `eventListener`, `eventHandler`, `assetApi`, `htlLint`. If unclear, use **Manual Pattern Hints** in **`{best-practices}/SKILL.md`** or ask the user to pick one of those.
 
@@ -262,13 +262,16 @@ User-named files → classify (best-practices hints or ask) → confirm module e
 
 Does **not** use BPA CSV, CAM/MCP, or best-practices pattern modules for collection. Follow **Branch A** in **Required delegation** and the **One-prompt workflow** in [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md).
 
-### Editable template creation flow (Branch C)
+### Template modernization flow (Branch C)
 
-Does **not** use BPA CSV or CAM/MCP. Read [references/editable-template-creation.md](references/editable-template-creation.md), complete its **Discovery checklist** (app ID, static templates, structure components, existing editable templates, breakpoints, allowed paths), report findings to the user, then generate the 4-file set per template (`structure`, `initial`, `policies`, template root) and update `templates/.content.xml`. Do **not** overwrite existing editable templates.
+Does **not** use BPA CSV or CAM/MCP.
 
-### AEM Modernization Rules flow (Branch D)
-
-Does **not** use BPA CSV or CAM/MCP. Read [references/aem-modernization.md](references/aem-modernization.md), complete its **Discovery checklist** (app ID, static templates, existing editable templates, existing rules, parsys nodes, design paths), report findings to the user, then generate structure rewrite rules, component rewrite rules, and policy import rules as needed. Editable templates must exist first — if missing, run **Branch C** before this flow.
+1. **Context.** Read [references/template-modernization-context.md](references/template-modernization-context.md). Execute discovery steps 1–9, emit `.migration/template-context.yml`, show the full block and the derived per-template plan table to the user, wait for `confirmed`. Every field flagged `needs-user-confirm` or `missing` must be resolved before proceeding — no silent defaults.
+2. **Per-template execute.** For each plan row, run the generators whose columns are `true`:
+   - [editable-template-creation.md](references/editable-template-creation.md) — when **Create editable?** is true.
+   - [aem-modernization.md](references/aem-modernization.md) — when any of **Create structure rule? / Create component rule? / Create policy rule?** is true.
+   A template row with "Create editable? + Create structure rule?" both true runs the editable-template generator first, then the structure-rule generator, in the same pass. Independent rows do not block each other.
+3. **Validate.** Run every applicable assertion in [references/template-modernization-validation.md](references/template-modernization-validation.md). Emit the validation report. Do **not** commit files that fail validation — fix first.
 
 ### htlLint flow
 
@@ -351,7 +354,7 @@ that cache.
 
 ## Quick reference
 
-**Source priority (when choosing how to obtain targets):** unified collection → BPA CSV → MCP → manual paths. **Not** an automatic cascade after MCP errors — if MCP fails, stop and wait for user direction (see **MCP errors and fallback**). For `htlLint`, use proactive `rg` discovery (no BPA/MCP). For **OSGi → Cloud Manager**, use [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) only (no BPA/MCP). For **AEM Modernization Rules** (Branch D) and **Editable Template Creation** (Branch C), use [references/aem-modernization.md](references/aem-modernization.md) and [references/editable-template-creation.md](references/editable-template-creation.md) respectively — no BPA/MCP.
+**Source priority (when choosing how to obtain targets):** unified collection → BPA CSV → MCP → manual paths. **Not** an automatic cascade after MCP errors — if MCP fails, stop and wait for user direction (see **MCP errors and fallback**). For `htlLint`, use proactive `rg` discovery (no BPA/MCP). For **OSGi → Cloud Manager**, use [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) only (no BPA/MCP). For **Template Modernization** (Branch C), use the three-file pipeline: [template-modernization-context.md](references/template-modernization-context.md) → ([editable-template-creation.md](references/editable-template-creation.md) + [aem-modernization.md](references/aem-modernization.md)) → [template-modernization-validation.md](references/template-modernization-validation.md) — no BPA/MCP.
 
 **Batch size:** 5 (default) on every BPA source. See **Batched processing** above.
 

@@ -1,59 +1,51 @@
 # AEM Modernization Rules — Template Conversion & Component Rewrites
 
-**Agent:** The parent skill loads this file when the user asks to create modernization rules, convert static templates to editable templates, or generate parsys-to-container rewrite rules. Users do **not** name this path.
+**Agent:** The parent skill loads this file when the user asks to create modernization rules, convert static templates to editable templates, or generate parsys-to-container rewrite rules. **This file only defines the generation mechanics.** Discovery, context, per-template planning, and validation live in dedicated files:
 
-No BPA pattern ID is required. The agent discovers what is needed by reading the project.
+- **Before this file:** [template-modernization-context.md](template-modernization-context.md) — discovery steps, structured context block, and the **per-template plan table**. This file never owns branch-level ordering or prerequisites; the plan decides, per template, which rules to generate.
+- **After this file:** [template-modernization-validation.md](template-modernization-validation.md) — post-generation assertions. `cq:copyChildren` presence, service-registration wiring, and cross-reference integrity are enforced there.
 
----
-
-## What This Pattern Does
-
-Generates the three types of rules consumed by the **AEM Modernize Tools** package (`com.adobe.aem.aem-modernize-tools`):
-
-| Rule Type | What it converts | Output location |
-|-----------|-----------------|-----------------|
-| **Structure Rewrite Rules** | Static template pages → editable template pages | `ui.apps/.../modernization/structure-rewrite-rules/` + `ui.config/.../osgiconfig/config.author/` |
-| **Component Rewrite Rules** | Legacy `parsys` nodes → responsive grid containers | `ui.apps/.../modernization/component-rewrite-rules/` |
-| **Policy Import Rules** | `/etc/designs/<design>` → `/conf/.../policies/` | `ui.apps/.../modernization/policy-import-rules/` |
-
-Each rule type is independent. The user may ask for one, two, or all three in a session.
-
-**Prerequisite:** Editable templates must already exist under `/conf/<appId>/settings/wcm/templates/` before structure rewrite rules can be created. If they are missing, run **`references/editable-template-creation.md`** first, then return here.
+No BPA pattern ID is required.
 
 ---
 
-## Prerequisites — Read the Project First
+## What This File Does
 
-**STOP. Before generating any file, read the project to discover:**
+Generates the three rule types consumed by the **AEM Modernize Tools** package (`com.adobe.aem.aem-modernize-tools`):
 
-### Discovery checklist
+| Rule Type | What it converts | Output location | Plan-table column |
+|-----------|-----------------|-----------------|--------------------|
+| **Structure Rewrite Rules** | Static template pages → editable template pages | `ui.apps/.../modernization/structure-rewrite-rules/` + `ui.config/.../osgiconfig/config.author/` | Create structure rule? |
+| **Component Rewrite Rules** | Legacy `parsys` nodes → responsive grid containers | `ui.apps/.../modernization/component-rewrite-rules/` | Create component rule? |
+| **Policy Import Rules** | `/etc/designs/<design>` → `/conf/.../policies/` | `ui.apps/.../modernization/policy-import-rules/` | Create policy rule? |
 
-1. **App ID(s):** Find the `<appId>` used in `/apps/<appId>/`. Look for the `appId` property in `ui.apps/pom.xml` or the `filevault-package-maven-plugin` configuration, or identify it from existing `/apps/` paths in the repo.
+Each rule type is independent. The plan table (one row per template) determines which columns fire for which template. A template row with all three columns true runs all three generators in one pass; a row with only "Create component rule?" true runs only that generator.
 
-2. **Static templates:** Glob `**/jcr_root/apps/**/templates/**/.content.xml` and read each. Record:
-   - Template name (folder name under `templates/`)
-   - `jcr:title` (human label)
-   - `sling:resourceType` on the page component (from the template's `jcr:content`)
+**Missing editable templates are not a branch-level block.** If template X's `editable.exists` is false, the plan row for X also has "Create editable?" true — the editable-template generator runs first, in the same pass, before the structure rule for X. No separate "run Branch C first" session is required.
 
-3. **Editable templates already created:** Glob `**/jcr_root/conf/**/settings/wcm/templates/**/.content.xml`. Match each to its static counterpart by name. Only generate structure rules for templates that have a corresponding editable template.
+---
 
-4. **Existing structure rules:** Glob `**/modernization/structure-rewrite-rules/*.xml`. Do not recreate rules that already exist.
+## Inputs — from the confirmed context block
 
-5. **Parsys nodes in page structure components:** For component rewrite rules, read the HTL/JSP files under `**/apps/**/components/structure/**`. Look for `sling:include` or `data-sly-resource` pointing to a `par`, `leftpar`, `rightpar`, or any named child that uses `wcm/foundation/components/parsys`. Record each node name.
+Before generating any file, verify `.migration/template-context.yml` exists and the user has replied `confirmed` on both the context block and the plan table. If either is missing, **stop** and point the user at [template-modernization-context.md](template-modernization-context.md).
 
-6. **App container resourceType:** Find the project's responsive grid container. Typically registered as `<appId>/components/content/container` — verify by searching for `layout="responsiveGrid"` or `wcmmode` in component HTL files.
+For each plan row with at least one rule column true, the context block supplies every input. Do not re-derive any of these — read them from the YAML.
 
-7. **Existing component rewrite rules:** Glob `**/modernization/component-rewrite-rules/*.xml`. Do not recreate.
+| Generator input | Source field |
+|---|---|
+| `<appId>` | `apps[*].id` |
+| `<templateName>` | `apps[*].templates[*].name` |
+| `staticTemplate` / `static.template` (structure rule) | `templates[*].static.path` |
+| `editableTemplate` / `editable.template` (structure rule) | `templates[*].editable.path` — `editable.exists` must be `true` after this session's editable-generation pass |
+| `sling.resourceType` (structure rule OSGi config) | `templates[*].static.pageResourceType` — `pageResourceTypeExists` must be `true` |
+| `container.resourceType` (structure rule OSGi config) | always `wcm/foundation/components/responsivegrid` (WCM foundation grid — not the app container) |
+| Parsys node names (component rule patterns) | `templates[*].structureComponent.namedChildren[]` where `classification == parsys` |
+| Replacement `sling:resourceType` (component rule) | `apps[*].conventions.contentContainerResourceType` |
+| `design` attribute (policy rule) | `designs[*].path` |
+| `policyPath` attribute (policy rule) | `/conf/<apps[*].id>/settings/wcm/policies/<apps[*].id>` |
+| Whether to generate repoinit | exists flag — see validation section 5; skip if already present |
 
-8. **Design paths:** Search for `/etc/designs/` references in `ui.apps` content or `ui.config` OSGi configs. Record each `<design-name>`.
-
-9. **Policy conf paths:** Check `**/jcr_root/conf/**/settings/wcm/policies/**/.content.xml` for existing policy trees. Match by app.
-
-10. **Existing service configs:** Check `**/osgiconfig/config.author/` for existing `com.adobe.aem.modernize.*.cfg.json`. Do not recreate.
-
-11. **Repoinit initializer:** Check for `org.apache.sling.jcr.repoinit.RepositoryInitializer-aem-modernize.cfg.json`. Only create if absent.
-
-Report your findings to the user before generating any files. Ask for confirmation if anything is ambiguous (e.g. multiple app IDs, missing editable templates, unknown design paths).
+**If any required field is `needs-user-confirm` or `missing`, stop.** Return to the context-gathering step.
 
 ---
 
@@ -389,13 +381,10 @@ Review required:
 
 ---
 
-## Critical rules
+## Post-generation step
 
-- **Read before writing** — always complete the discovery checklist before creating any file
-- **Do not recreate** existing rules — check for existing files before writing
-- **Do not modify repoinit** — if the initializer already exists, leave it alone
-- **Do not add placeholders** to repoinit scripts — interpolation is not supported there
-- **One rule file per template** for structure rules — do not combine multiple templates into one XML node
-- **`cq:copyChildren="{Boolean}true"` is mandatory** on component rewrite replacements — omitting it destroys existing content inside parsys
-- **Ask before guessing** on `sling.resourceType`, container resourceType, or design paths — wrong values cause silent failures at runtime
-- **Do not create editable templates** — this skill only creates the rules that reference them; the templates themselves must already exist in `/conf`
+Run every applicable assertion in [template-modernization-validation.md](template-modernization-validation.md). Sections 2 (structure rules), 3 (component rules — including the `cq:copyChildren` check), 4 (policy rules), 5 (repoinit), 6 (filter coverage), and 7 (cross-reference integrity) apply to this file. Do not commit any file that fails validation.
+
+The single highest-impact check is [section 3.1](template-modernization-validation.md) — `cq:copyChildren="{Boolean}true"` must be present on every component rewrite replacement. Omitting it destroys content inside parsys nodes at conversion time. Validation inverts the match (`rg -L`) so any missing flag lists the offending file immediately. A forgotten flag here is the class of bug validation exists to catch.
+
+Rules previously listed under "Critical rules" (do not recreate, one rule per template, ask before guessing, do not modify existing repoinit, no placeholder interpolation) are now expressed as machine-checkable assertions in the validation file and as plan-table logic in the context file — a template row where `existingRules.*.exists == true` has the corresponding column set false, so the generator simply doesn't fire for it.
