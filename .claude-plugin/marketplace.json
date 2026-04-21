@@ -43,7 +43,7 @@
       "description": "All AEM 6.5 LTS skills: Dispatcher, workflows for AEM 6.5 LTS and AMS environment"
     },
     {
-      "name": "project-management",
+      "name": "aem-project-management",
       "source": "./plugins/aem/project-management",
       "description": "Project lifecycle management for AEM Edge Delivery Services"
     },
