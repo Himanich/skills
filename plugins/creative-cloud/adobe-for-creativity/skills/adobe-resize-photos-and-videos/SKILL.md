@@ -12,6 +12,7 @@ description: >
   "I need this at [WxH]", "scale my video down", "change resolution", "downscale", "upscale".
   NOT for social media platform sets (use adobe-create-social-variations for that).
   Uses image_crop_and_resize for photos, video_resize for videos.
+license: Apache-2.0
 metadata:
   version: 1.0.0
   visibility: public

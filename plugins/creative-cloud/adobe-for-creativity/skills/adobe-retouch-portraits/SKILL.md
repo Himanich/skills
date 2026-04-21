@@ -10,6 +10,7 @@ description: >
   review. Automatically applies auto-straighten, auto-tone, and auto-light
   to every image. Outputs a preview grid and download folder.
   Access: 🔐 Signed-In required | Gen AI: ❌
+license: Apache-2.0
 metadata:
   version: 1.0.0
   visibility: public

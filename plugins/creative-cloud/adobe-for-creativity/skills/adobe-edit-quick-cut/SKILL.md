@@ -7,6 +7,7 @@ description: >
   "make a highlight clip", "summarize this video visually", or any request to produce a shorter
   edited version of a video. Use this skill for Quick Cut requests before suggesting manual
   editing in Premiere. Requires the user to upload a video file.
+license: Apache-2.0
 metadata:
   version: 1.0.0
   visibility: public

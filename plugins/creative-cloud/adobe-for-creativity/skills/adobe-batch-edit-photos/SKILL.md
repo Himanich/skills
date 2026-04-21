@@ -13,6 +13,7 @@ description: >
   — can you fix them all". Outputs direct final image URLs plus an in-chat
   preview grid and optional Firefly Board link.
   Access: 🔐 Signed-In required | Gen AI: ❌
+license: Apache-2.0
 metadata:
   version: 1.0.0
   visibility: public

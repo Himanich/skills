@@ -11,6 +11,7 @@ description: >
   Also handles requests to find or browse templates, edit text/copy, change background
   colors, or animate a design.
   Access: 🔐 Signed-In required | Gen AI: ❌
+license: Apache-2.0
 metadata:
   version: 1.0.0
   visibility: public
