@@ -74,12 +74,6 @@ Tool: asset_add_file
 Params: {}
 ```
 
-`asset_add_file` always returns `imageURIs: []` — this is expected and NOT an
-error. Wait for the user to select files; the real URIs arrive in the next
-message. Then call `read_widget_context` with `asset_add_file` to get the
-correct presigned S3 URLs. Use those for all subsequent tool calls.
-`dcx*.adobe.io` URIs are network-blocked; resolve them via `read_widget_context` first.
-
 ---
 
 ## Step 2: Understand the Desired Look
