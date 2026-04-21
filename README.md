@@ -38,6 +38,7 @@ gh upskill adobe/skills --all
 
 | Skill | Description |
 |-------|-------------|
+| `create-site` | Start a brand-new site from scratch: GitHub repo from boilerplate, aem-code-sync, initial DA content (nav, footer, homepage), and live URL handoff |
 | `content-driven-development` | Orchestrates the CDD workflow for all code changes |
 | `analyze-and-plan` | Analyze requirements and define acceptance criteria |
 | `building-blocks` | Implement blocks and core functionality |
