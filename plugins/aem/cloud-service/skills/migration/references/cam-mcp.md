@@ -6,8 +6,13 @@ Read this file when **fetching BPA targets via MCP** instead of a CSV or cached 
 
 1. Agent asks the user for their **CAM project name or ID**.
 2. **You confirm** the project name or ID (the agent should not guess or infer it).
-3. Agent calls **`fetch-cam-bpa-findings`** with the confirmed project and the **one pattern** for this session (`scheduler`, `assetApi`, etc., or `all` then filtered).
-4. Agent maps returned targets to Java files and continues the migration workflow in `../SKILL.md`.
+3. Agent calls **`fetch-cam-bpa-findings`** **once** with the confirmed project and the **one pattern** for this session (`scheduler`, `assetApi`, etc., or `all` then filtered). The MCP server returns all findings for that pattern.
+4. `bpa-findings-helper.js` caches the response to
+   `<collectionsDir>/mcp/<projectId>/<pattern>.json` and applies the batch slice (default 5) client-side.
+5. Agent processes that batch, reports progress (`returned / total`), then stops. The user says whether to continue.
+6. On continue, the agent re-invokes `getBpaFindings` with `offset = paging.nextOffset`; the helper reads the cached MCP fetch — **no additional MCP calls** — and returns the next batch.
+
+See [Batching](#batching) below for the full contract.
 
 ### Project name and ID — non-negotiable
 
@@ -66,6 +71,8 @@ The only MCP tool registered by the server. It can also resolve a project name t
 }
 ```
 
+The MCP server is **not** required to implement paging; the helper batches client-side.
+
 **Success response (shape may vary by server version):**
 
 ```typescript
@@ -99,12 +106,49 @@ The only MCP tool registered by the server. It can also resolve a project name t
 **Example:**
 
 ```javascript
-const result = await fetchCamBpaFindings({
+// One-shot fetch per (projectId, pattern). The helper caches this and pages
+// subsequent batches from the cache — do not call the MCP tool for every batch.
+const resp = await fetchCamBpaFindings({
   projectId: "<user-confirmed-cam-project-id>",
   pattern: "scheduler",
   environment: "prod"
 });
+// resp.targets — full list for this pattern
 ```
+
+---
+
+## Batching
+
+The migration skill processes BPA findings in **batches of 5** by default. Batching is
+**entirely client-side** — the MCP server is called once per `(projectId, pattern)`; the
+helper caches the response to disk and slices from the cache on subsequent calls.
+
+### Contract
+
+- **The MCP tool does not need to support `limit` or `offset`.** It is called once and
+  returns the full list for the requested pattern.
+- **Ordering should be stable across calls.** If the underlying BPA run changes between
+  fetches and the user wants fresh data, they (or the agent) delete
+  `<collectionsDir>/mcp/<projectId>/<pattern>.json` to trigger a re-fetch.
+- **No severity filtering.** Within a single pattern all findings are equal rank; the server
+  must not silently reorder or filter by severity.
+- **Cache location:** `<collectionsDir>/mcp/<projectId>/<pattern>.json`. Disjoint from the
+  CSV path's cache at `<collectionsDir>/unified-collection.json`, so MCP and CSV cannot
+  shadow each other.
+
+### Agent rules
+
+1. Call `fetch-cam-bpa-findings` **once** per `(projectId, pattern)` — the helper does this
+   the first time the agent invokes `getBpaFindings` on the MCP path.
+2. After each batch the helper returns, process **only** those findings, then **stop**:
+   *"Processed 5 of 137 scheduler findings. Reply `continue` for the next batch, or name
+   specific classes to focus on."*
+3. On continue, re-invoke `getBpaFindings` with `offset = paging.nextOffset`. The helper
+   reads the local cache — **no** additional MCP call.
+4. Stop when `paging.hasMore === false` (or `paging.nextOffset === null`).
+5. Never accumulate more than one batch in working memory. Each batch is independent.
+6. To refresh MCP data, delete the cache file for that `(projectId, pattern)` and re-invoke.
 
 ---
 
