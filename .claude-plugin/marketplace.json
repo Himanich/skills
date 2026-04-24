@@ -28,6 +28,11 @@
       "license": "Apache-2.0"
     },
     {
+      "name": "stardust",
+      "source": "./plugins/stardust",
+      "description": "Design-phase skills for static-HTML design projects: brand extraction, palette picking from a curated library, page briefings, wireframes, and branded HTML prototypes. Platform-agnostic output."
+    },
+    {
       "name": "aem-edge-delivery-services",
       "source": "./plugins/aem/edge-delivery-services",
       "description": "Skills for AEM Edge Delivery Services development"
