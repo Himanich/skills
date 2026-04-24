@@ -257,7 +257,7 @@ Does **not** use BPA CSV, CAM/MCP, or best-practices pattern modules for collect
 
 ### Template modernization flow (Branch C)
 
-No BPA / MCP. Three phases — context → per-template execute → validate — fully defined in [references/template-modernization-context.md](references/template-modernization-context.md). Do not commit on validation failure.
+No BPA / MCP. Three phases — context → per-template execute → validate — fully defined in [references/template-modernization-context.md](references/template-modernization-context.md). Use the confirmed context and per-template plan table first, execute generators via [references/editable-template-creation.md](references/editable-template-creation.md) and [references/aem-modernization.md](references/aem-modernization.md), then run [references/template-modernization-validation.md](references/template-modernization-validation.md). Do not commit on validation failure.
 
 ### htlLint flow
 

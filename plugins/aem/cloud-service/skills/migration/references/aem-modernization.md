@@ -2,7 +2,7 @@
 
 Generates rules for AEM Modernize Tools: structure rewrite (static → editable template pages), component rewrite (parsys → responsive grid), policy import (`/etc/designs/<name>` → `/conf/.../policies/`). Plus the one-per-project service configs and repoinit.
 
-Inputs come from the confirmed `.migration/template-context.yml` — see [template-modernization-context.md](template-modernization-context.md). Each rule type runs independently for plan rows where its column is true. A row with **Create editable?** also true runs the editable generator first, same pass — no separate session.
+Inputs come from the confirmed `.migration/template-context.yml` — see [template-modernization-context.md](template-modernization-context.md). Each rule type runs independently for plan rows where its column is true. A row with **Create editable?** also true runs the editable generator first, same pass. Do not invent values here; if context still has `needs-user-confirm` / `missing`, stop.
 
 ---
 
