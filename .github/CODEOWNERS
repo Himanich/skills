@@ -17,7 +17,7 @@
 /plugins/aem/edge-delivery-services/                   @shsteimer
 
 # AEM Project Management (Astha Bhargava is sole author)
-/plugins/aem/project-management/                       @AsthaBhargava
+/plugins/aem/project-management/                       @asthabh23
 
 # AEM Cloud Service (in-flight, contributors: abhishekgarg18, pkumargaddam, Himanich, akankshajain18, rombert)
 /plugins/aem/cloud-service/                            @abhishekgarg18 @pkumargaddam @Himanich @akankshajain18 @rombert
