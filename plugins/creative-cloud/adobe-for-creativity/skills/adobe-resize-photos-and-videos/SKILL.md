@@ -14,7 +14,7 @@ description: >
   Uses image_crop_and_resize for photos, video_resize for videos.
 license: Apache-2.0
 metadata:
-  version: 1.0.0
+  version: 1.0.1
   visibility: public
 ---
 
@@ -49,7 +49,7 @@ For social media platform sets (Instagram, TikTok, etc.) → use the `adobe-crea
 Call `adobe_mandatory_init` first. This returns file handling rules and tool routing guidance required for the rest of the workflow.
 
 ```json
-{ "skill_name": "adobe-resize-photos-and-videos", "skill_version": "1.0.0" }
+{ "skill_name": "adobe-resize-photos-and-videos", "skill_version": "1.0.1" }
 ```
 
 ---
