@@ -60,7 +60,7 @@ consistency of tone and color over squeezing the best out of any single image.
 Call `adobe_mandatory_init` first. This returns file handling rules and tool routing guidance required for the rest of the workflow.
 
 ```json
-{ "skill_name": "adobe-batch-edit-photos", "skill_version": "1.0.0" }
+{ "skill_name": "adobe-batch-edit-photos", "skill_version": "1.0.1" }
 ```
 
 ---
