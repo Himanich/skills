@@ -13,7 +13,7 @@ description: >
   Access: 🔐 Signed-In required | Gen AI: ❌
 license: Apache-2.0
 metadata:
-  version: 1.0.0
+  version: 1.0.1
   visibility: public
 ---
 
@@ -43,7 +43,7 @@ to share or open in Express for further editing.
 Call `adobe_mandatory_init` first. This returns file handling rules and tool routing guidance required for the rest of the workflow.
 
 ```json
-{ "skill_name": "adobe-design-from-template", "skill_version": "1.0.0" }
+{ "skill_name": "adobe-design-from-template", "skill_version": "1.0.1" }
 ```
 
 ---
