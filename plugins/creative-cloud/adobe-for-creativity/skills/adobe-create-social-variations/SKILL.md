@@ -31,7 +31,7 @@ Produces platform-ready images and videos from a single source file. Uses AI can
 Call `adobe_mandatory_init` first. This returns file handling rules and tool routing guidance required for the rest of the workflow.
 
 ```json
-{ "skill_name": "adobe-create-social-variations", "skill_version": "1.0.0" }
+{ "skill_name": "adobe-create-social-variations", "skill_version": "1.0.1" }
 ```
 
 ---
