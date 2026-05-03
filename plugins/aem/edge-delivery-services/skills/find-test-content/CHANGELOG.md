@@ -1,3 +1,24 @@
+# [1.2.0](https://github.com/adobe/skills/compare/find-test-content-v1.1.0...find-test-content-v1.2.0) (2026-05-03)
+
+
+### Bug Fixes
+
+* rename plugin to 'aem-project-management' ([c4e89d9](https://github.com/adobe/skills/commit/c4e89d98e0431fb8c0c53a835a0253f28cfa4c11))
+* support second-level plugins in CODEOWNERS ([05a79b2](https://github.com/adobe/skills/commit/05a79b2f69ba05b01f7cf7ace95699e45c73b959))
+* update GH username ([d9bbfda](https://github.com/adobe/skills/commit/d9bbfdaef1f68e910340b124ecb5788e396957d4))
+
+
+### Features
+
+* **da-auth:** add da-auth skill and surface DA auth in CDD workflow ([#89](https://github.com/adobe/skills/issues/89)) ([fc7a2e8](https://github.com/adobe/skills/commit/fc7a2e8c1dbcb37c65759ba907fe581f8a44e3c8))
+* **stardust:** replace v1 with v0.3.0 (redesign on top of impeccable) ([#111](https://github.com/adobe/skills/issues/111)) ([9cfed11](https://github.com/adobe/skills/commit/9cfed1145a05bae9cfa344af0ae8c2998c542560))
+* update adobe-batch-edit-photos ([d3148c7](https://github.com/adobe/skills/commit/d3148c78546448a322e2884ddd42bddef232a8f2))
+* update adobe-create-social-variations ([7f3273b](https://github.com/adobe/skills/commit/7f3273b9aa32a466329adbed4993c70ccb3472e4))
+* update adobe-design-from-template ([8232803](https://github.com/adobe/skills/commit/8232803fb40b24b339fcb8546ba226bf7ce5abb1))
+* update adobe-edit-quick-cut ([2691cb6](https://github.com/adobe/skills/commit/2691cb6e868ea44bc601abc1da28bb86f43d4a07))
+* update adobe-resize-photos-and-videos ([1046cd9](https://github.com/adobe/skills/commit/1046cd910fd2eccf0e5a52e7656d7820e6decc94))
+* update adobe-retouch-portraits ([e8ccb18](https://github.com/adobe/skills/commit/e8ccb18f098696e07bed510e4f7f1cc9c825587a))
+
 # [1.1.0](https://github.com/adobe/skills/compare/find-test-content-v1.0.0...find-test-content-v1.1.0) (2026-04-27)
 
 
