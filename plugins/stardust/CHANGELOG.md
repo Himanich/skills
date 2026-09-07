@@ -4,6 +4,55 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.19.1 — replica field harvest (2026-09), part 1: one-bullet learnings (P2, P4, P5, P7–P10, P13, P14, P17, P18, P21, P23, P25)
+
+First fold of a 25-entry learnings ledger from a same-design migration of
+a large vendor-templated site (2026-08/09, published-origin gated, ~150
+pages). This part ships
+only the findings that scored 3/3/3 on general / safe / small — each is a
+single bullet or an edit to an existing one; no scripts, no new sections.
+The remaining entries (element-anchored + masked chrome crops, a
+computed-style chrome-parity probe, sibling variance probing, capture-time
+code-artifact filtering, rendered-DOM capture, a bundled link-localization
+stage + lint tier) follow in separate PRs.
+
+- **Replica — recreation procedure:** authoring step 1 reconciles component
+  COUNTS from the capture before authoring (vendor templates repeat whole
+  widgets; a big height delta with matching section order is a duplicate,
+  not a missing section) and points at the paragraph-boundary rule; canon
+  chrome is re-verified against EACH new archetype's live page before page
+  content is iterated, with page-level compensation flagged for canon
+  back-port; no foundation `text-wrap: balance` in replica prototypes/block
+  CSS; the overlay-scrim bullet now reads the full computed
+  `background-image` layer list FIRST and luminance-fits only when the scrim
+  is genuinely undiscoverable; the sizing-MODEL lift covers heights and
+  overlaps at two or three widths with the vw encoding formula; icons and
+  vectors are harvested from the live DOM (`svg.outerHTML`), never
+  approximated.
+- **Replica — gate:** iteration discipline gains the post-pass typography
+  spot-check (a pixel pass at the wrong base metric is latent sibling
+  debt; compensating spacing is the tell); the wide-viewport check samples
+  heights and one intermediate width; the published-origin gate gains two
+  rules — re-probe live chrome metrics at deploy time (crawl captures are
+  the content source, live-now the chrome source; mask authored-volatile
+  regions) and budget one anchors-driven reconcile round at the published
+  origin (the harness number is provisional); the EDS transform list notes
+  that authored inner blocks may flatten, so `:has()`/block-class selectors
+  are verified against the delivered `.plain.html`.
+- **Migrate — content preservation:** paragraph boundaries come from the
+  source's block-level nodes, never from splitting captured text on
+  newlines (inline elements fragment a 5-paragraph disclaimer into 16
+  `<p>`s and double the section height).
+- **Deploy:** favicon delivery is verified with a `HEAD` at the published
+  origin; Step 3 section styles that paint several wrappers as one surface
+  contain child margins with `display: flow-root` (margin collapse through
+  an unpadded wrapper paints a ground-colored stripe inside a "card");
+  Step 6 chrome rows never pair a fixed `height` with vertical `padding`
+  under the border-box reset; the Step 7 brief bans `<br>` inside flex/grid
+  containers (it becomes a sized item) and bare `> span`-style child rules
+  in variant CSS (they resurrect hidden elements); Step 10 item 5 samples
+  section heights at an intermediate width.
+
 ## 0.19.0 — Experience Workspace editability contract (EW1–EW10) + gate
 
 Every text an author wrote in a DA document must be inline-editable in
