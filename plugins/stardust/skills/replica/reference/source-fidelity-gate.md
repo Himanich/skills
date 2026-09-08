@@ -180,7 +180,10 @@ alone catches the mismatch class. Two rules when reading it: compare the
 same DOM tier (EDS/section wrappers are full-width by design and
 false-flag against live INNER containers), and fix upstream — re-lift the
 authored rule per `recreation-procedure.md` § Lift the sizing MODEL, don't
-nudge the px.
+nudge the px. Sample heights as well as widths, and take one extra sample
+at an intermediate width (1280 or 1680) when the live layout is fluid: a
+hero that scales with the viewport on live and is fixed-px on the prototype
+is identical at 1440 and visibly off at 1512 (recorded).
 
 ## Iteration discipline
 
@@ -253,6 +256,14 @@ lifted, capture unhardened), and the fix is upstream, not a fourth loop.
   populating grids, matching crops — before geometry work even starts.
   Budget accordingly: on a media-heavy page, image/media parity IS
   iteration 1's job; geometry starts at iteration 2.
+- **A pixel pass at the wrong metric is debt — spot-check base typography
+  against live computed styles once the gate passes.** An archetype shipped
+  16px card body text (live: 17.6px) and still passed at 5.24% because the
+  tuned spacing absorbed the size error; siblings with more text amplified
+  it into extra wraps and +80..250px heights (recorded). After the pass,
+  read body font-size/line-height per block on both sides (a computed-style
+  probe — build-side runs are free) and re-fit rhythm at the true metric.
+  Compensating spacing is the tell.
 
 ## Hardening rules (false-measurement traps)
 
@@ -448,6 +459,26 @@ published page — preview or live origin — as build. Judge the result in the
 published-origin regime (§ Pass bar, calibration honesty), not against
 prototype-regime numbers.
 
+Two rules for that final run:
+
+- **Re-probe live chrome metrics at deploy time — crawl captures are the
+  CONTENT source, live-now is the chrome/metrics source.** The live site
+  drifts between crawl and deploy (recorded, one day apart: header 141→106px,
+  footer links 13→16px/24px with new 24px column headings, a swapped
+  campaign hero). A deploy gated against crawl-time captures ships
+  yesterday's chrome. Immediately before the published-origin gate, re-run
+  the chrome probes (anchor + crop gate, computed styles of matched
+  header/footer elements) against the live origin, never the crawl
+  snapshot; mask live-content drift (campaign creatives, promo slots) out
+  of the fidelity number — it is authored content, not conversion fidelity.
+- **Budget ONE anchors-driven reconcile round at the published origin.** The
+  pipeline shifts vertical rhythm (section wrappers, `<p><picture>`,
+  fragment chrome): a gate-passed 8.4% prototype first published at 11.75%,
+  and two text-anchor rounds (anchor probe live-vs-published, patch section
+  paddings in block CSS, re-measure) brought it to 6.5% with exact anchor
+  parity (recorded). Treat the pre-publish harness number as provisional
+  and the reconcile round as expected work, not a regression.
+
 Recurring EDS pipeline transforms that move the number (each recorded;
 none visible on a local harness):
 
@@ -467,6 +498,11 @@ none visible on a local harness):
   params — size/ratio assumptions lifted from the authored URL don't
   survive; read dimensions from the delivered rendition, not the authored
   asset.
+- **Authored inner blocks may be FLATTENED to default content**, so a
+  selector written against the authored markup
+  (`.section:has(.some-block)`) can silently never match the delivered
+  page (recorded). Verify every `:has()` / block-class selector against the
+  delivered `.plain.html` and rendered DOM, not the authored file.
 
 ## Residual logging format
 
