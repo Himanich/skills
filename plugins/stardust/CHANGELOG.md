@@ -4,6 +4,14 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.21.1 — evals: criteria.json in the tessl `weighted_checklist` schema
+
+`tessl plugin publish` validates every `evals/*/criteria.json` against the registry schema
+(`context`, `type: "weighted_checklist"`, `checklist[{ name, max_score, description }]`); the
+plugin's evals used the runner's own `{ criteria[{ id, weight, description }], total }` shape, so
+0.20.0 and 0.21.0 both failed to publish. All eleven rubrics are converted (ids → `name`, weights →
+`max_score`); the runner normalises either shape (`normalizeCriteria`), so scoring is unchanged.
+
 ## 0.21.0 — AI readability: the checker formula, one gate, document-first listings
 
 Four migrations (a family-entertainment chain, a semiconductor company's replica, a UK
