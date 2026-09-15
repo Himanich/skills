@@ -37,7 +37,19 @@ contract` records it; `helix-query.yaml` at the EDS project root is authored fro
 
 ## Block contract
 
-Authored-empty → fetch the index, filter by the current path (category, author, tag), newest first,
-client-paged; authored-with-rows → preserve the curated listing verbatim. One block, two modes.
-Fallback rows always exist. **Verify.** Index rows equal the authored cards on the listing pages; a
-newly published page appears after publish.
+**Document-first.** The generator writes the listing INTO the document: for a flat listing one row
+per item carrying exactly the text the card shows (title link, date, category, address, excerpt);
+for a grouped listing a heading row per group, then its item rows; last, one label-list row (a
+`<ul>` of the block's UI strings — filter labels, "View details", empty-state copy). The block
+renders from rows and reads the index only for what is not text (images, coordinates) and to **top
+up** items published after the last write, newest first, client-paged. Re-runs of the generator
+recognise their own rows (a link into the listed template set, or the label list) and replace them,
+so an index change is a re-run, never a merge. Curated authored rows are preserved verbatim.
+
+Why: served words ÷ rendered words is what Adobe's readability checker scores and what non-rendering
+crawlers read — a block that builds 65 cards from the index leaves ~850 words out of the document and
+halves the page's score (`deploy/reference/ai-readability.md`). Index-only rendering is right for
+thousands of items or per-user results; such a page needs an authored summary in the document.
+
+**Verify.** Authored rows equal the index on the listing pages; a newly published page appears after
+publish (top-up); the AI-readability gate reads ≥ 98 on every listing page.

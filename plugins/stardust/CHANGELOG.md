@@ -4,6 +4,43 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.21.0 — AI readability: the checker formula, one gate, document-first listings
+
+Four migrations (a family-entertainment chain, a semiconductor company's replica, a UK
+package-holiday retailer, a beverage brand pilot) were scored 40–58 % by Adobe's "AI Content
+Visibility Checker" while every stardust gate was green. Each session reverse-engineered a
+different model of the tool — served-text parity, hidden text, markdown line diff — and each spent
+a round on a fix the score did not reward (inlining nav/footer into 143 documents; clipping instead
+of hiding; unwrapping generated anchors). The extension's own analyzer code settles it:
+**score = min(100, served words ÷ rendered-DOM words)**, landmarks stripped by default, hidden text
+counted as rendered, a count ratio and not a word-set diff. Reproduced to the word on one site.
+
+- **New reference `deploy/reference/ai-readability.md`** (on demand): the formula and its
+  consequences (what JS adds to the DOM is the whole defect; hidden text, chrome and generated
+  anchors are neutral; served-only text inflates; short pages suffer most), the two metrics kept
+  apart (checker score vs served-text parity), a cause-class table with remediation (loop clones,
+  index-fed cards, runtime fragments, definition-driven forms, generated labels), six block rules,
+  chrome inlining as a documented option with its trade-off, and the gate contract.
+- **New gate `deploy/scripts/ai-readability.mjs`**: exact reimplementation, both toggles, `code`
+  score (fragments credited, app blocks excluded), per-block served-gap attribution, allowlist by
+  block + string, JSON report, exit 1 below `--min` (98). Runs in the deploy atomic delivery
+  contract on the published page, as the new `qa` check `ai-readability` (K), and in `audit`
+  Phase 4.
+- **Block rule (deploy, always-on, one bullet): `decorate()` adds no words to the DOM** — clones
+  presentational, listings document-first, generated text only for allowlisted runtime values.
+  The D12 key-facts paragraph shrinks to a one-liner that points at the reference (net always-on
+  growth ≈ 0).
+- **Listings contract rewritten (`dynamics/reference/listings.md`)**: document-first — one authored
+  row per item with the card's text, a heading row per group, a label-list row; the block uses the
+  index for non-text fields and top-up; re-runs replace their own rows. Dynamics Phase 4 and
+  rollout D2 point at it.
+- **Replica**: loop clones carry no text/alt/href/aria (`recreation-procedure.md`).
+- **Eval `evals/ai-readability/`**: clones, document-first listing, explicit fragment decision, no
+  generated text, gate reported, checker facts stated correctly.
+- Not adopted, on evidence: clip-instead-of-hide rules (hidden text is neutral), inlining nav/footer
+  into every document as a default (does not move the default score; two of three owners declined),
+  CSS-stretched links *for the score* (kept as the accessible-name shape only).
+
 ## 0.20.0 — dynamics: the dynamic surface of a migration
 
 Three real migrations (a US health insurer's employers section rebuilt greenfield, a UK

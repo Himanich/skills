@@ -69,7 +69,9 @@ under `stardust/qa/shots/`, and (first run) visual baselines under
 `stardust/qa/baselines/`. Exit 0 = no active errors, 1 = active errors,
 2 = infra failure. `reference/checks.md` documents every check, its finding
 ids, and severity rationale. Useful variants: `--checks <subset>`,
-`--max-pages <n>` (smoke run), `--fail-on warn` (strict gate).
+`--max-pages <n>` (smoke run), `--fail-on warn` (strict gate). The `ai-readability` check
+reproduces Adobe's AI Content Visibility Checker per page (served words ÷ rendered words) and
+attributes the gap per block (`deploy/reference/ai-readability.md`).
 
 The `editability` check is the post-deploy **Experience Workspace
 editability gate** (deploy SKILL.md § 8, EW1–EW10): per page it re-creates

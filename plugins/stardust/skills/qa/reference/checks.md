@@ -164,6 +164,20 @@ counted under `exempt` in the summary and never raise `dead-text`. Desktop
 viewport only (instrumentation is viewport-independent); `--max-pages` applies;
 needs playwright like `browse`.
 
+## ai-readability (K, browser + raw fetch — Adobe AI Content Visibility Checker, exact formula)
+
+Per page: served HTML (ChatGPT-User UA, no JS) vs the rendered DOM as textContent; landmarks
+stripped by default. `strict` = the tool's popup number; `code` = fragments credited + app blocks
+excluded (`--ai-exclude-blocks`, default `client-app,widget`); `servedGap` = rendered words absent
+from the served HTML, per block. Formula, cause classes and fixes: `deploy/reference/ai-readability.md`.
+
+| id | sev | what |
+|---|---|---|
+| `ai-readability-poor` | error | strict < 75 — the owner's gauge reads Fair/Poor; the rendered DOM carries hundreds of words the document lacks (clones, index cards, fragments) |
+| `ai-readability-low` | warn | strict < 95 or code < 98 — block code adds words the document does not have |
+| `ai-readability-served-gap` | info | ≥ 40 rendered main words never served — non-rendering crawlers miss them (fragment / index / generated text); evidence names the blocks |
+| `ai-readability-unmeasured` | info | page could not be fetched or rendered for the check |
+
 ## Cross-cutting
 
 - `<check>/check-crashed` (error) — a check module threw; the sweep continues

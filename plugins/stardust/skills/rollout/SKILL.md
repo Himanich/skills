@@ -216,6 +216,8 @@ Query indexes build from the **published** tree — publish per page in Phase C,
 Each feature ends with a parity row in `stardust/dynamics/parity.json` carrying a replayable check;
 `dynamics-check.mjs --origin <live host>` runs before Phase H and the report carries its table.
 Failed replays are `dynamic-gap` / `api-dependency` learnings, never silent passes.
+Index-backed listings ship **document-first** (authored rows, index for non-text and top-up —
+`dynamics/reference/listings.md`); the deploy AI-readability gate runs on every listing page.
 
 ### Phase D3 — Multilingual (per-language trees) — optional
 
