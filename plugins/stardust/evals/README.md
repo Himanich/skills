@@ -67,9 +67,10 @@ Each eval lives in its own directory and contains exactly two files:
 
 - `task.md` — Setup, User prompt, Expected behavior. Human-readable
   scenario specification.
-- `criteria.json` — Weighted scoring rubric. Each criterion has an
-  `id`, a `weight`, and a `description`. `total` should equal the
-  sum of weights. Used by the eval runner to score the agent's
+- `criteria.json` — Weighted scoring rubric in the tessl `weighted_checklist`
+  schema (`tessl plugin publish` validates it): `context`, `type`, and a
+  `checklist` of `{ name, max_score, description }`. The runner reads `name` as
+  the criterion id and `max_score` as its weight; the total is the sum. Used by the eval runner to score the agent's
   output.
 
 This format mirrors v1's structure (and the format other Adobe-skills
