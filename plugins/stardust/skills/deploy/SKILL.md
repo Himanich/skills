@@ -90,7 +90,7 @@ The content payload is a **body fragment** (see Step 9). The deploy needs the **
 
 **A `.plain.html` pass is NOT a layout pass — add one computed-style assertion (#the silent-failure guard).** The text-level asserts above are all satisfied while the page renders as a single stacked column, because a block-CSS scoping mistake (a selector keyed to a wrapper class the target runtime doesn't emit — see `blockWrapperClass` in the runtime contract) makes every grid fall back to `display: block` *with the typography still correct*. This shipped green on a real e2e site. So the contract's final gate is a **headless computed-style check on the delivered live URL** (not `.plain.html`): load the page in a headless browser and assert, for the first page of each template, that every block whose CSS declares a grid/flex layout **computes `display: grid`/`flex` (not `block`)**, `main .section` count > 0, blocks are decorated (`data-block-name` present), zero `pageerror`, zero broken images — **and every visible loaded image renders non-zero: `clientWidth > 0` (#122)**. Loaded ≠ rendered: an `<img>` with `naturalWidth > 0` can still render 0×0 (recorded: a flex item whose width derives from the image while the image's `max-width: 100%` derives from the item — circular sizing collapses to zero), and both the `.plain.html` checks and a `naturalWidth === 0` broken-image probe miss it. A block that should grid but computes `block` fails the page — do not flip it to `deployed`. This is the assertion `blockWrapperClass` in the runtime contract calls for; the atomic contract is where it must actually run, once per template. Two field-decodes worth pinning: a **burst of `PUT` 400s is a malformed path, not rate limiting** — lowercase every segment, never a double slash (`content//…` 400s the PUT while preview/live still 200), no trailing `-`/`_` on a segment; and **write long loops to a bash script file with absolute binary paths** (`/usr/bin/curl`, the full `node` path) — zsh drops PATH inside `while`/`for` in some contexts, and the resulting `command not found` burst mimics a transport failure.
 
-**Token hygiene (#16).** The IMS token typically lives in repo `.env` as `DA_TOKEN`. Before the first commit, make sure `.gitignore` excludes `.env`, `.env.*`, and `qa/` (the local QA harness) **on the branch you'll branch tests from** — otherwise every test subbranch re-exposes the token. Keep `samples/` out of commits too. Dev tokens last ~24h; a `401` with an empty body means expired → refresh and retry (the write is idempotent).
+**Token hygiene (#16).** The IMS token typically lives in repo `.env` as `DA_TOKEN`. Before the first commit, make sure `.gitignore` excludes `.env` and `.env.*` **on the branch you'll branch tests from** — otherwise every test subbranch re-exposes the token (the master skill's Setup step 6 writes the managed block; the local harness and pre-renders live under `stardust/.work/`, which `stardust/.gitignore` already excludes). Dev tokens last ~24h; a `401` with an empty body means expired → refresh and retry (the write is idempotent).
 
 **DA_TOKEN lifecycle — preflight and re-check, never fail pages on it.** At setup, preflight the token: decode the JWT `exp` claim when present (base64-decode the middle segment) and smoke-test ONE authenticated DA call before any batch. **Re-check before each long batch** — a token fresh at setup can expire mid-run. On a `401` mid-batch: checkpoint the ledger (the batch driver's persistent ledger already records per-page state), stop the batch, and halt with a single actionable instruction — "DA_TOKEN expired; refresh it in `.env` and re-run the same command (the ledger skips delivered pages)" — instead of letting every remaining page fail red. Token expiry is the one credential failure the agent cannot self-recover; it is a legitimate hard stop even in a hands-off run.
 
@@ -194,7 +194,7 @@ A FOUC is possible (head paints as default content, then reabsorbs); the final l
 # 2. load in Playwright (React/babel load from unpkg — needs internet), wait for
 #    mount, capture #root's innerHTML, save it for the block agents to read:
 #    page.goto('http://localhost:8765/<file>.html'); waitForTimeout(4000);
-#    fs.writeFileSync('samples/<proto>/_rendered.html', root.innerHTML)
+#    fs.writeFileSync('stardust/.work/prerender/<proto>.html', root.innerHTML)   # never write into samples/ (user input)
 ```
 From there it converts like an external-CSS prototype (semantic classes + the prototype's `.css`). If it's `<x-dc>` document-content, the sections are still `<section>`/`<div>` elements; just expect inline `style="…"` instead of a `<style>` block. The rest of this skill assumes a static `<main>` exists.
 
@@ -753,7 +753,7 @@ The hard property of stardust output: **any text an author wrote in a DA documen
 # harness mode — no server, same technique as block-roundtrip
 node skills/deploy/scripts/ew-editability-probe.mjs --content content/<page>.html --verbose --simulate-editor
 # URL mode — a served page (dev server, preview origin); --blocks-dir lets it read @ew-exempt tags
-node skills/deploy/scripts/ew-editability-probe.mjs http://localhost:3000/qa/page.html --blocks-dir blocks --verbose --simulate-editor
+node skills/deploy/scripts/ew-editability-probe.mjs http://localhost:3000/stardust/.work/harness/page.html --blocks-dir blocks --verbose --simulate-editor
 ```
 
 Exit 0 = every non-exempt authored text editable, no duplicates; 1 = dead/duplicated; 2 = probe error. Fix by moving the offending element (EW1) or the offending selector to wrapper-descendant form (EW2) — never by weakening the gate. Corollary the two external write-ups missed: `cloneNode(true)` is *not* what kills editing (the clone carries the attribute — that is why clone-based blocks worked while `textContent`-based ones did not); cloning is still wrong (duplicates, stale identity), but the fix is "move", not "avoid clone".
@@ -901,10 +901,10 @@ npx -y @adobe/aem-cli up --no-open &
 # 2. harness — use the committed helper (do NOT hand-roll the metadata strip, #46):
 #    it removes the metadata block by balanced tag-counting and rewrites absolute
 #    /img/ URLs to root-relative (#43), then emits the full harness doc.
-node skills/deploy/scripts/build-harness.mjs content/<path>.html qa/page.html   # qa/ is gitignored
+node skills/deploy/scripts/build-harness.mjs content/<path>.html stardust/.work/harness/page.html   # .work/ is gitignored via stardust/.gitignore
 ```
 
-Open `http://localhost:3000/qa/page.html` — `scripts.js` runs `loadPage()` (which adds `body.appear`, decorates, and loads sections), blocks load from the code origin, chrome loads via the `header`/`footer` blocks fetching `/nav` and `/footer`. Screenshot / inspect with headless Chrome (`--virtual-time-budget=9000 --screenshot` / `--dump-dom`) or Playwright.
+Open `http://localhost:3000/stardust/.work/harness/page.html` — `scripts.js` runs `loadPage()` (which adds `body.appear`, decorates, and loads sections), blocks load from the code origin, chrome loads via the `header`/`footer` blocks fetching `/nav` and `/footer`. Screenshot / inspect with headless Chrome (`--virtual-time-budget=9000 --screenshot` / `--dump-dom`) or Playwright.
 
 **Before any DA push, run the whole-page round-trip gate (#94)** — `block-roundtrip.mjs` with no `--blocks` (all blocks, DA-free): it catches cross-block drops a per-block run can miss (a section head absorbed by the wrong block, an instance-count mismatch between authored blocks and prototype sections). Its `--ew` pass (default on) is the whole-page **Experience Workspace editability gate**: 0 dead texts outside declared `@ew-exempt`, 0 duplicated indices.
 
@@ -915,7 +915,7 @@ Open `http://localhost:3000/qa/page.html` — `scripts.js` runs `loadPage()` (wh
 **Then run the stock QA gate — do NOT hand-roll a probe script (#101):**
 
 ```bash
-node skills/deploy/scripts/qa-gate.mjs http://localhost:3000/qa/page.html \
+node skills/deploy/scripts/qa-gate.mjs http://localhost:3000/stardust/.work/harness/page.html \
      --schema stardust/eds-schema/<page>.json     # exit 0 required
 ```
 

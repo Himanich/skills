@@ -34,7 +34,7 @@
  *     --json             machine-readable output
  *
  * Example:
- *   node scripts/replica/chrome-parity.mjs "https://<site>/" "http://localhost:8791/home-proposed.html" \
+ *   node stardust/scripts/replica/chrome-parity.mjs "https://<site>/" "http://localhost:8791/home-proposed.html" \
  *     --region header=header --region strip=".quick-links|.quicklinks" --region footer=footer
  *
  * Output per region: the region box delta, then one line per paired element

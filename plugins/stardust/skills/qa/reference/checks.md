@@ -84,7 +84,7 @@ Flows, not presence — each check replays a user-visible flow through `skills/d
 
 | id | sev | what |
 |---|---|---|
-| `baseline-created` | info | first run — screenshot saved as baseline (commit it) |
+| `baseline-created` | info | first run on this machine — screenshot saved as baseline (local, not tracked; a clone re-creates it) |
 | `visual-diff` | warn >0.5% / error >5% *(triage)* | pixels changed vs baseline; evidence: both PNG paths + per-band ratios. Iframes are masked; judge warn-level diffs before calling them regressions |
 | `page-height-changed` | warn | full-page height moved >2% |
 | `screenshot-failed` | warn | capture failed |

@@ -83,8 +83,11 @@ the author cannot click it in the canvas; `editability/duplicated-index`
 declared `@ew-exempt` (or listed in `--ew-exempt`) are info, not errors.
 
 First run on a site: expect a wave of `visual/baseline-created` info findings —
-that is the baseline being established, not a defect. Baselines should be
-committed to the workspace repo so later runs diff against an approved state.
+that is the baseline being established, not a defect. Baselines are
+screenshots and therefore local (`stardust/.gitignore` excludes
+`qa/baselines/` and `qa/shots/`, master skill § Artifacts): later runs on the
+same machine diff against them; a fresh clone re-establishes them on its
+first sweep. `qa/allowlist.json` is the tracked record of judgement.
 
 ### Phase 2 — triage the ambiguous flags (LLM judgment, still read-only)
 

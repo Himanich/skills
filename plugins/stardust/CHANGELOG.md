@@ -4,6 +4,18 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.22.0 — stardust owns `stardust/`: write boundary and versioning policy
+
+Field projects answered "what do I commit" by hand, each differently; one lost its state machine
+to a bare `state.json` exclude. Now: stardust writes only to `stardust/`, the impeccable root files
+and the EDS project (via deploy / rollout / dynamics); run-only files go under `stardust/.work/`.
+Three leaks fixed (replica's script copies left the boilerplate `scripts/`, deploy's harness left
+root `qa/`, deploy's pre-render left `samples/`). New Setup step 6 installs `stardust/.gitignore`
+(everything tracked except screenshots, `current/assets/`, `replica/gates/`, `migrated/assets/`,
+`rollout/qa/`, `.work/`, run residue, session state), covers `.env`, lists `stardust/` in
+`.hlxignore`, asserts `state.json` is not ignored, offers LFS above 50 MB. State report gains a
+`Repo:` block; artifact-map gains § Versioning; qa baselines are local.
+
 ## 0.21.1 — evals: criteria.json in the tessl `weighted_checklist` schema
 
 `tessl plugin publish` validates every `evals/*/criteria.json` against the registry schema

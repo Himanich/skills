@@ -46,18 +46,18 @@ GATE="stardust/replica/gates/<slug>-$W"
 
 # 1. structural — --dismiss keeps consent + timed marketing modals out of the
 #    inventory on both sides; add extra selectors for non-standard closers
-node scripts/diff/content-diff.mjs "$LIVE" "$PROTO" --profile generic --width $W \
+node stardust/scripts/diff/content-diff.mjs "$LIVE" "$PROTO" --profile generic --width $W \
   --main "<content-root>" --dismiss | tee "$GATE/content-diff-iter<N>.txt"
 
 # 2. visual heuristics — --main is a real flag here too (live sites often
 #    have no <main>; without it both sides false-flag BLANK RENDER)
-node scripts/diff/visual-diff.mjs "$LIVE" "$PROTO" --profile generic --width $W \
+node stardust/scripts/diff/visual-diff.mjs "$LIVE" "$PROTO" --profile generic --width $W \
   --main "<content-root>" --dismiss --out "$GATE/vdiff" | tee "$GATE/visual-diff-iter<N>.txt"
 
 # 3. pixel — stitched captures on BOTH sides (never fullPage:true)
-node scripts/replica/stitch-shot.mjs "$LIVE"  "$GATE/live.png"  --width $W --settle
-node scripts/replica/stitch-shot.mjs "$PROTO" "$GATE/proto.png" --width $W
-node scripts/replica/pixel-compare.mjs "$GATE/live.png" "$GATE/proto.png" \
+node stardust/scripts/replica/stitch-shot.mjs "$LIVE"  "$GATE/live.png"  --width $W --settle
+node stardust/scripts/replica/stitch-shot.mjs "$PROTO" "$GATE/proto.png" --width $W
+node stardust/scripts/replica/pixel-compare.mjs "$GATE/live.png" "$GATE/proto.png" \
   --out "$GATE/diff-iter<N>.png" --threshold 10
 ```
 
@@ -99,9 +99,9 @@ The prototype capture is re-taken every iteration.
    captures the pixel probe used — no extra live hit:
 
    ```bash
-   node scripts/replica/crop-compare.mjs "$GATE/live.png" "$GATE/proto.png" \
+   node stardust/scripts/replica/crop-compare.mjs "$GATE/live.png" "$GATE/proto.png" \
      --y 0 --height <nav-height> --out "$GATE/chrome-header-diff.png"
-   node scripts/replica/crop-compare.mjs "$GATE/live.png" "$GATE/proto.png" \
+   node stardust/scripts/replica/crop-compare.mjs "$GATE/live.png" "$GATE/proto.png" \
      --y <liveDocH - footerH> --y-b <protoDocH - footerH> --height <footerH> \
      --out "$GATE/chrome-footer-diff.png"
    ```
@@ -129,7 +129,7 @@ The prototype capture is re-taken every iteration.
    sides as the round's evidence.
 
    ```bash
-   node scripts/replica/chrome-parity.mjs "$LIVE" "$PROTO" --width $W \
+   node stardust/scripts/replica/chrome-parity.mjs "$LIVE" "$PROTO" --width $W \
      --region header=header --region footer=footer   # + --region strip=<sel>|<sel>
    ```
 
@@ -208,8 +208,8 @@ at.** `../scripts/anchor.mjs` prints `[y, height]` per top-level section
 (+ footer + doc height), same shape on both sides:
 
 ```bash
-node scripts/replica/anchor.mjs "$LIVE"  --width $W   # once per fix round at most (live hit)
-node scripts/replica/anchor.mjs "$PROTO" --width $W   # free — build-side only
+node stardust/scripts/replica/anchor.mjs "$LIVE"  --width $W   # once per fix round at most (live hit)
+node stardust/scripts/replica/anchor.mjs "$PROTO" --width $W   # free — build-side only
 ```
 
 Diff the two outputs, fix the FIRST section whose `[y, height]` disagrees
@@ -231,7 +231,7 @@ runs over the same stitched PNGs — no live hit):**
 - **Column scan for layout boundaries.** Before editing CSS to fix a section
   height, photo height, band start or card overlap, read the per-column
   class transitions (white / dark / brand / photo at N x positions) on the
-  capture: `node scripts/replica/row-profile.mjs live.png proto.png
+  capture: `node stardust/scripts/replica/row-profile.mjs live.png proto.png
   --columns 7`. Recorded: a stacked-crop visual read suggested a 415px photo
   with a white band under it; the scan of the same capture proved the photo
   full-bleed to 499px with the "white band" being an overlapping card — the
@@ -500,11 +500,11 @@ scripts expose it as flags:
 
 ```bash
 # content-diff against a live source: no source edits, flags only
-node scripts/diff/content-diff.mjs "$LIVE" "$PROTO" --profile generic \
+node stardust/scripts/diff/content-diff.mjs "$LIVE" "$PROTO" --profile generic \
   --width 1440 --main "<content-root>" --dismiss
 
 # visual-diff: --main is a real flag (rule 3), same live hardening
-node scripts/diff/visual-diff.mjs "$LIVE" "$PROTO" --profile generic \
+node stardust/scripts/diff/visual-diff.mjs "$LIVE" "$PROTO" --profile generic \
   --width 1440 --main "<content-root>" --dismiss
 
 # non-standard overlay closer / pinned locale / bot-managed site:
