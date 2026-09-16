@@ -47,6 +47,14 @@ sub-commands that delegate the actual design work to **impeccable**.
 5. **Status ledger.** Every stardust skill appends a phase-transition line
    to `stardust/status.jsonl` at each phase start/end, per
    `reference/run-status.md`.
+6. **Project hygiene** (idempotent). Write `stardust/.gitignore` from
+   `reference/stardust.gitignore` if absent; never edit a project's copy.
+   In a git repo: root `.gitignore` covers `.env` / `.env.*` (managed
+   `# >>> stardust` block), `.hlxignore` if present lists `stardust/`, and
+   `git check-ignore -q stardust/state.json` must fail — if it passes,
+   stop and name the rule. Offer, never write, LFS above 50 MB of tracked
+   binaries under `stardust/`. Details in `reference/artifact-map.md`
+   § Versioning.
 
 ## Routing
 
@@ -159,13 +167,10 @@ otherwise):
   representative spread of detail pages across all templates. State
   the chosen caps in `direction.md`.
 - **Commit at the end of each phase** when the project is a git repo.
-  Before the FIRST such commit, run the token-hygiene check that
-  `deploy` § Token hygiene (#16) specifies: `.gitignore` must cover
-  `.env`, `.env.*`, and `qa/` **before** anything is committed — in
-  the happy path the first commit lands at the end of the audit
-  phase, long before deploy's SKILL.md is ever read, and a tracked
-  `.env` poisons every later push (stardust-style e2e finding: GH013
-  push rejection + history rewrite at deploy time).
+  Before the FIRST such commit, re-run Setup step 6 — the first commit
+  lands at the end of the audit phase, long before deploy's SKILL.md is
+  read, and a tracked `.env` poisons every later push (GH013 + history
+  rewrite at deploy time).
 
 **Hard blockers remain stops.** An unreachable source site, an
 expired `DA_TOKEN` that cannot be recovered, or a signal-absent brand
@@ -211,6 +216,20 @@ Stardust state lives under `stardust/`. Impeccable's `PRODUCT.md` /
 `DESIGN.md` / `DESIGN.json` live at the project root and represent the
 *target* state. The current (extracted) state lives under
 `stardust/current/`. Full layout in `reference/artifact-map.md`.
+
+**Write boundary.** Stardust writes to `stardust/`, the impeccable target
+files at the project root, and the EDS project (only via `deploy`,
+`rollout`, `dynamics`). Run-only files — logs, harness page, pre-renders,
+script copies, drafts — go under `stardust/.work/<skill>/`; the root
+`scripts/` and `qa/` are not stardust's. Anything written elsewhere is a
+bug in that skill.
+
+**Versioning.** Everything under `stardust/` is committed except what
+`reference/stardust.gitignore` lists: screenshots, four heavy folders
+(`current/assets/`, `replica/gates/`, `migrated/assets/`, `rollout/qa/`),
+`.work/`, run residue, session state. Per-directory table and what a clone
+without `current/assets/` can and cannot do: `reference/artifact-map.md`
+§ Versioning.
 
 ## Provenance
 
@@ -303,7 +322,8 @@ motion gate cascade).
 - `reference/intent-examples.md` — worked examples (8-12) of the reasoning style.
 - `reference/impeccable-command-map.md` — when to reach for each of the 23 impeccable commands.
 - `reference/state-machine.md` — page lifecycle, stale rules, state report format.
-- `reference/artifact-map.md` — every file stardust reads or writes, with ownership and provenance shape.
+- `reference/artifact-map.md` — every file stardust reads or writes, with ownership, provenance shape and (§ Versioning) what is tracked.
+- `reference/stardust.gitignore` — installed as `stardust/.gitignore` by Setup step 6.
 - `reference/divergence-toolkit.md` — anti-mediocrity device. Default-moves list, deterministic seed, font decks, role-naming rule. Consumed by `direct` (when authoring target tokens) and `prototype` (when generating variants).
 - `reference/token-contract.md` — `:root` CSS custom-property contract every prototype and migrated page must expose. The token interface between stardust and any downstream consumer.
 - `reference/data-attributes.md` — structural `data-*` vocabulary applied to sections in every prototype and migrated page. The structural lingua franca between stardust sub-commands and downstream tools.

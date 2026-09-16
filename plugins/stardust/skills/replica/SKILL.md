@@ -52,11 +52,14 @@ eyeballing.
 4. Copy scripts into the project and run them from there, not from the
    plugin: this skill's whole `scripts/` dir (stitch-shot, pixel-compare,
    crop-compare, chrome-parity, row-profile, sibling-variance, anchor,
-   gate.sh, motion-observe) AND the whole `../diff/scripts/` dir (the diff scripts import
-   diff-profiles.mjs, and ALL live-target hardening — including
+   gate.sh, motion-observe) to `stardust/scripts/replica/` AND the whole
+   `../diff/scripts/` dir to `stardust/scripts/diff/` (the diff scripts
+   import diff-profiles.mjs, and ALL live-target hardening — including
    stitch-shot's — lives in its live-session.mjs; stitch-shot resolves it
-   from `scripts/diff/` next to `scripts/replica/`, so keep the two dirs
-   siblings).
+   from `stardust/scripts/diff/` next to `stardust/scripts/replica/`, so
+   keep the two dirs siblings). Never copy into the project-root
+   `scripts/` — that is the EDS boilerplate's directory (master skill
+   § Artifacts, the write boundary).
 
 ## Procedure
 
@@ -195,20 +198,20 @@ LIVE="https://<site>/<path>"
 
 # Probe 1+2 — the diff skill's two probes, generic profile (--dismiss keeps
 # consent + timed marketing modals out of both inventories)
-node scripts/diff/content-diff.mjs "$LIVE" "$PROTO" --profile generic --width 1440 --main "<content-root>" --dismiss
-node scripts/diff/visual-diff.mjs  "$LIVE" "$PROTO" --profile generic --width 1440 --main "<content-root>" --dismiss
+node stardust/scripts/diff/content-diff.mjs "$LIVE" "$PROTO" --profile generic --width 1440 --main "<content-root>" --dismiss
+node stardust/scripts/diff/visual-diff.mjs  "$LIVE" "$PROTO" --profile generic --width 1440 --main "<content-root>" --dismiss
 
 # Probe 3 — replica's pixel probe (stitched captures, NEVER fullPage:true)
-node scripts/replica/stitch-shot.mjs "$LIVE"  stardust/replica/gates/<slug>-1440/live.png  --width 1440 --settle
-node scripts/replica/stitch-shot.mjs "$PROTO" stardust/replica/gates/<slug>-1440/proto.png --width 1440
-node scripts/replica/pixel-compare.mjs stardust/replica/gates/<slug>-1440/live.png \
+node stardust/scripts/replica/stitch-shot.mjs "$LIVE"  stardust/replica/gates/<slug>-1440/live.png  --width 1440 --settle
+node stardust/scripts/replica/stitch-shot.mjs "$PROTO" stardust/replica/gates/<slug>-1440/proto.png --width 1440
+node stardust/scripts/replica/pixel-compare.mjs stardust/replica/gates/<slug>-1440/live.png \
   stardust/replica/gates/<slug>-1440/proto.png --out stardust/replica/gates/<slug>-1440/diff.png
 
 # Iteration inner loop (gate doc § Band breakdown): anchor probe + pixel round
-node scripts/replica/anchor.mjs "$PROTO" --width 1440   # build-side runs are free
+node stardust/scripts/replica/anchor.mjs "$PROTO" --width 1440   # build-side runs are free
 # Chrome: computed-style parity BEFORE any pixel round on header/footer/strips
-node scripts/replica/chrome-parity.mjs "$LIVE" "$PROTO" --width 1440   # exit 0 = quiet, then crop-compare
-scripts/replica/gate.sh <slug> "$LIVE" "$PROTO" 1440 iter2
+node stardust/scripts/replica/chrome-parity.mjs "$LIVE" "$PROTO" --width 1440   # exit 0 = quiet, then crop-compare
+stardust/scripts/replica/gate.sh <slug> "$LIVE" "$PROTO" 1440 iter2
 ```
 
 **Pass bar (all four, per breakpoint):**
@@ -257,7 +260,7 @@ output per archetype — not a post-pass**
 (`reference/recreation-procedure.md` § Interaction parity; optional, it was
 skipped on 5 of 7 archetypes — all shipped static). Motion is OBSERVED,
 never inferred from static classes or CSS: run
-`scripts/replica/motion-observe.mjs` per archetype live URL →
+`stardust/scripts/replica/motion-observe.mjs` per archetype live URL →
 `stardust/replica/motion/<slug>.json`, implement ONLY behaviors that
 fired (dead classes = NOT implemented), record
 `motion: {observed, implemented, dead[]}` in `progress.json`, and re-run
@@ -276,7 +279,7 @@ approval per the standard prototype approval flow (hands-off mode records
   clone of the gated archetype + content-fidelity + delivery-lint +
   media-reconcile. Siblings inherit the archetype's source-fidelity gate —
   never re-author one from scratch. **Template constancy is measured, not
-  assumed**: before cloning, run `scripts/replica/sibling-variance.mjs
+  assumed**: before cloning, run `stardust/scripts/replica/sibling-variance.mjs
   <archetype> <siblings…> --probe <block>=<sel> …` once per template and
   budget every delta as a block VARIANT class on the sibling's content (same
   file, § Sibling variance probe). Content-fidelity is
