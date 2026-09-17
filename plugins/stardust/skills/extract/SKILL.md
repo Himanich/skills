@@ -418,13 +418,20 @@ defining intent here, the agent is describing the existing site. Write
 them directly using impeccable's format specs:
 
 - For PRODUCT.md, follow the section structure in impeccable's
-  `reference/teach.md`. Populate `Register` from the brand surface
-  (sites that read as marketing/landing → `brand`; tools/dashboards →
-  `product`; ambiguous → `brand` with a note). Populate `Users`,
-  `Product Purpose`, `Brand Personality`, `Anti-references`, and
-  `Design Principles` from the captured copy and the brand surface.
-  Where the agent must infer, mark the section with `_provenance:
-  inferred` and a one-line basis sentence.
+  `reference/init.md` § Write PRODUCT.md: `# Product`, the
+  `<!-- impeccable:product-schema 1 -->` comment verbatim, then
+  `Platform` (`web`), `Users`, `Product Purpose`, `Positioning`,
+  `Capabilities and Constraints`, `Brand Commitments`, `Evidence on
+  Hand`, `Product Principles`, `Accessibility & Inclusion`; omit a
+  section rather than pad it. Under `Brand Commitments` record the
+  register guess from the brand surface (sites that read as
+  marketing/landing → `brand`; tools/dashboards → `product`; ambiguous
+  → `brand` with a note), the observed brand personality and the
+  observed anti-references. `Evidence on Hand` lists what was captured
+  under `stardust/current/` with paths. Populate `Users`, `Product
+  Purpose`, `Positioning` and `Product Principles` from the captured
+  copy and the brand surface. Where the agent must infer, mark the
+  section with `_provenance: inferred` and a one-line basis sentence.
 - For DESIGN.md and DESIGN.json, follow the format spec in
   impeccable's `reference/document.md`. Populate frontmatter
   (`colors`, `typography`, `rounded`, `spacing`, `components`) from
@@ -432,8 +439,8 @@ them directly using impeccable's format specs:
   v1's `componentStyle`, `motifs`, and `voice` arrays so nothing is
   lost.
 
-Stardust does **not** invoke `$impeccable teach` or `$impeccable
-document` for the current-state files: those commands write to project
+Stardust does **not** invoke `$impeccable init` (formerly `teach`) or
+`$impeccable document` for the current-state files: those commands write to project
 root (the *target*) and run an interview. Stardust authors the
 descriptive snapshot directly. The format spec from impeccable is the
 contract; the runtime command is not.
