@@ -63,7 +63,7 @@ echo "## 2. bare-name load" >> "$LOG"; echo '```' >> "$LOG"; echo "$R2" | tail -
 echo "$R2" | command grep -q 'SKILL_LOAD extract=ok'; check $? "skill(extract) loads by bare name"
 
 # 3. master skill setup
-R3="$(cp_run -p "Use the stardust skill. Perform ONLY its 'Setup' section (the numbered steps before 'Routing') and then stop; do not route, do not extract, do not ask me anything. For each step report the command you ran and its outcome. Finish with one line exactly: STARDUST_SMOKE impeccable=<found|missing> setup_failures=<number of steps that failed because a file or command did not exist>." --allow-all-tools 2>&1)"
+R3="$(cp_run -p "Use the stardust skill. Perform ONLY its 'Setup' section (the numbered steps before 'Routing') and then stop; do not route, do not extract, do not ask me anything. For each step report the command you ran and its outcome. Finish with one line exactly: STARDUST_SMOKE impeccable=<found|missing> setup_failures=<number of steps that failed because a file, script or command that the skill itself references (in the plugin or in impeccable) did not exist>. Project files that are legitimately absent in a fresh project (PRODUCT.md, DESIGN.md, stardust/state.json, stardust/status.jsonl) are expected and do not count as failures." --allow-all-tools 2>&1)"
 echo "## 3. master setup" >> "$LOG"; echo '```' >> "$LOG"; echo "$R3" | tail -40 >> "$LOG"; echo '```' >> "$LOG"
 echo "$R3" | command grep -q 'STARDUST_SMOKE impeccable=found'; check $? "setup: impeccable found"
 echo "$R3" | command grep -q 'setup_failures=0'; check $? "setup: no missing file or command"
