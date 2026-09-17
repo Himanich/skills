@@ -338,3 +338,10 @@ Grounded on 2026-09-17 counts. "Tier 1" is plugin install with no repo change
 - Renaming skills to `stardust-*` for flat namespaces: changes every Claude Code invocation; only worth it if the whole marketplace adopts a prefix convention.
 - Moving `evals/` and `notes/` out of the installed payload: 600 KB, no behavioural effect.
 - Anything generated per harness.
+
+## 9. Validation record (2026-09-17)
+
+- **Copilot CLI 1.0.85 smoke** (`evals/copilot-smoke/run.sh --plugin-dir`): 5/5 on the PR stack. Skill listing, bare-name load, master Setup with impeccable found, no missing plugin file, no call to the removed loader. First attempt scored 4/5 because the prompt let the model count an empty project's absent `PRODUCT.md` as a failure; the prompt now excludes absent project state.
+- **Claude Code evals** (`evals/runner`, baseline `main` vs the stack): direct-from-phrase N=3 vs N=3, ten stable criteria 3/3 on both sides, the two documented-noisy criteria 1/3 → 0/3 with the same failure mechanism as the baseline's own failing runs. extract-multipage N=1 vs N=1, 12/13 equal; `provenance_stamped` regressed because the new PRODUCT.md instruction displaced stardust's provenance block, fixed in the stack and rerun. Details and tables in `evals/BASELINE.md`.
+- **Static**: `npm run validate` and the new harness-neutral lint pass on every branch of the stack.
+- **CI caveat**: the repository's PR workflows run only for PRs whose base is `main`, so the stacked PRs #369–#371 show only the CLA and Kodiak checks until #368 merges and GitHub retargets them. Tessl Skill Review on #368 fails on `dynamics` at 78% against an 80% bar; the reviewer's notes concern that skill's pre-existing body (worked examples, reference bundle), not the one-line `compatibility` addition. `main` has no branch protection, so the check is informational.
