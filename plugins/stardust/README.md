@@ -194,6 +194,49 @@ folded back into the skills. The chrome crop gate, the sizing-model lift, the
 editability contract, link localization and the glyph-noise floor all entered
 the plugin that way.
 
+## Installing
+
+Stardust is packaged as a Claude Code plugin, and GitHub Copilot reads the
+same manifests, so both install from the adobe/skills marketplace. Impeccable
+is a hard dependency and is installed separately; Copilot does not resolve
+plugin dependencies.
+
+Claude Code:
+
+```bash
+/plugin marketplace add adobe/skills
+/plugin install stardust@adobe-skills
+/plugin marketplace add pbakaus/impeccable
+/plugin install impeccable@impeccable
+```
+
+GitHub Copilot CLI (also picked up by Copilot in VS Code and the cloud agent;
+verified 2026-09-17 with Copilot CLI 1.0.85):
+
+```bash
+copilot plugin marketplace add adobe/skills
+copilot plugin install stardust@adobe-skills
+copilot plugin marketplace add pbakaus/impeccable
+copilot plugin install impeccable@impeccable
+```
+
+In Copilot CLI the skills are addressed by their bare names (`stardust`,
+`extract`, `deploy`), not as `stardust:extract`. Where a skill body uses the
+Claude Code form, use the bare name.
+
+Other agents can install the skills without plugin grouping through
+`npx skills add adobe/skills` or `gh skill install adobe/skills --all`;
+install impeccable the same way. `notes/multi-agent-distribution.md` records
+what is verified per harness and what is not.
+
+### Prerequisites
+
+Stardust's bundled scripts run under Node 22 or later and need Playwright with
+Chromium resolvable from the project (`npm i -D playwright && npx playwright
+install chromium`). Several skills call `playwright-cli` from the adobe/skills
+`web` plugin. No harness installs these for you; the skills probe for them
+and print the install command when they are missing.
+
 ## Dependencies
 
 Stardust requires impeccable and has no fallback. The dependency is
