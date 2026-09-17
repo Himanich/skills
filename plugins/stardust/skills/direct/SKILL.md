@@ -554,10 +554,12 @@ runs, every answer impeccable's interview would surface has already
 been resolved through stardust's intent-reasoning + divergence
 resolution above.
 
-Start the file with `# Product` followed by the
-`<!-- impeccable:product-schema 1 -->` comment verbatim, so impeccable
-reads it as a current product record rather than a legacy one. Omit a
-section rather than filling it with generic prose. Sections to
+File order: stardust's `<!-- stardust:provenance … -->` block first
+(per `../stardust/reference/artifact-map.md` § Provenance, as for
+every stardust-written artifact), then `# Product`, then the
+`<!-- impeccable:product-schema 1 -->` comment verbatim so impeccable
+reads the file as a current product record rather than a legacy one.
+Omit a section rather than filling it with generic prose. Sections to
 populate:
 
 - **Platform** — the bare value `web`.

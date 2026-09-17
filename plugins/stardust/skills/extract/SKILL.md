@@ -418,7 +418,10 @@ defining intent here, the agent is describing the existing site. Write
 them directly using impeccable's format specs:
 
 - For PRODUCT.md, follow the section structure in impeccable's
-  `reference/init.md` § Write PRODUCT.md: `# Product`, the
+  `reference/init.md` § Write PRODUCT.md. File order: stardust's
+  `<!-- stardust:provenance … -->` block first (per
+  `../stardust/reference/artifact-map.md` § Provenance, as for every
+  file this skill writes), then `# Product`, then the
   `<!-- impeccable:product-schema 1 -->` comment verbatim, then
   `Platform` (`web`), `Users`, `Product Purpose`, `Positioning`,
   `Capabilities and Constraints`, `Brand Commitments`, `Evidence on
