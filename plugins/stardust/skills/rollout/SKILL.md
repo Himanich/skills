@@ -102,7 +102,7 @@ Phase 2) must exist with a disposition on every row; verify it against fresh evi
 --target-origin <live host> --migrated stardust/migrated` (host-bound APIs, rows the capture
 already delivered). New evidence → new rows. The listings contract (per-type `<meta>` fields +
 `helix-query.yaml`) is emitted by Phase C's `deploy` brief per page: retrofitting metadata across
-published pages is a second migration. Missing inventory → run `stardust:dynamics` Phases 1–3 now.
+published pages is a second migration. Missing inventory → run the stardust `dynamics` skill Phases 1–3 now.
 Contract: `skills/dynamics/reference/triage.md`, `reference/listings.md`.
 
 ### Phase C — Deliver the site (drive `deploy` per page, per the plan)
@@ -169,7 +169,7 @@ Walk `plan.json.steps` in order (representative pages first). For each page:
 
 **Foundation-first gate (hard block, once per rollout).** When the FIRST
 archetype page flips to `deployed`, stop and prove the foundation before
-authoring any second page: run `stardust:diff` (both probes) against its
+authoring any second page: run the stardust `diff` skill (both probes) against its
 prototype, **plus computed-style invariants in a headless render** — grid
 containers compute `display: grid` (not stacked single-column), sections are
 full-bleed where the design says so, and the CTA/button classes are actually
@@ -207,7 +207,7 @@ they MUST be published or the chrome 404s sitewide).
 **Redirects:** if Phase C's path-safety gate emitted `stardust/redirects.tsv`, wire
 it into the EDS redirects mechanism here so original inbound URLs don't 404.
 
-### Phase D2 — Dynamic features (`stardust:dynamics` Phases 4–5)
+### Phase D2 — Dynamic features (`dynamics` Phases 4–5)
 
 Implement the plan's reproducibility-`self` rows from the pattern catalogue
 (`skills/dynamics/reference/patterns.md` — index-backed listings and search, modal loader,

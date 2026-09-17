@@ -210,7 +210,7 @@ team: team-hero, team-roster, work-style, recent, careers, closing
 …
 ```
 
-A useful pattern: dispatch the `Explore` subagent at thoroughness=quick with this exact ask. You don't need a 22-pattern punch list — you need filenames + section names. **Resist the urge to "find shared patterns."** Pattern reuse will emerge organically when two sections turn out to be byte-identical.
+A useful pattern: dispatch a read-only exploration subagent with this exact ask where the harness offers one (Claude Code: the `Explore` agent at thoroughness=quick); otherwise run the search inline. You don't need a 22-pattern punch list — you need filenames + section names. **Resist the urge to "find shared patterns."** Pattern reuse will emerge organically when two sections turn out to be byte-identical.
 
 **Fingerprint per-instance variation BEFORE writing block code (#90).** A section-name list is
 copy-level; it does NOT reveal that instances *inside* a repeated group look different — an active
@@ -994,7 +994,7 @@ node skills/deploy/scripts/content-diff.mjs \
 
 Confirm the deployed eyeball is faithful and the CLS probe is < 0.1; the content-diff summary + the atomic-contract computed-style guard + `.plain.html` are the automated backstops. The flag lists double as a regression checklist — a new silent regression is worth adding both a fix AND a gate signal.
 
-**Step 10 is a per-page, during-conversion reconcile against the PROTOTYPE — not the whole-site sweep.** For a comprehensive post-rollout check of the DEPLOYED site against its extraction capture + visual baselines (routing, content fidelity, template conformance, rendered integrity, metadata/SEO, links, accessibility, performance budgets), use the read-only **`stardust:qa`** skill after `rollout`. The two are complementary: Step 10 asks "does this converted page match its prototype?", `stardust:qa` asks "is everything that shipped across the site actually correct?" — different reference, scope, and phase; they share no code.
+**Step 10 is a per-page, during-conversion reconcile against the PROTOTYPE — not the whole-site sweep.** For a comprehensive post-rollout check of the DEPLOYED site against its extraction capture + visual baselines (routing, content fidelity, template conformance, rendered integrity, metadata/SEO, links, accessibility, performance budgets), use the read-only **the stardust `qa` skill** skill after `rollout`. The two are complementary: Step 10 asks "does this converted page match its prototype?", the stardust `qa` skill asks "is everything that shipped across the site actually correct?" — different reference, scope, and phase; they share no code.
 
 ## Anti-patterns (lessons paid for the hard way)
 
@@ -1126,6 +1126,6 @@ Update `stardust/eds-conversion-log.md` (or create one) with: final block invent
 
 - `davids-model.md` — David's Model (aem.live) distilled: the 15 rules (`D#N`), each mapped to the contract or gate in this skill that enforces it, plus the component-model shape compatibility notes.
 - `da-deploy-protocol.md` — the curl-based DA Source API deploy contract (auth, source PUT, preview/publish, asset-before-preview ordering).
-- `IMPROVEMENTS.md` — running log of friction/gaps and the numbered findings (#NN) that the `stardust:diff` `eds` profile cites.
+- `IMPROVEMENTS.md` — running log of friction/gaps and the numbered findings (#NN) that the stardust `diff` skill's `eds` profile cites.
 - `scripts/ew-editability-probe.mjs` — the Experience Workspace editability gate (Step 8 § contract): instrument → decorate → count survivors; `--simulate-editor` edit-mode drift; URL and `--content` harness modes; reads `@ew-exempt` JSDoc tags.
 - Experience Workspace sources the contract was verified against (read them when the mechanism seems to have changed): da.live `blocks/canvas/editor-utils/editor-utils.js` (`getInstrumentedHTML` — what is stamped), `blocks/canvas/ew-editor-wysiwyg/ew-editor-wysiwyg.js`, `blocks/shared/prose2aem.js` (cells keep their `<p>`); da-nx `nx/public/plugins/quick-edit/quick-edit.js` (`setBody` → `loadPage` → `restoreBlockIndices`), `src/prose.js` (`createEditor` swap shape), `src/images.js`, `src/dom-index.js`, `src/selection.js` (cursor math on `textContent` length).

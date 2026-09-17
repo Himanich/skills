@@ -75,7 +75,7 @@ Flows, not presence — each check replays a user-visible flow through `skills/d
 
 | id | sev | what |
 |---|---|---|
-| `parity-missing` | info | no parity file — the migration never ran `stardust:dynamics` |
+| `parity-missing` | info | no parity file — the migration never ran the stardust `dynamics` skill |
 | `parity-failed` | error | a replayed flow did not complete (empty form accepted, dialog did not open, query returned nothing, player never requested playback) |
 | `parity-env-limit` | warn | a failed flow whose feature records an environment limit (geo-fenced hand-off target) |
 | `parity-unchecked` | info | a feature with a non-final status and no replayable check — an owner item |

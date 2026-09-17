@@ -19,7 +19,7 @@ A project with `stardust/extract` already complete:
 
 ## Expected behavior
 
-The `stardust:direct` skill is invoked. It:
+The stardust `direct` skill is invoked. It:
 
 1. Runs the master setup (impeccable dep, context loader, state read).
 2. **Restates** the phrase in stardust's dimensional vocabulary

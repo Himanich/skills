@@ -66,8 +66,8 @@ stardust/
 ├── dynamics/                         # dynamics working dir: generated-plan draft, parity.json (Phase 5), snapshot sync logs
 ├── redirects.tsv                     # original→normalized path pairs from the path-safety gate (rollout Phase C)
 ├── runtime-contract.json             # EDS runtime probe result (deploy § Runtime-detection probe)
-├── uplift-improvements.md            # >=3 specific weaknesses (cut, not padded) — load-bearing for uplift's variant A (written by `stardust:uplift` Phase 2a; absent otherwise)
-├── uplift-questions.md               # 6–8 "what if…" candidates with disqualifications (written by `stardust:uplift` Phase 2b; absent otherwise)
+├── uplift-improvements.md            # >=3 specific weaknesses (cut, not padded) — load-bearing for uplift's variant A (written by the stardust `uplift` skill Phase 2a; absent otherwise)
+├── uplift-questions.md               # 6–8 "what if…" candidates with disqualifications (written by the stardust `uplift` skill Phase 2b; absent otherwise)
 ├── canon/                            # design canon (canon-extraction.md) — written by prototype --prep on first approval, extended on subsequent approvals
 │   ├── header.html                   # canonical header chrome
 │   ├── footer.html                   # canonical footer chrome

@@ -20,7 +20,7 @@ A project where extract + direct have completed:
 
 ## Expected behavior
 
-The `stardust:prototype` skill is invoked. It:
+The stardust `prototype` skill is invoked. It:
 
 1. Runs the master setup (impeccable dep, context loader, state read).
 2. Verifies the page is `directed` (and not `pending` direction).

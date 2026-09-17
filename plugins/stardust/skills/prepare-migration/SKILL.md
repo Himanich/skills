@@ -1,6 +1,6 @@
 ---
 name: prepare-migration
-description: Prepare a whole site for migration by orchestrating the prep cascade — a full-inventory crawl (extract --prep), page-type and module-catalog confirmation (direct --prep), archetype prototypes plus design canon (prototype --prep), and asset preparation — with confirmation gates between phases. Builds the typed page inventory, confirmed module catalog, and canon that stardust:migrate consumes. Use when the user wants to prepare or set up a full-site migration, run migration prep, confirm page types and modules before migrating a site, get a large site ready to migrate, or invokes /stardust:prepare-migration. Trigger phrases include "prepare the migration", "migration prep", "set up the migration data", "get the site ready to migrate". Redesign-flow only — for same-design migrations stardust:replica runs its own preserve-mode prep cascade; never chain prepare-migration with replica. Not for running the migration itself (stardust:migrate) or converting a single page (stardust:deploy).
+description: Prepare a whole site for migration by orchestrating the prep cascade — a full-inventory crawl (extract --prep), page-type and module-catalog confirmation (direct --prep), archetype prototypes plus design canon (prototype --prep), and asset preparation — with confirmation gates between phases. Builds the typed page inventory, confirmed module catalog, and canon that `migrate` consumes. Use when the user wants to prepare or set up a full-site migration, run migration prep, confirm page types and modules before migrating a site, get a large site ready to migrate, or invokes `$stardust prepare-migration`. Trigger phrases include "prepare the migration", "migration prep", "set up the migration data", "get the site ready to migrate". Redesign-flow only — for same-design migrations `replica` runs its own preserve-mode prep cascade; never chain prepare-migration with replica. Not for running the migration itself (`migrate`) or converting a single page (`deploy`).
 license: Apache-2.0
 compatibility: Requires Node 22+, Playwright with Chromium resolvable from the project, playwright-cli on PATH, and the impeccable skill (github.com/pbakaus/impeccable) installed alongside stardust.
 ---
@@ -79,20 +79,15 @@ this site" a conscious gesture and keeps idempotency obvious.
 ## Procedure
 
 The cascade runs five phases sequentially. Each phase invokes its
-underlying skill via the Skill tool, surfaces the phase's prep
+underlying skill via the harness's skill-invocation tool (see the master
+skill § Routing for how sub-skills are addressed), surfaces the phase's prep
 summary, then waits for user confirmation (unless `--skip-confirm`
 or hands-off mode) before advancing.
 
 ### Phase 1 — extract --prep
 
-Invoke:
-
-```
-Skill {
-  skill: "stardust:extract",
-  args: "--prep"
-}
-```
+Invoke the stardust `extract` skill with the argument `--prep` (Claude
+Code form: `Skill { skill: "stardust:extract", args: "--prep" }`).
 
 The underlying skill runs the standard extract procedure with the
 five `--prep` overlays (lift cap, page typing, module candidates,
@@ -151,14 +146,8 @@ Cascade aborted between Phase 1 and Phase 2.
 
 ### Phase 2 — direct --prep
 
-Invoke:
-
-```
-Skill {
-  skill: "stardust:direct",
-  args: "--prep"
-}
-```
+Invoke the stardust `direct` skill with the argument `--prep` (Claude
+Code form: `Skill { skill: "stardust:direct", args: "--prep" }`).
 
 The underlying skill runs five `--prep` overlays (type catalog
 confirmation, module catalog finalization, color reservations,
@@ -169,14 +158,10 @@ Surface the summary and gate. User options match Phase 1
 
 ### Phase 3 — prototype --prep
 
-Invoke:
-
-```
-Skill {
-  skill: "stardust:prototype",
-  args: "--prep" + (canonFromSlug ? " --canon-from " + canonFromSlug : "")
-}
-```
+Invoke the stardust `prototype` skill with the argument `--prep`, plus
+`--canon-from <slug>` when a canon slug is already known (Claude Code
+form: `Skill { skill: "stardust:prototype", args: "--prep --canon-from
+<slug>" }`).
 
 The underlying skill fills page-type gaps (one approved archetype
 per type) and writes canon back per
@@ -231,7 +216,7 @@ Font downloads:      4 files (HarmoniaSans 4 weights)
 Brand assets:        all present
 ```
 
-### Phase 4.5 — Dynamic surface (pre-import gate — `stardust:dynamics` Phases 1–3)
+### Phase 4.5 — Dynamic surface (pre-import gate: `dynamics` Phases 1–3)
 
 Runs after assets prep and **before any bulk import**. Migration-bound:
 this is the step that keeps a dynamic site from being imported as a
