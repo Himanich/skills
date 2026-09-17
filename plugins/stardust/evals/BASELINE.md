@@ -268,12 +268,14 @@ The default 30-minute budget is too short for stripe.com from a European
 egress (geo-redirects to `de-ch`/`it` locales force recaptures); both
 labels were rerun at 75 minutes.
 
-Scores: baseline 100; after 95 (first run) — see below for the rerun.
+Scores: baseline 100; after 95 (first run), 100 (rerun on the fixed text).
 
 | criterion | w | baseline | after | note |
 |---|---|---|---|---|
 | activated, impeccable_dep_check, discovery_before_crawl, page_cap_confirmation, playwright_over_webfetch, per_page_json_shape, brand_extraction_shape, logo_locator_chain, current_product_md_direct, current_design_md_direct, state_json_shape, no_eds_references | | 12/12 | 12/12 | `impeccable_dep_check` passes with the loader removed; `current_product_md_direct` judged against the new schema. |
 | provenance_stamped | 5 | 1/1 | 0/1 | **real regression, fixed.** The new instruction said to start `PRODUCT.md` with `# Product` and the schema comment; the run dropped the `stardust:provenance` block that artifact-map requires first. direct kept the block in all three runs. Both instructions now spell out the order (provenance, `# Product`, schema comment) — commit 0b0700a on PR #370. |
 
-Rerun of the after label on the fixed text: _pending at the time of
-writing; result appended below when judged._
+Rerun of the after label on the fixed text (commit 0b0700a): **100/100,
+13/13 criteria**, `provenance_stamped` back to 1/1; `PRODUCT.md` opens with
+the `stardust:provenance` block, then `# Product`, then the schema comment.
+$18 / 91 turns.
