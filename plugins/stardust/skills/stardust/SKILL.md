@@ -37,17 +37,20 @@ sub-commands that delegate the actual design work to **impeccable**.
    line to the user verbatim when it reports a newer version; it prints the
    update command for the harness it found impeccable in. Any other outcome (current, unknown, offline) is
    noise — do not mention it, and never stop or degrade a run over it.
-2. **Run impeccable's context loader once per session.** Execute the loader at
-   `<harness>/skills/impeccable/scripts/load-context.mjs`. Its JSON output
-   tells you whether `PRODUCT.md` and `DESIGN.md` exist at the project root
-   (these are the *target* state for stardust). Skip the loader if it already
-   ran in this session's history.
+2. **Check the target-state files.** `PRODUCT.md` and `DESIGN.md` at the
+   project root are the *target* state for stardust; check whether they
+   exist (a directory listing is enough). Do not run impeccable's context
+   loader (`scripts/impeccable context`) here: it emits directives for
+   impeccable's own flow (init, new-work, detector, update checks) that do
+   not apply to stardust's setup, and impeccable runs it itself whenever
+   stardust invokes an impeccable command. Skip if already known from this
+   session's history.
 3. **Read stardust's state.** Read `stardust/state.json` if present
    (`reference/state-machine.md` defines the schema). Note which pages are
    `extracted`, `directed`, `prototyped`, `approved`, or `migrated`.
 4. **Read impeccable's command registry.** Parse
    `<harness>/skills/impeccable/scripts/command-metadata.json`. This is the
-   single source of truth for the 23 impeccable commands; never hardcode
+   single source of truth for the 24 impeccable commands; never hardcode
    them in your reasoning.
 5. **Status ledger.** Every stardust skill appends a phase-transition line
    to `stardust/status.jsonl` at each phase start/end, per
@@ -332,7 +335,7 @@ motion gate cascade).
 - `reference/intent-dimensions.md` — the axes redesigns move along.
 - `reference/intent-reasoning.md` — the procedure for handling a freeform phrase.
 - `reference/intent-examples.md` — worked examples (8-12) of the reasoning style.
-- `reference/impeccable-command-map.md` — when to reach for each of the 23 impeccable commands.
+- `reference/impeccable-command-map.md` — when to reach for each of the 24 impeccable commands.
 - `reference/state-machine.md` — page lifecycle, stale rules, state report format.
 - `reference/artifact-map.md` — every file stardust reads or writes, with ownership, provenance shape and (§ Versioning) what is tracked.
 - `reference/stardust.gitignore` — installed as `stardust/.gitignore` by Setup step 6.
