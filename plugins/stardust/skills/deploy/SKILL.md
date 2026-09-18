@@ -606,6 +606,8 @@ Chrome is the canonical fragment use case (D12): **content** lives in two author
 
 Dispatch one agent per page-archetype cluster (utility pages, services, case studies, etc.). Each agent owns a non-overlapping set of new blocks and content pages. Three to four parallel agents is the sweet spot.
 
+**Brief size and reading discipline.** The brief points at files — `stardust/eds-schema/<page>.json`, the conversion log's triage rows for its pages, this document's §§ 7–8, `davids-model.md` — and never pastes reference text into the prompt. Each agent reads by section (list the headings, then read the range it needs), not the whole file: across twelve field migrations this document (~27k words) was read end to end about twenty times per run, once per dispatched agent; in one recorded run the two conversion agents the harness's no-progress watchdog killed carried the fattest briefs, while a re-dispatch with a lean brief and line-ranged reads finished the same pages. Long-running steps (captures, gates, batch pushes) run in the background with a progress file the agent appends to per page, so the coordinator can read progress instead of waiting blind.
+
 The brief template:
 
 > Per the project's locked direction: each prototype `<section>` becomes its own EDS block. Lift the prototype's `<style>` for that section verbatim, scope it under the block class (`.block-name .x` instead of `section.x .y`), and rebuild the prototype's DOM through a `decorate(block)` function that consumes EDS table-block input.
@@ -974,7 +976,7 @@ The retired `visual-diff` classes are covered elsewhere: stretched images by the
 
 # Structural content + typography diff — ADVISORY summary. Use the DEPLOYED EDS URL
 # so blocks are decorated; a raw content .plain.html has no roles to classify.
-node skills/deploy/scripts/content-diff.mjs \
+node skills/diff/scripts/content-diff.mjs \
   "http://localhost:8791/<prototype>.html" \
   "https://<branch>--<repo>--<owner>.aem.page/<path>" \
   --profile eds   # --json to dump both inventories; exits 0 (advisory)

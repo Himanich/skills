@@ -181,6 +181,18 @@ otherwise):
   header and footer, (2) section landing/overview pages, (3) a
   representative spread of detail pages across all templates. State
   the chosen caps in `direction.md`.
+- **Delegate by file pointer, read by section.** A brief to a delegated
+  agent names the files and sections it needs (`state.json`, the page's
+  schema, the phase's SKILL.md sections); it never inlines reference docs.
+  Reference documents are read by heading and line range, not end to end.
+  Instruments that can stall run under their shipped deadline (replica
+  `gate.sh`, `pixel-compare --timeout`) — never under an agent-authored
+  `sleep N; kill` loop — and long steps write a progress file the
+  coordinator polls instead of blocking on the agent. (Field evidence,
+  2026-09: in one recorded run the two conversion agents the harness
+  watchdog killed carried the fattest briefs and whole-document reads,
+  and a lean re-dispatch finished the same pages; that conversion lost
+  89 minutes to a blind wait and 30 to fixed sleeps.)
 - **Commit at the end of each phase** when the project is a git repo.
   Before the FIRST such commit, re-run Setup step 6 — the first commit
   lands at the end of the audit phase, long before deploy's SKILL.md is

@@ -4,6 +4,40 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.22.1 — replica instruments: the pixel-compare hang fixed, deadlines, live-side caches, a path lint
+
+Evidence base: 48 field sessions (Aug–Sep 2026, 24 projects) plus the notes those runs wrote about
+themselves. `pixel-compare.mjs` was slow or timed out in 17 of 24 runs and on every plugin version
+since 0.18.1; seven projects' own notes name it, four describe it sitting at 0 % CPU after printing
+its verdict; agents answered with `sleep 150; kill` loops that cost one page 30 fixed minutes.
+Reproduced 2026-09-18: with stdout redirected (as gate.sh and every agent pipeline run it),
+`process.exit()` after the compare hung Node's platform shutdown (`Environment::Exit →
+DisposePlatform → WorkerThreadsTaskRunner::Shutdown → uv_thread_join`) in roughly 1 run in 4; nine
+such processes from earlier migrations were still alive on the test machine, some for six days.
+
+- **pixel-compare.mjs**: exits by draining (`process.exitCode`) instead of `process.exit()` —
+  0 hangs in 10 runs where the original hung; plus a supervised `--timeout` (default 120 s,
+  exit 124 = no verdict, not a FAIL) because the compare is synchronous and cannot time itself out.
+- **run-capped.mjs** (new): the deadline wrapper — macOS ships no `timeout`; kills the whole
+  process group (Chromium children included), passes exit codes through, 124 on the deadline.
+- **gate.sh**: every capture runs under `run-capped` (`GATE_STITCH_TIMEOUT` 300 s,
+  `GATE_COMPARE_TIMEOUT` 120 s), a partial live.png is never left for reuse, and this user's
+  replica instruments older than `GATE_REAP_MIN` (15) minutes are reaped before a round.
+- **chrome-parity.mjs `--live-cache`, anchor.mjs `--cache`**: the live side's measurement is
+  probed once per breakpoint and reused while URL, width and selectors match — the same contract
+  gate.sh already had for live.png (recorded: 5½-minute chrome-parity rounds ×3 ×4 archetypes).
+  anchor.mjs also warns when `--main` matched a wrapper that still contains header/footer (the
+  false-structural-red class recorded on four archetypes at once).
+- **evals/lint/script-paths.mjs** (new, in `npm run lint:stardust` and CI): every plugin-internal
+  `skills/<skill>/scripts/…` and `skills/<skill>/reference/…` path a skill doc names must exist.
+  It found two dangling references on main (a gate example pointing at the wrong skill's
+  `content-diff.mjs`, a hypothetical migrator path); both fixed.
+- Docs: source-fidelity-gate § Iteration discipline names the deadlines and caches; replica Phase 4
+  snippet uses them; deploy § 7 and the master skill's hands-off defaults get a brief-size and
+  read-by-section rule (across twelve runs deploy/SKILL.md was read whole ~20× per run, once per
+  dispatched agent; in one recorded run the watchdog-killed agents carried the fattest briefs); the DA protocol's two
+  `until … sleep 3` waits are capped and fail loud.
+
 ## 0.22.0 — stardust owns `stardust/`: write boundary and versioning policy
 
 Field projects answered "what do I commit" by hand, each differently; one lost its state machine
