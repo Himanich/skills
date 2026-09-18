@@ -22,6 +22,23 @@ Repository of Adobe skills for AI coding agents.
 /plugin install commerce-app-review@adobe-skills
 ```
 
+### GitHub Copilot CLI
+
+Copilot reads the Claude plugin manifests in this repository, so the same
+marketplace works there (verified 2026-09-17 with Copilot CLI 1.0.85 and the
+`stardust` plugin). Plugins are also picked up by Copilot in VS Code and the
+cloud agent.
+
+```bash
+copilot plugin marketplace add adobe/skills
+copilot plugin install stardust@adobe-skills
+copilot plugin install aem-edge-delivery-services@adobe-skills
+```
+
+Copilot CLI exposes plugin skills under their bare `name` with no plugin
+prefix, so two installed plugins with a same-named skill are ambiguous there.
+Plugin `dependencies` are not resolved; install them explicitly.
+
 ### Vercel Skills (npx skills)
 
 ```bash
