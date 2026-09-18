@@ -6,10 +6,10 @@ description: |
   migration — generates a read-only migration-runbook.md — or to fix specific Cloud Service
   blockers: scheduler, ResourceChangeListener, replication, EventListener, OSGi EventHandler,
   DAM AssetManager, HTL data-sly-test lint, Classic UI / ExtJS / Coral 2 → Coral 3 dialog migration (lui),
-  Custom Design Widgets (cdw), Guava cache → Caffeine swaps (guavaCache), and static→editable
-  template modernization. Also externalizes OSGi config secrets to Cloud Manager (scans
-  ui.config/.cfg.json for $[secret:]/$[env:] placeholders) and converts AMS/on-prem Dispatcher
-  configs to AEMaaCS (Branch E).
+  Custom Design Widgets (cdw), Vault package install-time dependencies (vault-package-dependencies),
+  Guava cache → Caffeine swaps (guavaCache), and static→editable template modernization. Also
+  externalizes OSGi config secrets to Cloud Manager (scans ui.config/.cfg.json for $[secret:]/$[env:]
+  placeholders) and converts AMS/on-prem Dispatcher configs to AEMaaCS (Branch E).
 license: Apache-2.0
 ---
 
@@ -33,6 +33,7 @@ This skill drives the **migration workflow**: BPA data, CAM/MCP, **one pattern p
 | **Just a few files** | *"Migrate **scheduler** in `core/.../MyJob.java`"* | Manual flow: no BPA required |
 | **OSGi → Cloud Manager** | *"**Scan my config files and create Cloud Manager environment secrets or variables.**"* | Agent **auto-reads** [references/osgi-cfg-json-cloud-manager.md](references/osgi-cfg-json-cloud-manager.md) (full Adobe-aligned rules inlined there); no BPA pattern id |
 | **HTL lint warnings** | *"Fix **htlLint** issues in `ui.apps`"* | Proactive discovery via `rg` → fix per the HTL lint reference |
+| **Vault package dependencies** | *"Fix **vault-package-dependencies** findings"* / *"Package install fails on AEMaaCS."* | Agent reads [references/vault-package-dependencies.md](references/vault-package-dependencies.md) — heuristic `pom.xml` scan (no BPA subtype, no analyzer) for `day/cq60/product:*` install-time deps in `content-package-maven-plugin`; removes the whole `<dependencies>` block. Not a `code-assessment` pattern — this dependency shape never occurs in native AEMaaCS code. |
 | **Template modernization** | *"**Migrate my static templates to editable templates and generate Modernize Tools rules.**"* / *"Create editable templates from my static templates."* / *"Generate AEM Modernize Tools structure/component/policy rules."* | Agent **auto-reads** [references/template-modernization/template-modernization-context.md](references/template-modernization/template-modernization-context.md) (shared discovery + structured context), produces a **per-template plan table**, then executes the plan using [editable-template-creation.md](references/template-modernization/editable-template-creation.md) and [aem-modernization.md](references/template-modernization/aem-modernization.md), and validates via [template-modernization-validation.md](references/template-modernization/template-modernization-validation.md). No BPA pattern id. |
 | **Dialog migration** | *"Convert my Classic UI / ExtJS dialogs to Touch UI."* / *"Upgrade Coral 2 dialogs to Coral 3."* / *"Fix LUI dialog findings."* | Agent reads [references/legacy-ui/dialog/context.md](references/legacy-ui/dialog/context.md) — filters BPA LUI to dialog sub-types, converts via [extjs-to-coral3.md](references/legacy-ui/dialog/extjs-to-coral3.md) or [coral2-to-coral3.md](references/legacy-ui/dialog/coral2-to-coral3.md), validates via [validation.md](references/legacy-ui/dialog/validation.md). BPA pattern id: `lui`. |
 | **Custom widget migration** | *"Fix my CDW findings."* / *"Migrate custom ExtJS widgets to Coral 3."* | Agent reads [references/legacy-ui/cdw/context.md](references/legacy-ui/cdw/context.md) — inventories xtypes, maps or scaffolds Granite UI components via [conversion.md](references/legacy-ui/cdw/conversion.md), validates via [validation.md](references/legacy-ui/cdw/validation.md). BPA pattern id: `cdw`. Run CDW before dialog migration when both are needed. |
@@ -82,6 +83,7 @@ Applies to **finding and editing the user's AEM project** (Java, bundles, config
    - `eventListener` / `eventHandler` → **`{code-assessment}/event-migration/SKILL.md`** *(pattern guide — both JCR and OSGi Event Admin paths)*
    - `assetApi` → **`{code-assessment}/asset-manager/SKILL.md`** *(pattern guide)*
    - `htlLint` → **`{code-assessment}/references/data-sly-test-redundant-constant.md`** *(reference — HTL lint is a single shared reference, not a dedicated pattern guide)*
+   - `vault-package-dependencies` → **[references/vault-package-dependencies.md](references/vault-package-dependencies.md)** *(reference — heuristic pom.xml scan; lives under `migration` only, not `code-assessment`, since this dependency shape never occurs in native AEMaaCS code)*
    - `guavaCache` → **[references/guava-cache.md](references/guava-cache.md)** *(reference — Guava cache → Caffeine swap; lives under `migration` only, not `code-assessment`, since Guava cache usage does not occur in native AEMaaCS code, only in code carried over from legacy AEM)*
 3. When code uses SCR, `ResourceResolver`, or console logging, read **`{code-assessment}/references/scr-to-osgi-ds.md`** and **`{code-assessment}/references/resource-resolver-logging.md`** (or the hub **`{code-assessment}/references/aem-cloud-service-pattern-prerequisites.md`**).
 
@@ -120,6 +122,7 @@ If the user asks to **convert / migrate a Dispatcher configuration** to AEM as a
 
 - Migrate legacy AEM Java toward **Cloud Service–compatible** patterns (scheduler, ResourceChangeListener, replication, EventListener/EventHandler, AssetManager)
 - Fix **HTL (Sightly)** lint warnings (`data-sly-test: redundant constant value comparison`)
+- Fix **Vault package install-time dependencies** (`day/cq60/product:*`) blocking package installation on AEMaaCS
 - Swap **Guava cache** (`com.google.common.cache.*`) for **Caffeine** (`guavaCache`)
 - **OSGi → Cloud Manager** secret/variable externalization (Branch A), **Template Modernization** (Branch C), **Legacy UI** dialog/CDW migration (Branch D)
 - Drive work from **BPA** (CSV or cached collection) or **CAM via MCP**, **one pattern per session**
@@ -226,7 +229,7 @@ For retries, error categories, and when user-directed CSV/manual paths are allow
 
 ## Pattern guides
 
-Do **not** duplicate the pattern table here. Use **`{code-assessment}/SKILL.md` → Pattern Guides** — five patterns each have a pattern guide (`{code-assessment}/<pattern>/SKILL.md`); shared topics (SCR→DS, ResourceResolver/SLF4J, HTL lint, prerequisites hub) stay as references (`{code-assessment}/references/<file>.md`). See **Branch B step 2** above for the per-pattern routing table.
+Do **not** duplicate the pattern table here. Use **`{code-assessment}/SKILL.md` → Pattern Guides** — five patterns each have a pattern guide (`{code-assessment}/<pattern>/SKILL.md`); shared topics (SCR→DS, ResourceResolver/SLF4J, HTL lint, prerequisites hub) stay as references (`{code-assessment}/references/<file>.md`); `vault-package-dependencies` is a `migration`-only reference (`references/vault-package-dependencies.md`), not a `{code-assessment}` pattern guide. See **Branch B step 2** above for the per-pattern routing table.
 
 ## Workflow
 
@@ -242,11 +245,12 @@ The runbook covers **every pattern the migration skill can address**. Each patte
 | `replication` | `cascade` | analyzer → LLM scan (no BPA/CSV subtype mapping) |
 | `htlLint` | `html-scan` | heuristic regex scan of `.html` (pure Node — no `rg` binary needed) |
 | `osgiConfig` | `config-scan` | heuristic scan of OSGi config files for secret-looking keys / `$[secret:]`/`$[env:]` placeholders — **key names + locations only, never secret values** |
+| `vault-package-dependencies` | `pom-scan` | Prefers Maven's **effective POM** (`mvn help:effective-pom`, one call per reactor root — `<pluginManagement>` inheritance and per-execution vs plugin-level `<configuration>` are Maven's problem, not ours). Falls back to a raw `pom.xml` text-scan when Maven can't resolve a module (dead parent repos, offline — common for legacy AEM 6.x / AMS codebases). No BPA subtype and no analyzer — a `pom.xml` install-time dependency declaration is invisible to a deployed-artifact BPA scan and there is no compiled detector for it. Every effective-POM failure surfaces as a warning so a degraded scan is never silently reported as clean. |
 | `lui`, `cdw`, `templateModernization` | BPA `cascade` → `content-scan` fallback | When a BPA CSV/CAM source is present, these come from BPA (subtypes `custom.classic.widget`; `legacy.dialog.classic`/`.coral2`; `legacy.static.template` + `custom.static.template`). With no BPA source, a heuristic `.content.xml` scan is the fallback — for `templateModernization` it walks `apps/<appId>/templates/**` at **any depth** (nested/grouped templates included) and classifies each static template as `custom.static.template` or `legacy.static.template` from its page-component resource type, so the custom-vs-legacy distinction survives even without a BPA report. Sample prompts route to **Branch D** (legacy-ui) / **Branch C** (templates), not code-assessment |
 | `guavaCache` | `bpa-only` (no analyzer, no content-scan) | BPA is the **sole** source of truth (subtype `custom.guava.cache`), one finding per **bundle** — `identifier` on this subtype is a Guava-internal class, not a customer class, so raw rows are deduped to the bundle named in the message, not surfaced per row. With no BPA source, `guavaCache` has no deterministic fallback and surfaces under **Tier 4 — LLM scan**: the agent greps `.java` files for `import com.google.common.cache` per module, per [references/guava-cache.md](references/guava-cache.md), and tags the result `confidence: llm`. There is deliberately no compiled analyzer detector for this pattern — it does not run inside `code-assessment`'s own discovery. |
 | `dispatcherConversion` | `content-scan` | Heuristic scan for an AMS / on-prem Dispatcher config layout (a monolithic `dispatcher.any` + `conf.vhost.d/`, or `conf.dispatcher.d/` AMS trees). Detected by `dispatcher-inventory.js`; the sample prompt routes to **Branch E**. |
 
-`htlLint`, `osgiConfig`, and the content-scan **fallback** for `lui`/`cdw`/`templateModernization` are **heuristic** (tagged `confidence: heuristic` in the cache) — candidate matches, not compiler-validated. BPA-sourced `lui`/`cdw`/`templateModernization`/`replication`/`guavaCache` findings are authoritative. Out of scope: `inject-in-sling-model` and `outdated-dependencies` (those belong to code-assessment's own runbook, not migration).
+`htlLint`, `osgiConfig`, `vault-package-dependencies`, and the content-scan **fallback** for `lui`/`cdw`/`templateModernization` are **heuristic** (tagged `confidence: heuristic` in the cache) — candidate matches, not compiler-validated. BPA-sourced `lui`/`cdw`/`templateModernization`/`replication`/`guavaCache` findings are authoritative. Out of scope: `inject-in-sling-model` and `outdated-dependencies` (those belong to code-assessment's own runbook, not migration).
 
 **BPA is the source of truth when a report is available.** `lui`/`cdw`/`templateModernization`/`replication` are read from the BPA CSV/CAM (the parser now extracts these subtypes and excludes `_COUNT_*`/`_STAT` summary rows), so the runbook counts match your BPA report's LUI-dialog / CDW / static-template / REP tallies. `lui` keeps only the dialog sub-types (`legacy.custom.component` → create-component; `legacy.static.template` is counted under `templateModernization`). The `.content.xml` scan is only the fallback when no BPA source is present — and it can **undercount** relative to BPA when the flagged legacy nodes live in packages (e.g. acs-commons) not in the project source. `replication`: BPA `replication.agent` findings when a report is present, else the analyzer detects `Replicator` usage from source.
 
