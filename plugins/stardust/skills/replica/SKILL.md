@@ -209,9 +209,12 @@ node stardust/scripts/replica/pixel-compare.mjs stardust/replica/gates/<slug>-14
   stardust/replica/gates/<slug>-1440/proto.png --out stardust/replica/gates/<slug>-1440/diff.png
 
 # Iteration inner loop (gate doc § Band breakdown): anchor probe + pixel round
+G=stardust/replica/gates/<slug>-1440
+node stardust/scripts/replica/anchor.mjs "$LIVE"  --width 1440 --cache $G/anchor-live.json   # live side: probed once, reused
 node stardust/scripts/replica/anchor.mjs "$PROTO" --width 1440   # build-side runs are free
 # Chrome: computed-style parity BEFORE any pixel round on header/footer/strips
-node stardust/scripts/replica/chrome-parity.mjs "$LIVE" "$PROTO" --width 1440   # exit 0 = quiet, then crop-compare
+node stardust/scripts/replica/chrome-parity.mjs "$LIVE" "$PROTO" --width 1440 --live-cache $G/chrome-live.json   # exit 0 = quiet, then crop-compare
+# gate.sh: live.png cached, every step under a deadline (exit 124 = re-run, not FAIL), stale instruments reaped
 stardust/scripts/replica/gate.sh <slug> "$LIVE" "$PROTO" 1440 iter2
 ```
 

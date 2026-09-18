@@ -431,5 +431,6 @@ do not engineer around it.
 ## Schema versioning
 
 The schema version is implicit in `_provenance.stardustVersion`. If
-stardust later changes the schema, write a one-shot migrator under
-`skills/stardust/scripts/migrate-state.mjs` and call it from setup.
+stardust later changes the schema, write a one-shot migrator
+(`migrate-state.mjs`, under the stardust skill's `scripts/`) and call it
+from setup.

@@ -33,6 +33,9 @@ jobs:
       - name: Stardust skill text stays harness-neutral
         run: node plugins/stardust/evals/lint/harness-neutral.mjs
 
+      - name: Stardust skill text names only scripts and references that exist
+        run: node plugins/stardust/evals/lint/script-paths.mjs
+
   codeowners-coverage:
     runs-on: ubuntu-latest
     steps:
