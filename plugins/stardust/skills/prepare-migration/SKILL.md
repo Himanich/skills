@@ -86,8 +86,8 @@ or hands-off mode) before advancing.
 
 ### Phase 1 — extract --prep
 
-Invoke the stardust `extract` skill with the argument `--prep` (Claude
-Code form: `Skill { skill: "stardust:extract", args: "--prep" }`).
+Invoke the stardust `extract` skill with the argument `--prep`.
+Claude Code form: `Skill { skill: "stardust:extract", args: "--prep" }`.
 
 The underlying skill runs the standard extract procedure with the
 five `--prep` overlays (lift cap, page typing, module candidates,
@@ -146,8 +146,8 @@ Cascade aborted between Phase 1 and Phase 2.
 
 ### Phase 2 — direct --prep
 
-Invoke the stardust `direct` skill with the argument `--prep` (Claude
-Code form: `Skill { skill: "stardust:direct", args: "--prep" }`).
+Invoke the stardust `direct` skill with the argument `--prep`.
+Claude Code form: `Skill { skill: "stardust:direct", args: "--prep" }`.
 
 The underlying skill runs five `--prep` overlays (type catalog
 confirmation, module catalog finalization, color reservations,
@@ -159,9 +159,8 @@ Surface the summary and gate. User options match Phase 1
 ### Phase 3 — prototype --prep
 
 Invoke the stardust `prototype` skill with the argument `--prep`, plus
-`--canon-from <slug>` when a canon slug is already known (Claude Code
-form: `Skill { skill: "stardust:prototype", args: "--prep --canon-from
-<slug>" }`).
+`--canon-from <slug>` when a canon slug is already known.
+Claude Code form: `Skill { skill: "stardust:prototype", args: "--prep --canon-from <slug>" }`.
 
 The underlying skill fills page-type gaps (one approved archetype
 per type) and writes canon back per

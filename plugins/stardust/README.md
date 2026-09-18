@@ -224,10 +224,34 @@ In Copilot CLI the skills are addressed by their bare names (`stardust`,
 `extract`, `deploy`), not as `stardust:extract`. Where a skill body uses the
 Claude Code form, use the bare name.
 
-Other agents can install the skills without plugin grouping through
-`npx skills add adobe/skills` or `gh skill install adobe/skills --all`;
-install impeccable the same way. `notes/multi-agent-distribution.md` records
-what is verified per harness and what is not.
+Other agents install the skills without plugin grouping. `npx skills add
+adobe/skills --list` shows all 108 skills in this repository as one flat
+list, so name stardust's fifteen explicitly, and install impeccable the same
+way:
+
+```bash
+npx skills add adobe/skills -s stardust -s extract -s direct -s prototype \
+  -s migrate -s prepare-migration -s replica -s reskin -s audit -s uplift \
+  -s diff -s deploy -s rollout -s dynamics -s qa
+npx skills add pbakaus/impeccable -s impeccable
+```
+
+`gh skill install adobe/skills --all` (GitHub CLI 2.90 or later) is the
+equivalent for the agents it supports. Both paths copy loose skills: no
+plugin grouping, no dependency check, updates through `npx skills update`
+or `gh skill update`.
+
+### Verified on
+
+| Harness | Version | Date | What was run |
+|---|---|---|---|
+| Claude Code | 2.1.x plugin | continuous | `evals/runner` suite |
+| GitHub Copilot CLI | 1.0.85 | 2026-09-17 | `evals/copilot-smoke/run.sh`: skill listing, bare-name load, master Setup |
+| Grok Build, Amp | | | expected to work (Claude plugin compatible), not run |
+| Codex, Cursor, Gemini CLI, OpenCode, Kiro and other `.agents/skills` adopters | | | installable through `npx skills add`; not run |
+
+`notes/multi-agent-distribution.md` has the reasoning behind the tiers and
+the work breakdown.
 
 ### Prerequisites
 
