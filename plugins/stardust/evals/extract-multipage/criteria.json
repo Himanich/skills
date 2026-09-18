@@ -5,7 +5,7 @@
     {
       "name": "activated",
       "max_score": 5,
-      "description": "The stardust:extract skill was invoked."
+      "description": "The stardust `extract` skill was invoked."
     },
     {
       "name": "impeccable_dep_check",

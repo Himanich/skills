@@ -140,7 +140,7 @@ inline, or run an impeccable command) and re-invoke migrate.
 **Dynamic-surface precondition (safety net).** If
 `stardust/dynamic-features.md` is missing, the hand-run flow
 (`extract → direct → prototype → migrate`) never passed a pre-import
-gate: run `stardust:dynamics` Phases 1–3 now (`extract --dynamics`
+gate: run the stardust `dynamics` skill Phases 1–3 now (`extract --dynamics`
 for reach if needed, detector on the archetypes, triage draft, curate)
 before rendering any page. Never import a site as static without a
 decision per dynamic row. Per page, rows of the inventory that touch it

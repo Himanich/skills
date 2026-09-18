@@ -5,7 +5,7 @@
     {
       "name": "activated",
       "max_score": 5,
-      "description": "The stardust:direct skill was invoked with the freeform phrase as input."
+      "description": "The stardust `direct` skill was invoked with the freeform phrase as input."
     },
     {
       "name": "dimensional_restatement",

@@ -11,7 +11,7 @@ Empty project; no `stardust/` folder. Impeccable installed in
 
 ## Expected behavior
 
-The `stardust:extract` skill is invoked. It:
+The stardust `extract` skill is invoked. It:
 
 1. Runs the master skill setup (impeccable dep check, context loader).
 2. **Discovers** the page inventory before crawling: tries

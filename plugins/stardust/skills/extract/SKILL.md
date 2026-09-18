@@ -1,6 +1,6 @@
 ---
 name: extract
-description: Crawl an existing website (capped, multi-page) and seed stardust/current/ with PRODUCT.md, DESIGN.md, DESIGN.json, a per-page inventory, and the consolidated brand surface — the captured design system, palette, typography, motifs, and voice of the live site. Use when the user wants to analyze an existing site's design, extract or reverse-engineer its design system or brand, capture design tokens from a live site, import a website as the starting point for a redesign, capture the current state before a migration, or invokes /stardust:extract. Trigger phrases include "analyze this site", "extract the design tokens", "capture the brand", "crawl the site", "reverse engineer the design". Not for scraping page data or content for its own sake (it captures design evidence, not datasets), and not for the redesign itself — extraction is descriptive; direction and prototyping happen downstream.
+description: Crawl an existing website (capped, multi-page) and seed stardust/current/ with PRODUCT.md, DESIGN.md, DESIGN.json, a per-page inventory, and the consolidated brand surface — the captured design system, palette, typography, motifs, and voice of the live site. Use when the user wants to analyze an existing site's design, extract or reverse-engineer its design system or brand, capture design tokens from a live site, import a website as the starting point for a redesign, capture the current state before a migration, or invokes `$stardust extract` (`/stardust:extract` in Claude Code). Trigger phrases include "analyze this site", "extract the design tokens", "capture the brand", "crawl the site", "reverse engineer the design". Not for scraping page data or content for its own sake (it captures design evidence, not datasets), and not for the redesign itself — extraction is descriptive; direction and prototyping happen downstream.
 license: Apache-2.0
 compatibility: Requires Node 22+, Playwright with Chromium resolvable from the project, playwright-cli on PATH, and the impeccable skill (github.com/pbakaus/impeccable) installed alongside stardust.
 ---
@@ -52,7 +52,7 @@ critique, and it does not modify the live site. It writes only under
   them up in `_crawl-log.json#dynamicSurface`. Set by
   `prepare-migration`, `replica` and `migrate`'s safety net; never by a
   bare extract, `uplift` or `audit` — dynamics is a migration concern.
-  Depth and classification belong to `stardust:dynamics`.
+  Depth and classification belong to the stardust `dynamics` skill.
 - `--concurrency <n>` — optional. Parallel browser contexts for the
   per-page capture loop. Default 4; sane range 4–8. See
   § Concurrency.
@@ -277,7 +277,7 @@ Capture per page (full schema in `reference/current-state-schema.md`):
   player ids, hydration hints, in the page JSON `dynamic` section and
   `_crawl-log.json#dynamicSurface` (schema in
   `reference/current-state-schema.md § Dynamic`). Evidence only; the
-  `stardust:dynamics` sub-skill probes archetypes in depth and decides.
+  stardust `dynamics` sub-skill probes archetypes in depth and decides.
 
 Save to `stardust/current/pages/<slug>.json` with `_provenance` as the
 first key. **The bundled crawler also saves the settled rendered DOM

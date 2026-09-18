@@ -78,9 +78,9 @@ Six phases plus a reference-grounding interphase. Phases 1, 4, 5
 delegate to existing skills; phases 2, 2.5, 3, 6 are owned by
 `uplift`.
 
-### Phase 1 — Extract (delegate to `stardust:extract`)
+### Phase 1 — Extract (delegate to the stardust `extract` skill)
 
-Invoke `stardust:extract <URL> --single` (single-page mode).
+Invoke `$stardust extract <URL> --single` (single-page mode).
 Extract owns:
 
 - Live Playwright render with the standard wait recipe.
@@ -94,7 +94,7 @@ Extract owns:
 
 `uplift` does not crawl beyond one page. The brand surface from a
 single homepage is sufficient for three variants; multi-page extract
-is what `stardust:extract` (without `--single`) is for.
+is what the stardust `extract` skill (without `--single`) is for.
 
 ### Phase 2 — Tension and trait identification (owned by `uplift`)
 
@@ -128,7 +128,7 @@ pattern at fault, and proposes one concrete fix. An item that fails
 the bar is cut, not padded.
 
 **Audit consumption.** When `stardust/audit/<domain-slug>/audit.json`
-exists for this origin (written by the `stardust:audit` skill),
+exists for this origin (written by the stardust `audit` skill),
 consume its design findings as candidate improvements instead of
 re-deriving them from scratch — cite the finding IDs in the item's
 evidence and add the audit file to `readArtifacts`.
@@ -309,9 +309,9 @@ Composition: identical IA to A; the bet is motion, not layout.
 Motion: cinematic, register <register>.
 ```
 
-### Phase 4 — Direct (delegate to `stardust:direct`)
+### Phase 4 — Direct (delegate to the stardust `direct` skill)
 
-Invoke `stardust:direct` with the resolved direction. Pass the
+Invoke the stardust `direct` skill with the resolved direction. Pass the
 three-variant declaration as the input phrase ("uplift presales
 redesign — three variants per stardust/direction.md"). Direct owns:
 
@@ -328,15 +328,17 @@ redesign — three variants per stardust/direction.md"). Direct owns:
 direct's existing validators to refuse if the variants violate
 the brand-faithful contract.
 
-### Phase 5 — Prototype × 3 (delegate to `stardust:prototype`)
+### Phase 5 — Prototype × 3 (delegate to the stardust `prototype` skill)
 
 Render **A first, then B and C**:
 
-1. **Render A** — invoke `stardust:prototype <slug>` scoped to
+1. **Render A** — invoke `$stardust prototype <slug>` scoped to
    variant A. A establishes and **freezes the canon** (tokens,
    chrome, module renderings) that B and C inherit; rendering it
    first removes the ordering race.
-2. **Render B, then C** (default: sequential). B and C prototype
+2. **Render B, then C** (default: sequential; parallel only where the
+   harness offers a subagent primitive, such as Claude Code's Agent
+   tool or Copilot CLI's `task` tool). B and C prototype
    the *same slug*, and same-slug concurrent runs are last-write-
    wins on `state.json` per
    `../stardust/reference/state-machine.md` § Concurrency — so
@@ -572,7 +574,7 @@ DESIGN-C.md / DESIGN-C.json                 ← carries motion.register
 - Three review surfaces, not a deployable bundle. After the brand
   owner picks a variant, iterate via chat-driven impeccable
   commands and approve via the standard `prototype` approval flow.
-  Migration is `stardust:migrate`.
+  Migration is the stardust `migrate` skill.
 
 ## References
 

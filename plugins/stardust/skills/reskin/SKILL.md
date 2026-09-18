@@ -98,7 +98,7 @@ site, into `stardust/canon-source/`. Full recipes per donor type in
 `reference/donor-sources.md`; summary:
 
 - **Live URL** (`--donor <url>`): invoke
-  `stardust:extract <content-url> --design-source <donor-url>` — the
+  `$stardust extract <content-url> --design-source <donor-url>` — the
   existing skill, unchanged. It lands in `stardust/canon-source/`: the
   donor's `pages/`, `assets/` (screenshots included),
   `_brand-extraction.json`, `_crawl-log.json`, and a descriptive
@@ -363,7 +363,7 @@ per-family keeps the loop bounded without absorbing real failures.)
 Reskin owns the archetype pages; scale and shipping are the existing
 pipeline, unchanged:
 
-- **Scale via `stardust:migrate`** (`../migrate/SKILL.md`) with the
+- **Scale via the stardust `migrate` skill** (`../migrate/SKILL.md`) with the
   donor-pinned target (the `state.json.designSource` stamp Phase 1
   wrote is exactly what `direct`/`migrate` read for donor pinning;
   a bounded donor capture wrote no stamp — record the donor origin
@@ -373,7 +373,7 @@ pipeline, unchanged:
   gated archetype. Content rules are the ones reskin already
   enforces — `../migrate/reference/content-preservation.md` is
   inherited wholesale.
-- **Ship via `stardust:deploy` / `stardust:rollout`**, unchanged. Blocks
+- **Ship via the stardust `deploy` and `rollout` skills**, unchanged. Blocks
   written for donor modules obey the Experience Workspace editability
   contract (deploy SKILL.md § 8, EW1–EW10) and pass the EW gate
   (`block-roundtrip --ew`) before they are done.

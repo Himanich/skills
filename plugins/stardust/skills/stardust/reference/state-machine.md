@@ -84,11 +84,11 @@ move the state, it flags it.
 
 | State        | Meaning                                                                 | Set by                  |
 |--------------|-------------------------------------------------------------------------|-------------------------|
-| `extracted`  | Crawled and parsed. `current/pages/<slug>.json` exists.                 | `stardust:extract`      |
-| `directed`   | Direction `direction.md` resolved; this page is in scope of the direction. | `stardust:direct`     |
-| `prototyped` | A proposed-redesign prototype exists at `prototypes/<slug>-proposed.html`. | `stardust:prototype` |
-| `approved`   | The user explicitly approved the prototype.                             | `stardust:prototype`    |
-| `migrated`   | Final redesigned static HTML written to `migrated/<slug>.html`.         | `stardust:migrate`      |
+| `extracted`  | Crawled and parsed. `current/pages/<slug>.json` exists.                 | `extract` |
+| `directed`   | Direction `direction.md` resolved; this page is in scope of the direction. | `direct` |
+| `prototyped` | A proposed-redesign prototype exists at `prototypes/<slug>-proposed.html`. | `prototype` |
+| `approved`   | The user explicitly approved the prototype.                             | `prototype` |
+| `migrated`   | Final redesigned static HTML written to `migrated/<slug>.html`.         | `migrate` |
 
 **Linearity rule.** A page never moves backward. Re-running `prototype`
 after `approved` does not demote — it produces a new prototype with a
