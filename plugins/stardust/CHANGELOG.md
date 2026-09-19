@@ -4,6 +4,34 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.22.2 — wait discipline: the coordinator never parks the conversation past the prompt-cache window
+
+Evidence base: the same 48 field sessions (Aug–Sep 2026, 24 projects), 20.7k main-session
+requests. 1,271 requests re-wrote most of their context (649 M of 713 M cache-creation tokens);
+1,222 of them followed an idle gap of ≥ 5 minutes. Classified by what preceded each: 46 % were the
+agent's own blocking waits — a foreground `sleep` (median 480 s), a 5–10-minute foreground gate
+sweep, crawl or publish loop, or a blocking read of an agent's output with a 10-minute timeout —
+worth 325 M tokens; 33 % were the user typing after a pause; 11 % were background-task
+notifications that arrived after 5 minutes. The cliff is sharp: a foreground `sleep` of ≤ 240 s
+missed the cache in 10 % of cases, 271–300 s in 18 %, ≥ 301 s in 85–87 %. Nothing in the plugin
+mentioned the cache window; the existing rule forbade `sleep N; kill` around instruments only.
+
+- **Master skill, hands-off defaults**: a "Wait discipline" bullet — long steps run in the
+  background with a progress/summary file; the coordinator does independent work or checks the
+  file at most every 4 minutes; never a fixed `sleep` ≥ 5 minutes, never a blocking output read
+  with a long timeout, never a foreground command expected to exceed ~2 minutes. Ending the turn
+  is for the user's benefit, not the cache's (a notification after 5 minutes misses too), so it is
+  reserved for waits over ~45 minutes or decisions the user should take. A Claude Code-marked
+  note names `run_in_background` and the harness's `promptCacheTtl: "1h"` owner setting (2× write
+  price instead of 1.25×; on these sessions it alone would have cut cache-side spend by ~29 %,
+  the rule alone by ~18 %).
+- **Mirrors**: deploy § 7 (brief/reading discipline), source-fidelity-gate § Iteration discipline
+  (gate rounds over several pages run in the background, not as foreground `for` loops — 58 % of
+  the recorded 5–10-minute sweeps re-wrote the prefix), rollout execution model (the batch driver's
+  log and ledger are the progress file).
+- No instrument, gate, threshold or verdict changes; the DA protocol's capped `until … sleep 3`
+  waits (≤ 3 min) stay as they are.
+
 ## 0.22.1 — replica instruments: the pixel-compare hang fixed, deadlines, live-side caches, a path lint
 
 Evidence base: 48 field sessions (Aug–Sep 2026, 24 projects) plus the notes those runs wrote about
