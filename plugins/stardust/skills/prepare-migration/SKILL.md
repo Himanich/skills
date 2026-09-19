@@ -53,6 +53,21 @@ this site" a conscious gesture and keeps idempotency obvious.
 
 1. Run the master skill's setup (`skills/stardust/SKILL.md`
    § Setup) — impeccable dep check, context loader, state read.
+   **Flow guard.** This is the redesign flow's orchestrator. If
+   `state.json.flow` is `replica`, refuse: print "never run
+   `prepare-migration` before or after `replica`" and the switch
+   command (`$stardust prepare-migration --switch-flow`, which marks
+   the replica artefacts stale — master skill § Two migration flows).
+   If `flow` is absent, resolve it first: a keep-design phrase in the
+   ask ("1:1", "exact replica", "same design", "faithful",
+   "re-platform") means this skill does not apply — say so and hand to
+   `replica`; a plain migration ask gets the one keep-vs-redesign
+   question (hands-off: default `redesign`, recorded in
+   `direction.md`); then stamp `flow: "redesign"`
+   (`skills/stardust/reference/state-machine.md` § Flow keys).
+   (Recorded: "build a 1:1 migration plan" entered here on a plugin
+   that already described both flows and ran the redesign cascade for
+   two hours before `direct` was asked for an "exact replica".)
 2. Verify `stardust/state.json` exists with at least one extracted
    page. If not, recommend `$stardust extract <url>` and stop.
 3. Verify `stardust/direction.md` exists with an active direction.
@@ -93,15 +108,23 @@ The underlying skill runs the standard extract procedure with the
 five `--prep` overlays (lift cap, page typing, module candidates,
 typed slots, prep summary).
 
-On completion, surface the summary verbatim and gate:
+On completion, surface the summary verbatim, name the flow, and gate —
+the first interactive gate of the cascade carries the keep-vs-redesign
+choice (one recorded migration ran this cascade for 3.5 hours before the
+user asked for the keep-design flow, and the work was discarded):
 
 ```
-Confirm and continue? (yes / refine "<phrase>")
+Flow: redesign — the design changes while migrating. Say `switch to replica` now if it is to be kept.
+Confirm and continue? (yes / refine "<phrase>" / switch to replica)
 ```
 
 User options:
 
 - **`yes`** — advance to Phase 2.
+- **`switch to replica`** — the design is to be kept: stop this cascade
+  and run `$stardust replica <url> --switch-flow` (master skill § Two
+  migration flows). The extract just produced is reused by replica
+  Phase 1; nothing else from this flow is.
 - **`refine "<phrase>"`** — re-invoke `extract --prep` with the
   refinement (e.g., "type news/* slugs as listing not article",
   "exclude /search and /404 from inventory"). Re-surface summary;

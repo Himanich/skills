@@ -96,8 +96,26 @@ Worked examples in
 `skills/stardust/reference/intent-examples.md` calibrate the style.
 Hard ceiling on questions: two per turn, no exceptions.
 
+**Zero movement is not a direction — hand off to `replica`.** Before
+restating, check whether the phrase pins every axis unchanged: "exact
+replica", "same design", "pixel-perfect", "faithful", "keep the current
+design", "1:1", "re-platform only", "preserve verbatim", or
+`ia-fidelity: verbatim` with palette, type and density all pinned. That
+is a same-design migration and `direct` has nothing to decide: write a
+one-paragraph note to `stardust/direction.md` ("zero-movement phrase —
+same-design migration; the direction is the mechanical promotion in
+`replica` Phase 2"), stamp `state.json.flow: "replica"` if unset
+(`../stardust/reference/state-machine.md` § Flow keys), and stop with
+"run `$stardust replica <url>`". Never continue into a redesign
+direction, a `--prep` module catalog or a plan on such a phrase — under
+hands-off included: "ask nothing" below never means "proceed on a
+replica phrase". (Recorded: `direct` invoked with "exact replica —
+preserve verbatim" kept going; 2,207 pages were published at 24–28 %
+pixel diff, four to five times the replica pass bar.)
+
 **Hands-off mode** (per `skills/stardust/SKILL.md` § Hands-off mode,
-`state.json.handsOff: true`): ask nothing and wait for nothing.
+`state.json.handsOff: true`): ask nothing and wait for nothing — after
+the zero-movement check above, which hands-off does not skip.
 Derive every answer the questions would have collected from the
 captured evidence — density and ia-fidelity from their documented
 defaults and trigger conditions, audience and register from the

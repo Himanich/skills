@@ -30,6 +30,9 @@ and resumable. The state file is `stardust/state.json`. It is written by
     "directionFile": "stardust/direction.md",
     "iaFidelity": "reimagined"
   },
+  "flow": "redesign",
+  "flowChosenAt": "<ISO timestamp>",
+  "flowSource": "user-phrase",
   "pages": [
     {
       "slug": "home",
@@ -56,7 +59,9 @@ and resumable. The state file is `stardust/state.json`. It is written by
 Top-level keys: `_provenance`, `site`, `direction`, `pages`. Always in
 that order. `_provenance` is always the first key. A hands-off run adds
 one optional top-level key, `handsOff` (after `direction`; see
-§ Hands-off keys).
+§ Hands-off keys). A migration project adds `flow`, `flowChosenAt`,
+`flowSource` (after `direction` and `handsOff`, before `pages`; see
+§ Flow keys).
 
 ---
 
@@ -73,6 +78,48 @@ When the run was activated hands-off (`skills/stardust/SKILL.md`
   quality gates passed, not by the user. A later explicit user
   approval appends a new history entry (without the marker); it does
   not rewrite the hands-off one.
+
+---
+
+## Flow keys
+
+A migration project records the flow it runs — the answer to the master
+skill's first migration question (`skills/stardust/SKILL.md` § Two
+migration flows) — so every sub-skill checks it instead of inferring it
+from the ask:
+
+- `"flow": "redesign" | "replica" | "reskin"`.
+- `"flowChosenAt": "<ISO timestamp>"`.
+- `"flowSource": "user-phrase" | "question" | "hands-off-default"` — a
+  keep-design or redesign phrase in the ask, the one keep-vs-redesign
+  question, or the hands-off rule (keep-design phrase → `replica`,
+  otherwise `redesign`).
+
+Stamped once, by whichever entry resolves the choice first: the master
+skill when § Two migration flows resolves; `replica` Setup (`replica`),
+`prepare-migration` Setup (`redesign`) and `reskin` Setup (`reskin`) when
+invoked directly; `direct` when a zero-movement phrase hands off
+(`replica`). Absent on redesign-only projects that never migrate (a bare
+`extract` for audit or uplift): the keys mean "a migration flow was
+chosen", not "this is a migration".
+
+**Guards that read it.** `migrate`, `deploy`, `rollout` and (for migration
+asks only) `extract` refuse to run a migration on a project that has
+`state.json` but no `flow`: they print the two-flow table and hand back to
+the master routing. `prepare-migration` refuses under `flow: replica`;
+`replica` refuses under `flow: redesign`. Both print the never-mix line and
+the one command that switches flows explicitly. `migrate` (sibling tier)
+and `rollout` additionally require, under `flow: replica`, a gated
+archetype per page type before siblings ship (`skills/rollout/SKILL.md`
+§ Setup).
+
+**Switching.** `$stardust replica --switch-flow` / `$stardust
+prepare-migration --switch-flow` / `$stardust reskin --switch-flow` rewrite `flow` (+ `flowChosenAt`,
+`flowSource: "question"`), append a `MODE SWITCH` entry to
+`stardust/direction.md` naming the artefacts the old flow produced, and
+mark every `prototyped` / `migrated` page stale (`staleReason:
+"flow-switch"`, § Stale flagging) — nothing is deleted or re-run
+automatically. A switch is the only way `flow` changes.
 
 ---
 
@@ -225,6 +272,7 @@ stardust state
 Site:        https://example.com (extracted 2026-04-25, 25/38 pages)
 Direction:   "make it more expressive for a young audience"
              (resolved 2026-04-25, see stardust/direction.md)
+Flow:        redesign (chosen 2026-04-25 from the user's phrase)
 
 Pages
 -----
@@ -256,6 +304,14 @@ file matching a secret shape (`.env*`, `_storage-state.json`,
 `*-clearance.json`). Then one line per consequence that applies on this
 checkout (`current/assets/` missing, baselines missing). Above 50 MB of
 tracked binaries under `stardust/`, add "consider Git LFS (optional)".
+
+The `Flow:` line is omitted when no flow key exists; on a migration ask
+with no flow, the report ends with the two-flow table instead of a
+recommendation (§ Flow keys). Under `flow: replica` the redesign heuristics
+below do not apply: recommend from `stardust/replica/progress.json` — an
+ungated archetype → `$stardust replica <archetype>`, all archetypes gated →
+`$stardust migrate` / `rollout` — and print the last gate numbers per
+archetype so a resumed session restarts without re-diagnosis.
 
 The recommended next step uses these heuristics, in order:
 

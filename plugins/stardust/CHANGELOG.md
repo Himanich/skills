@@ -4,6 +4,57 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.23.0 — routing enforcement: the migration flow is chosen once, recorded, and guarded at every entry
+
+Evidence base: the same 48 field sessions. 0.18.5 fixed the routing *surface* (the two-flow table,
+"never mix", the never-chain descriptions) and the class survived it: on 0.21.1 a keep-design ask
+("migrate … to the final fidelity") loaded `prepare-migration`; on 0.18.5 a "same design" ask adopted
+a redesign-only "train the template, then compile" plan and reverted it after an hour, 45 turns and
+36 M tokens; a 144-hour resume session invoked no stardust skill at all and followed memory. Earlier
+in the corpus (0.18.1–0.18.2): "build a 1:1 migration plan" ran the redesign cascade for two hours
+before `direct` was asked for an "exact replica" and kept going — 2,207 pages published at 24–28 %
+pixel diff; a migration assessment ran the prep cascade 3.5 hours before the user asked for the
+keep-design flow and the work was discarded; `migrate <url>` / `extract <url>` as first commands on
+two same-design migrations led to hand-built compilers tuned by eye. Routing must be enforced at the
+sub-skill entry points and on the resume path, not only described in the master skill.
+
+- **`state.json.flow`** (`"redesign" | "replica" | "reskin"`, + `flowChosenAt`, `flowSource:
+  user-phrase | question | hands-off-default`) — `reference/state-machine.md` § Flow keys: stamped
+  once by whichever entry resolves the choice (master routing, `replica` / `prepare-migration` /
+  `reskin` Setup, `direct`'s hand-off); changed only by an explicit `--switch-flow`, which records a
+  `MODE SWITCH` in `direction.md` and marks the old flow's prototyped/migrated pages stale.
+- **Master skill § Two migration flows**: keep-design phrases ("exact replica", "1:1",
+  "pixel-perfect", "faithful", "same design", "keep the current design", "re-platform only", every
+  axis pinned) select `replica` without a question; redesign phrases select the redesign flow;
+  anything else asks the one keep-vs-redesign question (hands-off: keep-design phrase → `replica`,
+  else `redesign`, recorded). Planning aids are named per flow; a redesign procedure inside a
+  replica run (or the reverse) is a routing defect to refuse or flag. § Routing: a resume (new
+  session, "continue", memory-driven) starts with the state report and enters the next phase through
+  its skill. § Journal rule: agent-authored crawlers, compilers, importers and gates that replace a
+  skill phase are **named deviations** in `direction.md`. Description now says "resume a … migration".
+- **Entry guards**: `migrate`, `deploy`, `rollout` and a migration-intent `extract` refuse to start a
+  migration on a project with `state.json` and no `flow` (two-flow table, hand back);
+  `prepare-migration` refuses under `flow: replica` and resolves an absent flow before running;
+  `replica` refuses under `flow: redesign` and stamps `replica` when absent; `reskin` stamps `reskin`.
+  A bare `extract` for redesign/audit/uplift and `deploy` on hand-authored prototypes (no
+  `state.json`) are unaffected.
+- **`direct` Phase 1**: a zero-movement phrase (every axis pinned) is not a direction — write the
+  hand-off note, stamp `flow: replica`, stop with "run replica"; hands-off does not skip this.
+  intent-dimensions § 9 says the same in one line.
+- **First gate carries the choice**: `prepare-migration` Phase 1 gate prints `Flow: redesign …
+  switch to replica`; `replica` Phase 1 surfaces `Flow: replica … switch to redesign`. The state report
+  gains a `Flow:` line and replica-flow recommendations from `progress.json` (last gate numbers per
+  archetype).
+- **Gated-archetype precondition** (`flow: replica`): `migrate` (sibling tier) and `rollout` Setup
+  read `stardust/replica/progress.json` and block a page type whose archetype has no gate result at
+  each breakpoint that is a pass or over-the-bar with every residual carrying a `cause`. Reuses the
+  gate's pass/residual semantics; thresholds unchanged.
+- **`evals/routing-migration-flow/`** (new): four phrasings; asserts the flow is named first, the one
+  question for plain asks, `flow` recorded, `replica` invoked and `prepare-migration` never loaded for
+  keep-design, `migrate` never first, no hand-built pipeline.
+
+Deferred to the T13 progress-surface work: the enriched state report as a script (`stardust status`).
+
 ## 0.22.2 — wait discipline: the coordinator never parks the conversation past the prompt-cache window
 
 Evidence base: the same 48 field sessions (Aug–Sep 2026, 24 projects), 20.7k main-session

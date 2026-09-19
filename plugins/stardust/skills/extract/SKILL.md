@@ -129,6 +129,16 @@ Additional checks for this sub-command:
    `site.originUrl` and the new `<url>` is a different origin, stop and
    ask before clobbering. Stardust does not silently mix two sites in
    one project.
+   **Flow guard (migration asks only).** If the ask carries migration
+   intent ("migrate", "to EDS", "re-platform", "1:1", "replica") and
+   `stardust/state.json` exists — or is about to be created — without
+   `flow`, hand back to the master skill § Two migration flows before
+   crawling: the flow is chosen and stamped there, and a keep-design
+   ask enters through `replica` (which invokes this skill with `--prep`
+   itself). A bare `extract <url>` for a redesign, audit or uplift is
+   unaffected. (Recorded: `extract` on a raw URL as the entry of a
+   same-design migration; the agent then built its own importer beside
+   `replica`.)
 3. **Browser contexts.** Open a fresh `BrowserContext` per capture
    worker (§ Concurrency; default 4). Run the **consent dismissal
    pre-flight** per `reference/playwright-recipe.md` § Pre-flight:

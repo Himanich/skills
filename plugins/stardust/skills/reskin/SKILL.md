@@ -62,7 +62,11 @@ regression check instead of a debugging tool.
 ## Setup
 
 1. Run the master skill's setup (`../stardust/SKILL.md` § Setup):
-   impeccable dep check, context loader, state read.
+   impeccable dep check, context loader, state read. **Flow.** Stamp
+   `state.json.flow: "reskin"` if unset
+   (`../stardust/reference/state-machine.md` § Flow keys); if another
+   flow is set, print it and the switch command
+   (`$stardust reskin --switch-flow`) instead of running.
 2. **Playwright import-resolvability probe** — same contract as
    `../extract/SKILL.md` § Setup:
    `node -e "import('playwright').then(()=>process.exit(0))"` from the

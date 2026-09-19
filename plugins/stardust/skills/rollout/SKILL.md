@@ -35,10 +35,27 @@ least the archetype pages first. For a single page, use `stardust deploy` direct
 
 ## Setup
 
-1. Run the master skill's setup (`skills/stardust/SKILL.md` § Setup).
+1. Run the master skill's setup (`skills/stardust/SKILL.md` § Setup). **Flow
+   guard:** `stardust/state.json` without `flow` on a migration ask → do not
+   roll out; print the master's two-flow table and hand back to its routing
+   (`skills/stardust/reference/state-machine.md` § Flow keys).
 2. Verify `stardust/migrated/` exists with at least one `*.html` page (full mode:
    all pages; archetypes-only: the archetypes + a `state.json` with `type`
    populated). If not, recommend `stardust migrate` on the archetypes and stop.
+   **Gated-archetype precondition (`flow: replica`).** Read
+   `stardust/replica/progress.json`: a page type may ship only when its
+   archetype has a gate result at every configured breakpoint that is
+   `pass: true`, or over the bar with every residual carrying a `cause`
+   (`skills/replica/reference/source-fidelity-gate.md` § Residual logging
+   format — a documented residual is a pass with an asterisk). A page type
+   whose archetype was never gated, or is over the bar with no residual
+   entries, is **blocked**: list it with its archetype slug and the command
+   to gate it (`$stardust replica <archetype>`), and neither fan out its
+   siblings nor `POST /live/` any of them. Accepting logged residuals under
+   hands-off is not a bypass for an ungated archetype. Thresholds are the
+   gate's, unchanged. (Recorded: 2,207 pages published at 24–28 % diff from
+   an archetype that never passed; a 3,366-page re-import after a random
+   review found what a gate would have.)
 3. Verify the EDS/AEM target is ready exactly as `deploy` requires (project
    scaffolding, `DA_TOKEN`, code branch pushable). `rollout` adds no new transport.
 4. If `state.json.handsOff` is true (`skills/stardust/SKILL.md` § Hands-off
