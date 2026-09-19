@@ -68,6 +68,7 @@ for a judgment pass without re-crawling.
 | `console-error` | warn | console.error output (third-party noise → allowlist) |
 | `request-failed` | error | same-origin request failed or ≥400 |
 | `decoration-stalled` | warn | sections never reached `data-section-status="loaded"` (hanging tags stall EDS decoration) |
+| `dropdown-unreachable` | error | desktop only — a hover-opened submenu closes while the pointer travels in 2px steps from the trigger link's centre to the first sub-link (its nearest point, i.e. straight down), or the sub-link is not the element under the pointer on arrival (`pointer-events: none`, occlusion). Submenus are discovered generically as header elements that become visible on `mouse.move` over a `header nav li`; items with none are skipped; probed once per distinct header (a probe that errors is `dropdown-probe-failed`, info). Fixture-tested: `scripts/test/dropdown-unreachable.test.mjs` |
 
 ## dynamics (H, browser; replay of `stardust/dynamics/parity.json`)
 
