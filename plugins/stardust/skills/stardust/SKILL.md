@@ -1,6 +1,6 @@
 ---
 name: stardust
-description: Guided multi-page redesign of an existing website through a four-phase pipeline — extract (crawl and capture the current site), direct (set a visual direction), prototype (generate redesigned HTML), and migrate (emit a deployable static site). Tracks progress incrementally per page in stardust/state.json so redesigns are resumable. Delegates the per-page design craft (typography, spacing, color, layout, motion) to the impeccable skill. Use when the user wants to redesign, revamp, modernize, or restyle an existing site they can point to by URL, run the extract/direct/prototype/migrate flow, or resume a multi-page redesign. Also routes the same-design migration flow (replica) and the donor-design flow (reskin). Not for designing a brand-new site from scratch or one-off single-component edits.
+description: Guided multi-page redesign of an existing website through a four-phase pipeline — extract (crawl and capture the current site), direct (set a visual direction), prototype (generate redesigned HTML), and migrate (emit a deployable static site). Tracks progress incrementally per page in stardust/state.json so redesigns are resumable. Delegates the per-page design craft (typography, spacing, color, layout, motion) to the impeccable skill. Use when the user wants to redesign, revamp, modernize, or restyle an existing site they can point to by URL, run the extract/direct/prototype/migrate flow, or resume a multi-page redesign or migration. Also routes the same-design migration flow (replica) and the donor-design flow (reskin). Not for designing a brand-new site from scratch or one-off single-component edits.
 license: Apache-2.0
 compatibility: Requires Node 22+, Playwright with Chromium resolvable from the project, playwright-cli on PATH, and the impeccable skill (github.com/pbakaus/impeccable) installed alongside stardust.
 ---
@@ -71,6 +71,14 @@ Once setup is done, route on the user's input:
 - **No argument.** Render the **state report** described in
   `reference/state-machine.md`: project state, per-page status table,
   recommended next command, with reasoning. Do not write anything.
+  The same applies to any **resume**: a new session on a project that
+  has `stardust/state.json`, "continue", "where are we", or a resume
+  driven by a memory file. Start with the state report (it names the
+  flow and the last gate numbers), then enter the next phase **through
+  its skill** — the procedure drives, not memory. (Recorded: a
+  144-hour resume session invoked no stardust skill at all, re-read
+  the procedure through `grep`, and followed whatever the previous
+  context remembered.)
 - **First word names a sub-skill.** Delegate to the matching sub-skill
   and pass remaining args through. Sub-skills are named by their bare
   skill name below; how to address one depends on the harness. Claude
@@ -143,6 +151,45 @@ That answer selects the flow; the downstream chain is shared.
   surface gets a disposition before import; `rollout` D2 implements the
   reproducible rows and `qa` replays parity. Never for redesign-only
   work (`uplift`, a bare `extract`): dynamics is a migration concern.
+
+**Choosing, and recording the choice.** Read the ask before any sub-skill
+loads:
+
+- **Keep-design phrases select `replica` without a question:** "exact
+  replica", "1:1", "pixel-perfect", "faithful", "same design", "keep the
+  current design", "as is", "re-platform only", "migrate keeping the
+  design", or a direction phrase that pins every axis unchanged
+  (`ia-fidelity: verbatim` with palette, type and density all pinned).
+- **Redesign phrases select the redesign flow:** "redesign", "modernise",
+  "refresh", "new look", "rethink", "reimagine" — any phrase that moves a
+  design axis.
+- **Anything else** ("migrate X to EDS", "build a migration plan for X")
+  asks the one keep-vs-redesign question — the only question this section
+  asks. Under hands-off it is not asked: a keep-design phrase selects
+  `replica`, otherwise `redesign`, recorded as a named assumption in
+  `direction.md`.
+
+Stamp the choice in `state.json` as `flow` / `flowChosenAt` / `flowSource`
+(`reference/state-machine.md` § Flow keys) before delegating. The
+sub-skills enforce it: `migrate`, `deploy`, `rollout` and a
+migration-intent `extract` refuse to start a migration on a project with
+`state.json` and no `flow`; `prepare-migration` refuses under
+`flow: replica` and `replica` under `flow: redesign`. Switching is
+explicit — `$stardust replica --switch-flow` / `$stardust
+prepare-migration --switch-flow` — and marks the old flow's prototyped or
+migrated pages stale (§ Per-page state).
+
+**Planning aids belong to one flow.** Redesign: the `prepare-migration`
+plan and its phase gates, the canon, module catalogs, template plans of
+the "learn the template, then compile" kind. Keep-design: `replica`'s
+inconsistency register and `progress.json`, the archetype gate ledgers,
+`rollout` waves. A redesign procedure or plan template inside a replica
+run — or the reverse — is a routing defect: refuse it, or flag it in
+`direction.md` and hand back to this section. (Recorded: a same-design
+migration adopted a redesign-only "train the template, then compile" plan
+and spent an hour, 45 turns and 36 M tokens before reverting it; another
+loaded `prepare-migration` for a keep-design ask on a plugin that already
+described the two flows — description without a guard did not hold.)
 
 State the chosen flow explicitly in the first response to a migration
 question, including the fact that `replica` needs no `prepare-migration`
@@ -302,6 +349,15 @@ here*. The journal does.
 `reference/journal-format.md`.** On every prompt execution that resulted in
 a non-trivial write (any `direct`, `prototype`, `migrate`, or substantial
 iteration), append an entry before ending the turn.
+
+**Named deviations.** Any agent-authored crawler, compiler, importer,
+wave driver or gate that replaces a skill phase is recorded in
+`stardust/direction.md` as a **named deviation** — what it replaces, why
+the shipped instrument did not serve, where the replacement lives — and
+noted in the journal entry. An unrecorded parallel pipeline is a defect,
+not initiative: three recorded migrations rebuilt the import pipeline by
+hand (one a 60 KB importer) beside skills that shipped it, and their
+fidelity numbers were never comparable to the gate's.
 
 The journal is **append-only**. If a prior entry turns out wrong, write a
 new entry that corrects it; do not edit history. This preserves the

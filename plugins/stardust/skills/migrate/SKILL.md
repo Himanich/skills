@@ -66,7 +66,18 @@ inline, or run an impeccable command) and re-invoke migrate.
    project root and re-install (`npm i -D playwright --no-save
    --legacy-peer-deps`) on failure.
 1. Run the master skill's setup
-   (`skills/stardust/SKILL.md` § Setup).
+   (`skills/stardust/SKILL.md` § Setup). **Flow guard.** If
+   `stardust/state.json` exists without `flow` and the ask is a
+   migration (a URL plus "migrate" / "to EDS" / "re-platform"), do not
+   run: print the two-flow table from the master skill § Two migration
+   flows and hand back to its routing — the flow is chosen and stamped
+   there before any sub-skill runs
+   (`skills/stardust/reference/state-machine.md` § Flow keys). Under
+   hands-off the master's default applies (keep-design phrase →
+   `replica`, otherwise `redesign`), recorded in `direction.md`.
+   (Recorded: `migrate <url>` as the first command of two same-design
+   migrations led to a hand-built compiler tuned by eye instead of the
+   replica gate.)
 2. Verify `stardust/state.json` exists with at least one
    `directed` page.
 3. Verify project-root `DESIGN.md` and `DESIGN.json` exist with
@@ -146,6 +157,18 @@ before rendering any page. Never import a site as static without a
 decision per dynamic row. Per page, rows of the inventory that touch it
 become `contentDeviations[]` `kind: "dynamic-dependency"` entries
 (`reference/content-preservation.md § Dynamic dependencies`).
+
+**Gated-archetype precondition (`flow: replica`).** Before rendering any
+`sibling`-tier page, read `stardust/replica/progress.json`: the page
+type's archetype must have a gate result at every configured breakpoint
+that is `pass: true`, or over the bar with every residual carrying a
+`cause` (`../replica/reference/source-fidelity-gate.md` § Residual
+logging format — a documented residual is a pass with an asterisk). An
+archetype never gated, or over the bar with no residual entries, blocks
+its page type: report the archetype slug and `$stardust replica
+<archetype>`, and render nothing for that type. The same rule guards
+`rollout` Setup; the published-origin re-gate is unchanged. Thresholds
+are the gate's.
 
 Print the plan and wait for confirmation when the scope is large:
 

@@ -42,7 +42,13 @@ eyeballing.
 ## Setup
 
 1. Run the master skill's setup (`../stardust/SKILL.md` § Setup): context
-   loader, state read.
+   loader, state read. **Flow guard.** If `state.json.flow` is
+   `redesign`, refuse: print the never-mix line and the switch command
+   (`$stardust replica --switch-flow`, which marks the redesign flow's
+   prototyped and migrated pages stale — master skill § Two migration
+   flows). If `flow` is absent, stamp `flow: "replica"`,
+   `flowSource: "user-phrase"` (`../stardust/reference/state-machine.md`
+   § Flow keys): invoking `replica` is the choice.
 2. Verify Playwright is importable from the project root (extract needs it;
    so do the gate scripts).
 3. Install the gate's pixel deps in the project:
@@ -81,6 +87,12 @@ replica consumes the full migration inventory, not the discovery cap:
   current state (Phase 2 promotes these verbatim).
 - `state.json.pages[].type` — page types (each becomes one archetype).
 - `DESIGN.json.extensions.modules[]` — module candidates (become blocks).
+
+When extract's summary comes back, surface it with the flow line first —
+"Flow: replica — the design is kept. Say `switch to redesign` now if it is
+to change." — so the first thing the user sees in this flow is the choice
+it rests on. `switch to redesign` runs `$stardust prepare-migration
+--switch-flow`; the extract is reused, nothing else is.
 
 **Bounded/single-page entry (one-page or pilot runs).** `--prep` is the
 site-wide contract; it is NOT the only way in. When the ask is "replicate
