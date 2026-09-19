@@ -4,6 +4,24 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.23.1 — chrome: hover-dropdown reachability rule (deploy § 6, replica mechanism cloning) + qa `dropdown-unreachable` rendered check
+
+Recurring chrome defect: a hover-opened desktop dropdown whose sub-list is absolutely positioned
+with an offset below the hovered `<li>` closes as the pointer crosses the gap; every crop and pixel
+gate passes because the resting state is identical (recorded 2026-09-19: 5/5 dropdowns unreachable
+on a deployed origin; an earlier same-symptom `pointer-events: none` case in the 2026-08 harvest).
+
+- **`deploy/SKILL.md` § 6**: "Hover dropdowns need a contiguous hover surface" — `<li>` spans the
+  nav row with the sub-list at `top: 100%`, or keep the lifted geometry and bridge the gap with an
+  invisible `::before` (off in the mobile query; preferred in replica mode); pre-deploy grep.
+- **`replica/reference/recreation-procedure.md`** Mechanism cloning rule item 4: hover-path
+  reachability is part of the state machine — verify trigger → first sub-link keeps the menu open.
+- **qa `dropdown-unreachable`** (rendered, desktop 1440, error): submenus discovered generically as
+  header elements that become visible on hover over a `header nav li`; the pointer walks in 2 px
+  steps straight down to the first sub-link; fails if the menu closes on the way or on arrival or
+  the sub-link is not under the pointer. Once per distinct header; fixture test
+  `qa/scripts/test/dropdown-unreachable.test.mjs`.
+
 ## 0.23.0 — routing enforcement: the migration flow is chosen once, recorded, and guarded at every entry
 
 Evidence base: the same 48 field sessions. 0.18.5 fixed the routing *surface* (the two-flow table,
