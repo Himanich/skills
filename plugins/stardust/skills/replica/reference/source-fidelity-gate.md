@@ -357,6 +357,12 @@ lifted, capture unhardened), and the fix is upstream, not a fourth loop.
   test), and a page's four rounds then spent a fixed 30 minutes sleeping.
   When a capture legitimately needs longer (a 10k-px page under `--settle`),
   raise the variable for that page and say so in the ledger.
+- **Your waiting has a ceiling too.** A gate round over several archetypes
+  or siblings runs in the background, not as a foreground `for` loop of
+  `gate.sh` calls (recorded: 5–10-minute foreground sweeps, 58 % of which
+  re-wrote the whole prompt prefix because the cache window is 5 minutes).
+  Read the round's ledger at most every 4 minutes, never with a single
+  `sleep` of 5 minutes or more — the master skill's wait discipline.
 - **Media-density budget.** The ≤3-iteration convergence was validated on a
   typographic, low-image page (the retail home). Image-dense commerce homes
   (recorded: a fashion retailer, ~130 imgs) spend iterations on media parity —

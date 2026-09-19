@@ -190,6 +190,10 @@ should run the bundled, resumable driver rather than a serial loop:
 `node skills/deploy/scripts/deploy-batch.mjs --org <org> --repo <repo>
 --branch <branch> --content <dir>` (concurrency pool, persistent ledger that skips
 already-live pages, retry/backoff, append-only log, delivered-`.plain.html` check).
+The driver and every batch run in the background; its log and ledger are the
+progress file. Check them at most every 4 minutes and never with a fixed `sleep`
+of 5 minutes or more (the prompt-cache window) — the master skill's wait
+discipline; recorded batch waits of 9–10 minutes re-wrote a ~650k prefix each time.
 After a transient blip, re-run the same command — it re-drives only the FAILs.
 Then reconcile the ledger into coverage with `update-coverage.mjs`.
 

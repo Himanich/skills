@@ -193,6 +193,30 @@ otherwise):
   watchdog killed carried the fattest briefs and whole-document reads,
   and a lean re-dispatch finished the same pages; that conversion lost
   89 minutes to a blind wait and 30 to fixed sleeps.)
+- **Wait discipline: never park the conversation past the prompt-cache
+  window.** Anything expected to run longer than about 2 minutes — a gate
+  round over several pages, a crawl, a batch push, a capture set, a
+  delegated agent — runs in the background and writes a progress or
+  summary file; the coordinator never runs it in the foreground and never
+  covers it with one long `sleep`. While it runs, do independent work;
+  when there is none, check back with one short read of the progress
+  file **at most every 4 minutes** — never a fixed `sleep` of 5 minutes or
+  more, and never a blocking "wait for the agent's output" call with a
+  long timeout. The number is not taste: the prompt cache expires after
+  5 idle minutes, and at the 500–900k-token contexts a migration reaches,
+  every expiry re-writes the whole prefix at write price (12× a cached
+  read). Field data, 48 sessions: a foreground wait of ≤ 4 minutes missed
+  the cache in ~10 % of cases, ≥ 5 minutes in 85–87 %; 572 such
+  agent-side waits re-wrote 325 M tokens — 46 % of everything those
+  sessions wrote to the cache. Ending the turn to wait for a completion
+  notification helps the user, not the cache: a notification that arrives
+  after 5 minutes misses too (137 recorded), so prefer short checks for
+  waits under ~45 minutes and end the turn only when the wait is longer
+  or the user should decide. (Claude Code: `run_in_background: true` on
+  the shell call, the harness posts a task notification when it exits;
+  `promptCacheTtl: "1h"` in settings.json stretches the window to an hour
+  at 1.6× write price — an owner setting, worth it for any multi-hour
+  session.)
 - **Commit at the end of each phase** when the project is a git repo.
   Before the FIRST such commit, re-run Setup step 6 — the first commit
   lands at the end of the audit phase, long before deploy's SKILL.md is
