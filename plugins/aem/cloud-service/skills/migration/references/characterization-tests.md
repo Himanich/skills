@@ -37,10 +37,11 @@ plus a dev-deploy check before merge.
 1. **One test per finding**, ≤ ~25 lines, one assertion of the behavioral outcome, from a skeleton
    below. No suites, edge cases, or parameterized variants. A migration batch is at most **5
    findings** (Step 5), so a batch pins at most 5 tests — no separate cap needed.
-2. **Reuse the existing test harness only.** Requires JUnit 5 (`org.junit.jupiter`), Mockito
-   (`org.mockito:mockito-core`), and — for resource side effects — `io.wcm.testing.mock.aem`, all
-   already `<scope>test</scope>` in the module's pom. **If any is absent → skip**
-   (`no-test-harness`). Never add dependencies (that costs a build + reruns).
+2. **Reuse the existing test harness only.** Skeleton A needs JUnit 5 (`org.junit.jupiter`) +
+   Mockito (`org.mockito:mockito-core`); skeletons B/C additionally need `io.wcm.testing.mock.aem`
+   (AemContext) — all `<scope>test</scope>` in the module's pom. **If the deps a given skeleton
+   requires are absent → skip** (`no-test-harness`); a missing `io.wcm.testing.mock.aem` blocks only
+   B/C, not the Mockito-only skeleton A. Never add dependencies (that costs a build + reruns).
 3. **Stable seam required.** Bind to a method that exists **unchanged** after the migration (a work
    method or a delegated business method). If the logic is inline in the framework callback with no
    stable delegate → **skip** (`no-stable-seam`). This is the single most important rule: it is what
@@ -77,12 +78,21 @@ for the target already exists, add **one** method to it instead of a new file.
 Run only the generated test, from the reactor root:
 
 ```bash
-mvn -q -pl <module> -am -Dtest=<TargetClass>MigrationTest test
+mvn -pl <module> -am -Dtest=<TargetClass>MigrationTest -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false test
 ```
 
-- **Before the edit:** must print `BUILD SUCCESS` with the test green → behavior pinned.
-- **After the edit:** re-run the identical command. Green = behavior preserved. Red = real
-  regression → revert that finding's edit and record `pin-fail → reverted`.
+Do **not** add `-q`: on a *passing* build Maven prints neither `BUILD SUCCESS` nor the Surefire
+`Tests run:` line (both are INFO-level, which `-q` suppresses), so a green run would look like a
+failure and you would wrongly skip it. `-DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false`
+is required because `-am` also builds the target module's upstream **reactor** modules through the
+`test` phase, where the `-Dtest` filter matches nothing — without those flags Surefire fails them
+with *"No tests matching pattern"* before the target test ever runs.
+
+- **Before the edit:** the run must end in `BUILD SUCCESS` (exit 0) with the target test green
+  (`Tests run: N, Failures: 0, Errors: 0`) → behavior pinned.
+- **After the edit:** re-run the identical command. `BUILD SUCCESS` with the target test green =
+  behavior preserved. `BUILD FAILURE` with the target test failing = real regression → revert that
+  finding's edit and record `pin-fail → reverted`.
 
 ## Skeletons (fill placeholders from the finding — do not extend)
 
