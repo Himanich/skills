@@ -37,10 +37,22 @@ plus a dev-deploy check before merge.
 1. **One test per finding**, ≤ ~25 lines, one assertion of the behavioral outcome, from a skeleton
    below. No suites, edge cases, or parameterized variants. A migration batch is at most **5
    findings** (Step 5), so a batch pins at most 5 tests — no separate cap needed.
-2. **Reuse the existing test harness only.** Requires JUnit 5 (`org.junit.jupiter`), Mockito
-   (`org.mockito:mockito-core`), and — for resource side effects — `io.wcm.testing.mock.aem`, all
-   already `<scope>test</scope>` in the module's pom. **If any is absent → skip**
-   (`no-test-harness`). Never add dependencies (that costs a build + reruns).
+2. **Match the module's test stack; add the minimum only if none exists.** Skeleton A needs only
+   JUnit + Mockito; skeletons B/C also need `io.wcm.testing.mock.aem`.
+   - **Harness already present (common on projects migrated from AEM 6.x):** use whatever the module
+     has and **match its version** — **JUnit 4** (`@RunWith(MockitoJUnitRunner.class)`, `AemContext`
+     as a `@Rule` field) or **JUnit 5** (`@ExtendWith(...)`, `AemContextExtension`). Add nothing.
+   - **No test harness in the module:** add the minimal `<scope>test</scope>` deps **once per
+     module** — `org.junit.jupiter:junit-jupiter` + `org.mockito:mockito-core` (+
+     `io.wcm.testing.aem-mock-junit5` for B/C). **Version-match the project's Java level: Java 8 →
+     Mockito 4.x** (Mockito 5 requires Java 11), Java 11+ → Mockito 5.x. This is a once-per-module
+     cost amortized across that module's findings, not per-finding.
+   - **Guardrail — a run reporting `Tests run: 0` is a false pass, not a pin.** (Happens when a
+     JUnit 5 test is added to a module whose Surefire can't see the jupiter engine.) If the pre-edit
+     run does not actually execute the test, record `no-test-harness` and move on — never report
+     `pinned` for a test that did not run.
+   - If deps can't be resolved (dead legacy repo / offline — common for 6.x/AMS) → skip
+     `no-test-harness`; do not retry.
 3. **Stable seam required.** Bind to a method that exists **unchanged** after the migration (a work
    method or a delegated business method). If the logic is inline in the framework callback with no
    stable delegate → **skip** (`no-stable-seam`). This is the single most important rule: it is what
@@ -51,12 +63,11 @@ plus a dev-deploy check before merge.
 5. **Exactly two runs total.** Green before the edit (pins behavior), green after the edit (same
    Step 5 iteration). Nothing in between.
 
-**Expected yield is low on legacy code — that is by design, not a failure.** Many legacy jobs and
-listeners inline their logic in the framework callback (no delegate to bind to), and services build
-their cache internally or won't activate under `registerInjectActivateService` without every
-`@Reference` mocked. Expect to skip more often than you pin; a handful of pinned `guavaCache` /
-`scheduler` tests is a good outcome. Do not chase coverage or reshape the target code to make it
-testable — that is exactly the effort this module refuses to spend.
+**The one legitimate reason to skip is `no-stable-seam` (rule 3), not tooling.** Some legacy jobs and
+listeners inline their logic in the framework callback with nothing to bind to — skip those. But a
+missing JUnit 5 dep is **not** a reason to skip: match the module's JUnit 4/5 stack, or add the
+minimal deps once (rule 2). Do not chase coverage or reshape the target code to make it testable —
+that is the only effort this module refuses to spend.
 
 ## Reporting (Step 5 / Step 6)
 
@@ -80,27 +91,39 @@ Run only the generated test, from the reactor root:
 mvn -q -pl <module> -am -Dtest=<TargetClass>MigrationTest test
 ```
 
-- **Before the edit:** must print `BUILD SUCCESS` with the test green → behavior pinned.
+- **Before the edit:** must print `BUILD SUCCESS` **and `Tests run: 1`** (0 tests executed is a
+  false pass → record `no-test-harness`, per rule 2) with the test green → behavior pinned.
 - **After the edit:** re-run the identical command. Green = behavior preserved. Red = real
   regression → revert that finding's edit and record `pin-fail → reverted`.
 
 ## Skeletons (fill placeholders from the finding — do not extend)
 
-### A. `guavaCache` — memoization outcome (cache hit calls the backend once)
+> **JUnit 4 modules:** the bodies are identical — only swap the annotations. Class-level
+> `@RunWith(MockitoJUnitRunner.class)`; for A/B/C an `AemContext` `@Rule` field
+> (`@Rule public final AemContext ctx = new AemContext();`) instead of `AemContextExtension`;
+> `org.junit.Test` and `org.junit.Assert.*`.
+
+### A. `guavaCache` — cached lookup returns a stable value (memoization check optional)
+
+Construct the SUT however the module allows — do **not** require a constructor-injectable backend.
+The mandatory part pins the current return value (characterization); add the memoization `verify`
+**only** when a loader/backend collaborator is actually mockable.
 
 ```java
-@ExtendWith(MockitoExtension.class)
 class <TargetClass>MigrationTest {
   @Test
-  void repeatedKeyHitsBackendOnce() {
-    <Backend> backend = mock(<Backend>.class);
-    when(backend.<load>(<KEY>)).thenReturn(<VALUE>);
-    <TargetClass> sut = new <TargetClass>(backend);   // or inject the mocked collaborator
+  void cachedLookupIsStable() throws Exception {
+    <TargetClass> sut = /* construct as the module allows: new <TargetClass>(),
+        ctx.registerInjectActivateService(new <TargetClass>()), or new <TargetClass>(mockedDep) */;
 
-    assertEquals(<VALUE>, sut.<publicCacheMethod>(<KEY>));
-    assertEquals(<VALUE>, sut.<publicCacheMethod>(<KEY>));   // second call served from cache
+    Object first  = sut.<publicCacheMethod>(<KEY>);   // pin whatever it returns today
+    Object second = sut.<publicCacheMethod>(<KEY>);
 
-    verify(backend, times(1)).<load>(<KEY>);          // identical for Guava and Caffeine
+    assertNotNull(first);
+    assertEquals(first, second);                       // repeated lookup stays consistent post-swap
+    // OPTIONAL — add @ExtendWith(MockitoExtension.class) (JUnit 5) / @RunWith(MockitoJUnitRunner.class)
+    // (JUnit 4) and this line ONLY when the backend is a mockable collaborator:
+    //   verify(backend, times(1)).<load>(<KEY>);      // pins memoization itself, identical Guava/Caffeine
   }
 }
 ```
