@@ -38,7 +38,8 @@ plus a dev-deploy check before merge.
    below. No suites, edge cases, or parameterized variants. A migration batch is at most **5
    findings** (Step 5), so a batch pins at most 5 tests — no separate cap needed.
 2. **Match the module's test stack; add the minimum only if none exists.** Skeleton A needs only
-   JUnit + Mockito; skeletons B/C also need `io.wcm.testing.mock.aem`.
+   JUnit + Mockito; skeletons B/C also need `io.wcm.testing.mock.aem` (AemContext) — so a missing
+   `io.wcm.testing.mock.aem` blocks only B/C, never the Mockito-only skeleton A.
    - **Harness already present (common on projects migrated from AEM 6.x):** use whatever the module
      has and **match its version** — **JUnit 4** (`@RunWith(MockitoJUnitRunner.class)`, `AemContext`
      as a `@Rule` field) or **JUnit 5** (`@ExtendWith(...)`, `AemContextExtension`). Add nothing.
@@ -88,13 +89,24 @@ for the target already exists, add **one** method to it instead of a new file.
 Run only the generated test, from the reactor root:
 
 ```bash
-mvn -q -pl <module> -am -Dtest=<TargetClass>MigrationTest test
+mvn -pl <module> -am -Dtest=<TargetClass>MigrationTest -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false test
 ```
 
-- **Before the edit:** must print `BUILD SUCCESS` **and `Tests run: 1`** (0 tests executed is a
-  false pass → record `no-test-harness`, per rule 2) with the test green → behavior pinned.
-- **After the edit:** re-run the identical command. Green = behavior preserved. Red = real
-  regression → revert that finding's edit and record `pin-fail → reverted`.
+Do **not** add `-q`: on a *passing* build Maven prints neither `BUILD SUCCESS` nor the Surefire
+`Tests run:` line (both are INFO-level, which `-q` suppresses), so a green run would look like a
+failure and you would wrongly skip it. `-DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false`
+is required because `-am` also builds the target module's upstream **reactor** modules through the
+`test` phase, where the `-Dtest` filter matches nothing — without those flags Surefire fails them
+with *"No tests matching pattern"* before the target test ever runs.
+
+- **Before the edit:** the run must end in `BUILD SUCCESS` (exit 0) with the target test green —
+  `Tests run: 1, Failures: 0, Errors: 0`. **`Tests run: 0` is a false pass, not a pin:**
+  `-DfailIfNoTests=false` lets a test that never executed still succeed (e.g. a freshly added
+  JUnit 5 test in a module whose Surefire can't see the jupiter engine). If the target test did not
+  actually run, record `no-test-harness` and move on.
+- **After the edit:** re-run the identical command. `BUILD SUCCESS` with the target test green =
+  behavior preserved. `BUILD FAILURE` with the target test failing = real regression → revert that
+  finding's edit and record `pin-fail → reverted`.
 
 ## Skeletons (fill placeholders from the finding — do not extend)
 
