@@ -198,6 +198,11 @@ for their CAM project name or ID; the tools resolve it internally (prefer **`pro
 when known). Do not pass an unconfirmed project name string. **Full tool schemas, REST notes, retries, and error handling:**
 [references/cam-mcp.md](references/cam-mcp.md).
 
+If the **AEM MCP Server** is connected instead, run the recipes **`list-bpa-findings-by-pattern`**
+and **`list-bpa-findings-by-severity`** with `read-api`. They return the same response shapes and
+follow the same confirmation rules. The pattern recipe pages its results. See
+[references/cam-mcp.md](references/cam-mcp.md#through-the-aem-mcp-server-code-mode-recipes).
+
 ### Calling the helper
 
 Scripts live under **`./scripts/`** (next to this `SKILL.md`).
