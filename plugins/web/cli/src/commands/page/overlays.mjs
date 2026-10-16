@@ -32,18 +32,28 @@ export function detectOverlays(driver, session, patterns) {
 function stepCode(step) {
   if (step.action === 'click') {
     const sel = JSON.stringify(step.selector);
-    return `await page.locator(${sel}).first().click({ timeout: 2000 }).catch(() => {});`;
+    return (
+      `{ const l = page.locator(${sel}).first(); ` +
+      `if ((await l.count()) === 0) { skipped++; } ` +
+      `else { await l.click({ timeout: 2000 }); clicked++; } }`
+    );
   }
   return `await page.waitForTimeout(${Number(step.ms)});`;
 }
 
+function dismissCode(steps) {
+  const body = steps.map(stepCode).join('\n');
+  return `async page => {\nlet clicked = 0, skipped = 0;\n${body}\nreturn { clicked, skipped };\n}`;
+}
+
 function runDismissSteps(driver, session, overlay) {
-  const body = overlay.dismiss.map(stepCode).join('\n');
+  const base = { id: overlay.id, strategy: 'dismiss' };
   try {
-    driver.run(session, { code: `async page => {\n${body}\nreturn true;\n}` });
-    return { id: overlay.id, strategy: 'dismiss', ok: true };
-  } catch {
-    return { id: overlay.id, strategy: 'dismiss', ok: false };
+    const result = parseMaybe(driver.run(session, { code: dismissCode(overlay.dismiss) }));
+    if (result?.clicked > 0) return { ...base, ok: true };
+    return { ...base, ok: false, error: 'no dismiss selector matched' };
+  } catch (err) {
+    return { ...base, ok: false, error: err.message };
   }
 }
 
@@ -58,7 +68,8 @@ function dismissThorough(driver, session, report) {
   const dismissed = report.overlays
     .filter(hasSteps)
     .map((o) => runDismissSteps(driver, session, o));
-  const toHide = report.overlays.filter((o) => !hasSteps(o));
+  const failed = new Set(dismissed.filter((d) => !d.ok).map((d) => d.id));
+  const toHide = report.overlays.filter((o) => !hasSteps(o) || failed.has(o.id));
   return [...dismissed, ...hideOverlays(driver, session, report, toHide)];
 }
 
@@ -68,7 +79,7 @@ function dismissThorough(driver, session, report) {
  * @param {string} session
  * @param {object} report detection report
  * @param {{ mode: 'quick'|'thorough' }} spec
- * @returns {Array<{ id: string, strategy: string, ok: boolean }>}
+ * @returns {Array<{ id: string, strategy: string, ok: boolean, error?: string }>}
  */
 export function dismissOverlays(driver, session, report, { mode }) {
   if (mode === 'quick') {
@@ -88,10 +99,10 @@ Example:
   web page overlays --session s1 --dismiss --mode thorough
 Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
-  with --dismiss also: applied: [{ id, strategy: hide|dismiss, ok }], residual: [{ tag, id, ... }]
+  with --dismiss also: applied: [{ id, strategy, ok, error? }], residual: [{ tag, id, ... }]
 Notes:
   --dismiss quick hides every overlay with CSS. thorough (default) clicks the CMP's dismiss steps
-  and hides overlays that have none; scroll lock is fixed in both. residual[] lists fixed
+  and hides overlays that have none or whose dismiss failed; scroll lock is fixed in both. residual[] lists fixed
   high-z-index elements still covering the viewport: check it is empty.
 `;
 

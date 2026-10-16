@@ -44,7 +44,7 @@ const REPORT = {
   scroll_fix: 'html { overflow:auto!important }',
 };
 
-async function run(extra, { runFails = false } = {}) {
+async function run(extra, { runFails = false, dismissResult = { clicked: 1, skipped: 0 } } = {}) {
   const calls = [];
   const fetchUrls = [];
   const driver = {
@@ -60,7 +60,7 @@ async function run(extra, { runFails = false } = {}) {
       if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0'))
         throw new Error('boom');
       if (o.code.includes('r.right > 0')) return '[]';
-      return o.code.includes('page.evaluate(') ? JSON.stringify(REPORT) : true;
+      return o.code.includes('page.evaluate(') ? JSON.stringify(REPORT) : dismissResult;
     },
     evaluate: (s, expr) => (calls.push(['evaluate', expr]), 'ok'),
   };
@@ -144,4 +144,38 @@ test('invalid --mode exits 2 without driver calls', async () => {
 test('--refresh-db triggers fetch; default fetches on empty cache too', async () => {
   const { fetchUrls } = await run(['http://x', '--refresh-db']);
   assert.equal(fetchUrls.length, 2);
+});
+
+test('dismiss code counts matches and does not swallow click errors', async () => {
+  const { calls } = await run(['http://x', '--dismiss']);
+  const code = calls.find((c) => c[1].includes('#acme-save'))[1];
+  assert.match(code, /count\(\)/);
+  assert.doesNotMatch(code, /\.catch\(/);
+});
+
+test('zero clicked → dismiss ok:false and the overlay is hidden as fallback', async () => {
+  const { doc, calls } = await run(['http://x', '--dismiss'], {
+    dismissResult: { clicked: 0, skipped: 2 },
+  });
+  assert.deepEqual(doc.applied[0], {
+    id: 'overlay-0',
+    strategy: 'dismiss',
+    ok: false,
+    error: 'no dismiss selector matched',
+  });
+  const h = hides(calls);
+  assert.match(h[0][1], /#acme-hide/);
+  assert.match(h[0][1], /\.modal-hide/);
+});
+
+test('a throwing dismiss run reports ok:false with the error and hides the overlay', async () => {
+  const { doc, calls } = await run(['http://x', '--dismiss'], { runFails: true });
+  assert.equal(doc.applied[0].ok, false);
+  assert.equal(doc.applied[0].error, 'boom');
+  assert.match(hides(calls)[0][1], /#acme-hide/);
+});
+
+test('one click → dismiss ok:true', async () => {
+  const { doc } = await run(['http://x', '--dismiss']);
+  assert.deepEqual(doc.applied[0], { id: 'overlay-0', strategy: 'dismiss', ok: true });
 });
