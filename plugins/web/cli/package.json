@@ -3,10 +3,9 @@
   "version": "0.0.0-semantically-released",
   "type": "module",
   "bin": {
-    "web": "./bin/web.mjs"
+    "web": "./dist/web.mjs"
   },
   "files": [
-    "bin",
     "dist"
   ],
   "engines": {
