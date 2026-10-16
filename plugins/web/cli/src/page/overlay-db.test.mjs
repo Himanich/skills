@@ -1,8 +1,11 @@
-// Run: node --test scripts/overlay-db.test.js
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { normalizeCmpRules, parseReport, buildHideExpression } = require('./overlay-db.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  normalizeCmpRules, buildHideExpression, loadPatterns,
+} from '#src/page/overlay-db.mjs';
 
 // Shapes taken from Consent-O-Matic Rules.json (methods: [{ name, action }]).
 const rules = {
@@ -98,7 +101,67 @@ test('hide expression selects overlays by id; no ids keeps only scroll_fix', () 
   assert.equal(injected, report.scroll_fix);
 });
 
-test('reads the report from saved playwright-cli eval output', () => {
-  const saved = `### Result\n${JSON.stringify(JSON.stringify(report))}\n### Ran Playwright code\n`;
-  assert.deepEqual(parseReport(saved), report);
+const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const RULES = { x: rules.withHide };
+
+function fakeFetch(failing = false) {
+  const urls = [];
+  const fetch = async (url) => {
+    urls.push(url);
+    if (failing) throw new Error('offline');
+    return url.endsWith('.json')
+      ? { ok: true, json: async () => RULES }
+      : { ok: true, text: async () => '##.cookie-bar\n! c\n' };
+  };
+  return { fetch, urls };
+}
+
+function cacheWith(fetchedAt) {
+  const dir = mkdtempSync(join(tmpdir(), 'odb-'));
+  const patterns = { cmps: { old: {} }, generic_selectors: ['.old'], stats: {} };
+  writeFileSync(join(dir, 'patterns.json'), JSON.stringify(patterns));
+  writeFileSync(join(dir, 'last-fetch'), fetchedAt);
+  return dir;
+}
+
+test('loadPatterns refetches a stale cache and rewrites it', async () => {
+  const dir = cacheWith(new Date(Date.now() - 8 * 86400000).toISOString());
+  const { fetch, urls } = fakeFetch();
+  const p = await loadPatterns({ fetch, cacheDir: dir });
+  assert.equal(urls.length, 2);
+  assert.deepEqual(Object.keys(p.cmps), ['x']);
+  assert.deepEqual(p.generic_selectors, ['.cookie-bar']);
+  assert.deepEqual(JSON.parse(readFileSync(join(dir, 'patterns.json'), 'utf8')).cmps, p.cmps);
+});
+
+test('loadPatterns uses a fresh cache without fetching', async () => {
+  const dir = cacheWith(new Date().toISOString());
+  const { fetch, urls } = fakeFetch();
+  const p = await loadPatterns({ fetch, cacheDir: dir });
+  assert.equal(urls.length, 0);
+  assert.deepEqual(Object.keys(p.cmps), ['old']);
+});
+
+test('loadPatterns refresh forces a fetch on a fresh cache', async () => {
+  const dir = cacheWith(new Date().toISOString());
+  const { fetch, urls } = fakeFetch();
+  await loadPatterns({ fetch, cacheDir: dir, refresh: true });
+  assert.equal(urls.length, 2);
+});
+
+test('loadPatterns falls back to the cache with a warning when fetch fails', async () => {
+  const dir = cacheWith('2000-01-01T00:00:00Z');
+  const stderr = sink();
+  const p = await loadPatterns({ fetch: fakeFetch(true).fetch, cacheDir: dir, stderr });
+  assert.deepEqual(Object.keys(p.cmps), ['old']);
+  assert.match(stderr.buf, /Using cached pattern database/);
+});
+
+test('loadPatterns without a cache and failing fetch throws FAILURE with hint', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'odb-'));
+  await assert.rejects(
+    loadPatterns({ fetch: fakeFetch(true).fetch, cacheDir: dir, stderr: sink() }),
+    (e) => e.code === 'FAILURE' && /cannot fetch overlay pattern database/.test(e.message)
+      && /--refresh-db/.test(e.hint),
+  );
 });

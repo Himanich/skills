@@ -1,6 +1,7 @@
 import { registerTree } from '#src/commands/page/tree.mjs';
 import { registerReduce } from '#src/commands/page/reduce.mjs';
 import { registerCollect } from '#src/commands/page/collect.mjs';
+import { registerOverlays } from '#src/commands/page/overlays.mjs';
 
 /**
  * Register the `page` group.
@@ -14,4 +15,5 @@ export function registerPage(program, deps) {
   registerTree(group, deps);
   registerReduce(group, deps);
   registerCollect(group, deps);
+  registerOverlays(group, deps);
 }
