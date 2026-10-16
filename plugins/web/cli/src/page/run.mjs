@@ -29,7 +29,10 @@ export async function runPageCommand(command, deps, { url, fn }) {
     },
   );
   const doc = {
-    ...result, url: health?.url || url, session, durationMs: Date.now() - start,
+    ...result,
+    url: health?.url || url,
+    session,
+    durationMs: Date.now() - start,
   };
   ctx.print(doc, result.text);
 }

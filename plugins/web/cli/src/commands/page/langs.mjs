@@ -26,9 +26,8 @@ export function registerLangs(group, deps) {
       const detector = await (deps.loadDetector ?? loadDetector)();
       return runPageCommand(command, deps, {
         url,
-        fn: (driver, session) => detectLanguages(
-          driver.run(session, { code: loadBundle('langs-collect.js') }), detector,
-        ),
+        fn: (driver, session) =>
+          detectLanguages(driver.run(session, { code: loadBundle('langs-collect.js') }), detector),
       });
     });
 }

@@ -1,4 +1,4 @@
-import { CliError, exitCodeFor } from './errors.mjs';
+import { CliError, exitCodeFor } from '#src/errors.mjs';
 
 /**
  * Write one result document to stdout.

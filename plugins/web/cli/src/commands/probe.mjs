@@ -5,34 +5,50 @@ import { artifactPath, generateSessionName } from '#src/session.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { checkHealth, detectSignals, findDocumentChain } from '#src/driver/blocked.mjs';
 
-const REALISTIC_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'
-  + ' AppleWebKit/537.36 (KHTML, like Gecko)'
-  + ' Chrome/120.0.0.0 Safari/537.36';
+const REALISTIC_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' +
+  ' AppleWebKit/537.36 (KHTML, like Gecko)' +
+  ' Chrome/120.0.0.0 Safari/537.36';
 
 export const STEPS = [
   {
     name: 'default',
-    browser: 'chromium', stealth: false, uaOverride: false, persistent: false,
+    browser: 'chromium',
+    stealth: false,
+    uaOverride: false,
+    persistent: false,
     config: { browser: 'chromium', stealth: false, uaOverride: false },
   },
   {
     name: 'stealth',
-    browser: 'chromium', stealth: true, uaOverride: false, persistent: false,
+    browser: 'chromium',
+    stealth: true,
+    uaOverride: false,
+    persistent: false,
     config: { browser: 'chromium', stealth: true, uaOverride: false },
   },
   {
     name: 'stealth-ua',
-    browser: 'chromium', stealth: true, uaOverride: true, persistent: false,
+    browser: 'chromium',
+    stealth: true,
+    uaOverride: true,
+    persistent: false,
     config: { browser: 'chromium', stealth: true, uaOverride: true },
   },
   {
     name: 'chrome',
-    browser: 'chrome', stealth: true, uaOverride: true, persistent: false,
+    browser: 'chrome',
+    stealth: true,
+    uaOverride: true,
+    persistent: false,
     config: { browser: 'chrome', stealth: true, uaOverride: true },
   },
   {
     name: 'persistent',
-    browser: 'chrome', stealth: true, uaOverride: true, persistent: true,
+    browser: 'chrome',
+    stealth: true,
+    uaOverride: true,
+    persistent: true,
     config: { browser: 'chrome', stealth: true, uaOverride: true },
   },
 ];
@@ -79,7 +95,11 @@ function runStep(driver, { url, outputDir, stepDef, log }) {
       initScripts.push(stealthPath);
     }
     driver.open({
-      session, url, config: browserConfig, persistent: stepDef.persistent, initScripts,
+      session,
+      url,
+      config: browserConfig,
+      persistent: stepDef.persistent,
+      initScripts,
     });
     waitForStable(driver, session);
     const health = driver.pageHealth(session);
@@ -90,7 +110,12 @@ function runStep(driver, { url, outputDir, stepDef, log }) {
     return { step, networkLines, browserConfig };
   } catch (err) {
     const health = {
-      title: '', url: '', bodyLength: 0, status: 0, hasMainContent: false, error: err.message,
+      title: '',
+      url: '',
+      bodyLength: 0,
+      status: 0,
+      hasMainContent: false,
+      error: err.message,
     };
     const step = { ...base, result: 'error', health, durationMs: Date.now() - start };
     return { step, networkLines: [], browserConfig };
@@ -130,8 +155,10 @@ export function runProbe(driver, { url, outputDir, log = () => {} }) {
     const out = runStep(driver, { url, outputDir, stepDef, log });
     steps.push(out.step);
     networkLines.push(...out.networkLines);
-    log(`  ${stepDef.name}: ${out.step.result} (${out.step.health.title || 'no title'}, `
-      + `${out.step.durationMs}ms)`);
+    log(
+      `  ${stepDef.name}: ${out.step.result} (${out.step.health.title || 'no title'}, ` +
+        `${out.step.durationMs}ms)`,
+    );
     if (out.step.result === 'success') {
       success = { stepDef, browserConfig: out.browserConfig };
       break;
@@ -142,11 +169,16 @@ export function runProbe(driver, { url, outputDir, log = () => {} }) {
     timestamp: new Date().toISOString(),
     steps,
     firstSuccess: success?.stepDef.name ?? null,
-    detectedSignals: detectSignals(networkLines, steps.map((s) => s.health)),
+    detectedSignals: detectSignals(
+      networkLines,
+      steps.map((s) => s.health),
+    ),
   };
   mkdirSync(outputDir, { recursive: true });
-  writeFileSync(artifactPath(outputDir, 'probe', 'probe', 'report.json'),
-    JSON.stringify(report, null, 2));
+  writeFileSync(
+    artifactPath(outputDir, 'probe', 'probe', 'report.json'),
+    JSON.stringify(report, null, 2),
+  );
   if (!success) return { report, recipePath: null };
   const recipePath = artifactPath(outputDir, 'probe', 'probe', 'recipe.json');
   const browser = { ...success.browserConfig };
@@ -180,8 +212,9 @@ export function registerProbe(program, deps) {
       const { report, recipePath } = runProbe(driver, { url, outputDir: opts.output, log });
       if (report.firstSuccess === null) {
         throw new CliError('BLOCKED', 'all probe steps were blocked', {
-          hint: 'see report.steps for per-step health; '
-            + 'the site may require a persistent profile or manual login',
+          hint:
+            'see report.steps for per-step health; ' +
+            'the site may require a persistent profile or manual login',
         });
       }
       print({ report, recipePath });

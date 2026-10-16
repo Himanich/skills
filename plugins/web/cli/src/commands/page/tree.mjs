@@ -28,7 +28,10 @@ export function captureTree(driver, session, { minWidth = 900, settleMs } = {}) 
   );
   if (typeof raw === 'string') raw = JSON.parse(raw);
   return {
-    text: raw.textFormat, tree: raw.data, nodeMap: raw.nodeMap, rootBackground: raw.rootBackground,
+    text: raw.textFormat,
+    tree: raw.data,
+    nodeMap: raw.nodeMap,
+    rootBackground: raw.rootBackground,
   };
 }
 
@@ -44,8 +47,10 @@ export function registerTree(group, deps) {
     .addHelpText('after', HELP)
     .option('--min-width <n>', 'minimum element width in px', parseIntArg, 900)
     .option('--settle-ms <n>', 'wait after scrolling for lazy content', parseIntArg, 2000)
-    .action((url, _opts, command) => runPageCommand(command, deps, {
-      url,
-      fn: (driver, session, opts) => captureTree(driver, session, opts),
-    }));
+    .action((url, _opts, command) =>
+      runPageCommand(command, deps, {
+        url,
+        fn: (driver, session, opts) => captureTree(driver, session, opts),
+      }),
+    );
 }

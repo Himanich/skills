@@ -11,10 +11,11 @@ export function startFixture(html) {
     server.listen(0, '127.0.0.1', () => {
       resolve({
         url: `http://127.0.0.1:${server.address().port}/`,
-        close: () => new Promise((done) => {
-          server.close(() => done());
-          server.closeAllConnections();
-        }),
+        close: () =>
+          new Promise((done) => {
+            server.close(() => done());
+            server.closeAllConnections();
+          }),
       });
     });
   });

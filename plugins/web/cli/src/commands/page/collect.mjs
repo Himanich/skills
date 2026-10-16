@@ -69,7 +69,10 @@ export function collectPage(driver, session, { what, outputDir, stderr = process
   if (what !== 'all') return { ...results[what], files };
   const screenshot = takeScreenshot(driver, session, path('screenshot.jpg'), stderr);
   const collection = {
-    url, collectedAt: new Date().toISOString(), screenshot, collectors: results,
+    url,
+    collectedAt: new Date().toISOString(),
+    screenshot,
+    collectors: results,
   };
   files.collection = writeJson(path('collection.json'), collection);
   return { ...collection, files };
@@ -93,9 +96,12 @@ export function registerCollect(group, deps) {
       }
       return runPageCommand(command, deps, {
         url,
-        fn: (driver, session, opts) => collectPage(driver, session, {
-          what, outputDir: opts.output, stderr: deps.stderr,
-        }),
+        fn: (driver, session, opts) =>
+          collectPage(driver, session, {
+            what,
+            outputDir: opts.output,
+            stderr: deps.stderr,
+          }),
       });
     });
 }

@@ -51,8 +51,8 @@ record lives under --output, so keep --output the same across calls.
 const DESCRIPTION = 'pilot a Chrome extension: launch, open, status, close';
 const FALLBACK_NOTES = {
   'no-content-script':
-    'no content-script context: chrome.sidePanel.open() needs a user gesture; add a '
-    + 'content_scripts entry and handle {type:"open_side_panel"} in the service worker',
+    'no content-script context: chrome.sidePanel.open() needs a user gesture; add a ' +
+    'content_scripts entry and handle {type:"open_side_panel"} in the service worker',
   'panel-not-found': 'side panel target did not appear within 5s',
 };
 const LOAD_FAILED_HINT = 'check manifest.json and the extension build; see chrome://extensions';
@@ -255,10 +255,7 @@ function needSession(ctx) {
  * @param {object} deps
  */
 export function registerExt(program, deps) {
-  const ext = program
-    .command('ext')
-    .description(DESCRIPTION)
-    .addHelpText('after', GROUP_HELP);
+  const ext = program.command('ext').description(DESCRIPTION).addHelpText('after', GROUP_HELP);
   const action = (cmd, fn, { needs = true } = {}) =>
     cmd.action(async (...args) => {
       const ctx = createContext(args.at(-1), deps);
@@ -274,16 +271,25 @@ export function registerExt(program, deps) {
     launch,
     { needs: false },
   );
-  action(ext
+  action(
+    ext
       .command('open <surface>')
       .description('open sidepanel, popup or options')
-      .addHelpText('after', HELP.OPEN), open);
-  action(ext
+      .addHelpText('after', HELP.OPEN),
+    open,
+  );
+  action(
+    ext
       .command('status')
       .description('show extension session state')
-      .addHelpText('after', HELP.STATUS), status);
-  action(ext
+      .addHelpText('after', HELP.STATUS),
+    status,
+  );
+  action(
+    ext
       .command('close')
       .description('close the extension session')
-      .addHelpText('after', HELP.CLOSE), close);
+      .addHelpText('after', HELP.CLOSE),
+    close,
+  );
 }

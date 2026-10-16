@@ -55,11 +55,12 @@ export function primarySubtag(code) {
 }
 
 export function reconcile(declared, detectedList) {
-  const detectedCodes = new Set(
-    detectedList.filter((r) => r.is_reliable).map((r) => r.language),
-  );
+  const detectedCodes = new Set(detectedList.filter((r) => r.is_reliable).map((r) => r.language));
   const declaredCodes = new Set();
-  const add = (raw) => { const p = primarySubtag(raw); if (p) declaredCodes.add(p); };
+  const add = (raw) => {
+    const p = primarySubtag(raw);
+    if (p) declaredCodes.add(p);
+  };
 
   if (declared.htmlLang) add(declared.htmlLang);
   for (const { lang } of declared.nestedLangs) add(lang);
@@ -78,11 +79,16 @@ export function reconcile(declared, detectedList) {
 function detect(text, detector) {
   const identifier = detector.create(0, MAX_CLD3_BYTES);
   try {
-    const pieces = text.split('\n').filter((b) => b.trim()).flatMap(chunks);
-    return aggregate(pieces.map((piece) => ({
-      ...identifier.findLanguage(piece),
-      size: Buffer.byteLength(piece),
-    })));
+    const pieces = text
+      .split('\n')
+      .filter((b) => b.trim())
+      .flatMap(chunks);
+    return aggregate(
+      pieces.map((piece) => ({
+        ...identifier.findLanguage(piece),
+        size: Buffer.byteLength(piece),
+      })),
+    );
   } finally {
     identifier.dispose();
   }

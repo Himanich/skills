@@ -7,7 +7,13 @@ import { runCli } from '#src/cli.mjs';
 
 const OK = { title: 'Home', url: 'http://x/', bodyLength: 500, status: 200, hasMainContent: true };
 const BAD = { title: 'Access Denied', url: 'http://x/', bodyLength: 10, status: 403 };
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
 
 function run(healths) {
   const out = mkdtempSync(join(tmpdir(), 'probe-test-'));
@@ -28,8 +34,14 @@ function run(healths) {
   const stdout = sink();
   const stderr = sink();
   const deps = { stdout, stderr, env: {}, driverFactory: () => driver };
-  return runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps)
-    .then((code) => ({ code, out, opened, closed: calls, stdout, stderr }));
+  return runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps).then((code) => ({
+    code,
+    out,
+    opened,
+    closed: calls,
+    stdout,
+    stderr,
+  }));
 }
 
 test('stops at first successful step and writes recipe for it', async () => {
@@ -63,7 +75,10 @@ test('all steps blocked → BLOCKED exit 3, report still written', async () => {
 test('each step closes its session and removes the stealth file', async () => {
   const r = await run([BAD, BAD, OK]);
   assert.equal(r.closed.length, 3);
-  assert.deepEqual(r.closed, r.opened.map((o) => o.session));
+  assert.deepEqual(
+    r.closed,
+    r.opened.map((o) => o.session),
+  );
   const stealth = r.opened[1].initScripts[0];
   assert.equal(r.opened[1].initExisted[0], true);
   assert.equal(existsSync(stealth), false);

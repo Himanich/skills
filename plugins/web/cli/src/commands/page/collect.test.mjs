@@ -5,17 +5,36 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
-const OK = { title: 'T', url: 'http://x/final', bodyLength: 5000, status: 200, hasMainContent: true };
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
+const OK = {
+  title: 'T',
+  url: 'http://x/final',
+  bodyLength: 5000,
+  status: 200,
+  hasMainContent: true,
+};
 const SVG = '<svg viewBox="0 0 1 1"><path/></svg>';
 
 async function run(extra, data, { screenshotFails = false } = {}) {
   const out = mkdtempSync(join(tmpdir(), 'collect-'));
   const calls = [];
-  const rec = (n) => (...a) => (calls.push([n, ...a]), undefined);
+  const rec =
+    (n) =>
+    (...a) => (calls.push([n, ...a]), undefined);
   const driver = {
-    ensureAvailable: () => {}, open: rec('open'), close: rec('close'), list: () => [],
-    goto: rec('goto'), inject: rec('inject'), pageHealth: () => OK,
+    ensureAvailable: () => {},
+    open: rec('open'),
+    close: rec('close'),
+    list: () => [],
+    goto: rec('goto'),
+    inject: rec('inject'),
+    pageHealth: () => OK,
     run: (s, o) => (calls.push(['run', s, o]), data),
     screenshot: (...a) => {
       calls.push(['screenshot', ...a]);
@@ -51,16 +70,23 @@ test('all passes null to extract and writes collection + screenshot', async () =
 });
 
 test('screenshot failure warns on stderr and still succeeds', async () => {
-  const { code, stderr, stdout } = await run(['all', 'http://x'],
-    { url: 'u', metadata: {} }, { screenshotFails: true });
+  const { code, stderr, stdout } = await run(
+    ['all', 'http://x'],
+    { url: 'u', metadata: {} },
+    { screenshotFails: true },
+  );
   assert.equal(code, 0);
   assert.match(stderr.buf, /Warning: screenshot failed/);
   assert.equal(JSON.parse(stdout.buf).screenshot, undefined);
 });
 
 test('icons writes manifest under session-prefixed dir', async () => {
-  const data = { url: 'http://x', svgs: [{ width: 16, height: 16, svgClass: 'search',
-    parentTag: 'A', source: 'inline-svg', svg: SVG }] };
+  const data = {
+    url: 'http://x',
+    svgs: [
+      { width: 16, height: 16, svgClass: 'search', parentTag: 'A', source: 'inline-svg', svg: SVG },
+    ],
+  };
   const { code, calls, stdout, out } = await run(['icons', 'http://x'], data);
   assert.equal(code, 0);
   assert.match(calls.find((c) => c[0] === 'run')[2].code, /\["icons"\]\)$/);
@@ -72,8 +98,10 @@ test('icons writes manifest under session-prefixed dir', async () => {
 });
 
 test('metadata writes json file and prints fields at top level', async () => {
-  const { code, stdout, out } = await run(['metadata', 'http://x'],
-    { url: 'http://x', metadata: { title: 'Example' } });
+  const { code, stdout, out } = await run(['metadata', 'http://x'], {
+    url: 'http://x',
+    metadata: { title: 'Example' },
+  });
   assert.equal(code, 0);
   const doc = JSON.parse(stdout.buf);
   assert.equal(doc.title, 'Example');

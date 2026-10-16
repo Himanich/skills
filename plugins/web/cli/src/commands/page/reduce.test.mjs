@@ -2,17 +2,35 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runCli } from '#src/cli.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
-const OK = { title: 'T', url: 'http://x/final', bodyLength: 5000, status: 200, hasMainContent: true };
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
+const OK = {
+  title: 'T',
+  url: 'http://x/final',
+  bodyLength: 5000,
+  status: 200,
+  hasMainContent: true,
+};
 const SECTION = { id: 's1' };
 const PHASE1 = {
-  url: 'http://x/p1', title: 'T', viewport: { w: 1, h: 2 }, templateHash: 'abc', sections: [SECTION],
+  url: 'http://x/p1',
+  title: 'T',
+  viewport: { w: 1, h: 2 },
+  templateHash: 'abc',
+  sections: [SECTION],
 };
 
 function run(args, results) {
   const calls = [];
   const queue = [...results];
-  const rec = (n) => (...a) => (calls.push([n, ...a]), undefined);
+  const rec =
+    (n) =>
+    (...a) => (calls.push([n, ...a]), undefined);
   const driver = {
     ensureAvailable: () => {},
     open: rec('open'),
@@ -24,7 +42,9 @@ function run(args, results) {
     pageHealth: () => OK,
     evaluate: (s, e) => {
       calls.push(['evaluate', s, e]);
-      return e.includes('detectSections') ? JSON.stringify(queue.length > 1 ? queue.shift() : queue[0]) : undefined;
+      return e.includes('detectSections')
+        ? JSON.stringify(queue.length > 1 ? queue.shift() : queue[0])
+        : undefined;
     },
   };
   const stdout = sink();
@@ -36,8 +56,10 @@ const detects = (calls) => calls.filter((c) => c[0] === 'evaluate' && /detectSec
 const scrolls = (calls) => calls.filter((c) => c[0] === 'run' && /scrollTo/.test(c[2].code));
 
 test('retries scroll when sections empty', async () => {
-  const { code, calls, stdout } = await run(['page', 'reduce', 'http://x'],
-    [{ sections: [] }, { sections: [SECTION] }]);
+  const { code, calls, stdout } = await run(
+    ['page', 'reduce', 'http://x'],
+    [{ sections: [] }, { sections: [SECTION] }],
+  );
   assert.equal(code, 0);
   assert.equal(detects(calls).length, 2);
   assert.equal(scrolls(calls).length, 2);
@@ -45,8 +67,10 @@ test('retries scroll when sections empty', async () => {
 });
 
 test('throws EMPTY_RESULT after retries', async () => {
-  const { code, calls, stdout } = await run(['page', 'reduce', 'http://x', '--retries', '1'],
-    [{ sections: [] }]);
+  const { code, calls, stdout } = await run(
+    ['page', 'reduce', 'http://x', '--retries', '1'],
+    [{ sections: [] }],
+  );
   assert.equal(code, 1);
   assert.equal(JSON.parse(stdout.buf).error.code, 'EMPTY_RESULT');
   assert.equal(detects(calls).length, 2);

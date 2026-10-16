@@ -136,7 +136,8 @@ export function registerBrowser(program, deps) {
   action(
     browser
       .command('open [url]')
-      .description('open a browser session').addHelpText('after', HELP.OPEN)
+      .description('open a browser session')
+      .addHelpText('after', HELP.OPEN)
       .option('--cdp-port <n>', 'remote debugging port', parseIntArg)
       .option('--persistent', 'use a persistent profile'),
     ({ opts, driver, print }, url) => {
@@ -156,7 +157,10 @@ export function registerBrowser(program, deps) {
   );
 
   action(
-    browser.command('attach <cdp-url>').description('attach to a running Chrome').addHelpText('after', HELP.ATTACH),
+    browser
+      .command('attach <cdp-url>')
+      .description('attach to a running Chrome')
+      .addHelpText('after', HELP.ATTACH),
     ({ opts, driver, print }, cdpUrl) => {
       const session = opts.session ?? generateSessionName();
       driver.attach({ session, cdpUrl });
@@ -164,37 +168,55 @@ export function registerBrowser(program, deps) {
     },
   );
 
-  action(browser.command('list').description('list sessions').addHelpText('after', HELP.LIST), ({ driver, print }) => {
-    const sessions = driver.list().map((s) => ({
-      name: s.name,
-      status: s.status,
-      headed: s.headed,
-      url: sessionUrl(driver, s),
-    }));
-    print({ sessions });
-  });
-
-  action(browser.command('close').description('close the session').addHelpText('after', HELP.CLOSE), (ctx) => {
-    const session = openSession(ctx);
-    ctx.driver.close(session);
-    ctx.print({ session, status: 'closed' });
-  });
-
-  action(browser.command('close-all').description('close every session').addHelpText('after', HELP.CLOSE_ALL), (ctx) => {
-    const closed = ctx.driver.list().map((s) => s.name);
-    ctx.driver.closeAll();
-    ctx.print({ closed });
-  });
+  action(
+    browser.command('list').description('list sessions').addHelpText('after', HELP.LIST),
+    ({ driver, print }) => {
+      const sessions = driver.list().map((s) => ({
+        name: s.name,
+        status: s.status,
+        headed: s.headed,
+        url: sessionUrl(driver, s),
+      }));
+      print({ sessions });
+    },
+  );
 
   action(
-    browser.command('eval <expr>').description('evaluate a JS expression').addHelpText('after', HELP.EVAL),
+    browser.command('close').description('close the session').addHelpText('after', HELP.CLOSE),
+    (ctx) => {
+      const session = openSession(ctx);
+      ctx.driver.close(session);
+      ctx.print({ session, status: 'closed' });
+    },
+  );
+
+  action(
+    browser
+      .command('close-all')
+      .description('close every session')
+      .addHelpText('after', HELP.CLOSE_ALL),
+    (ctx) => {
+      const closed = ctx.driver.list().map((s) => s.name);
+      ctx.driver.closeAll();
+      ctx.print({ closed });
+    },
+  );
+
+  action(
+    browser
+      .command('eval <expr>')
+      .description('evaluate a JS expression')
+      .addHelpText('after', HELP.EVAL),
     (ctx, expr) => {
       ctx.print({ result: ctx.driver.evaluate(openSession(ctx), expr) });
     },
   );
 
   action(
-    browser.command('run <file-or-code>').description('run a Playwright script or code').addHelpText('after', HELP.RUN),
+    browser
+      .command('run <file-or-code>')
+      .description('run a Playwright script or code')
+      .addHelpText('after', HELP.RUN),
     (ctx, arg) => {
       const target = existsSync(arg) ? { file: arg } : { code: arg };
       ctx.print({ result: ctx.driver.run(openSession(ctx), target) });
@@ -202,7 +224,10 @@ export function registerBrowser(program, deps) {
   );
 
   action(
-    browser.command('cdp <method> [params-json]').description('send a raw CDP command').addHelpText('after', HELP.CDP),
+    browser
+      .command('cdp <method> [params-json]')
+      .description('send a raw CDP command')
+      .addHelpText('after', HELP.CDP),
     (ctx, method, json) => {
       const params = parseParams(json);
       ctx.print({ result: ctx.driver.cdp(openSession(ctx), method, params) });
@@ -212,7 +237,8 @@ export function registerBrowser(program, deps) {
   action(
     browser
       .command('screenshot')
-      .description('take a screenshot').addHelpText('after', HELP.SHOT)
+      .description('take a screenshot')
+      .addHelpText('after', HELP.SHOT)
       .option('--full-page', 'capture the full page')
       .option('--selector <css>', 'capture one element'),
     (ctx) => {

@@ -5,7 +5,14 @@ import { buildBundle, buildHideExpression, loadPatterns } from '#src/page/overla
 
 const MODES = ['quick', 'thorough'];
 
-const RESIDUAL_EXPRESSION = `JSON.stringify([...document.querySelectorAll('*')].filter(el => { var s = getComputedStyle(el); var r = el.getBoundingClientRect(); return s.position === 'fixed' && parseInt(s.zIndex, 10) > 1000 && (el.offsetWidth > 100 || el.offsetHeight > 100) && r.right > 0 && r.bottom > 0 && r.left < window.innerWidth && r.top < window.innerHeight; }).map(el => { var s = getComputedStyle(el); return { tag: el.tagName, id: el.id, cls: (el.className || '').slice(0, 50), z: s.zIndex, w: el.offsetWidth, h: el.offsetHeight }; }))`;
+const RESIDUAL_EXPRESSION =
+  `JSON.stringify([...document.querySelectorAll('*')].filter(el => { var s = ` +
+  `getComputedStyle(el); var r = el.getBoundingClientRect(); return s.position ` +
+  `=== 'fixed' && parseInt(s.zIndex, 10) > 1000 && (el.offsetWidth > 100 || ` +
+  `el.offsetHeight > 100) && r.right > 0 && r.bottom > 0 && r.left < ` +
+  `window.innerWidth && r.top < window.innerHeight; }).map(el => { var s = ` +
+  `getComputedStyle(el); return { tag: el.tagName, id: el.id, cls: (el.className ` +
+  `|| '').slice(0, 50), z: s.zIndex, w: el.offsetWidth, h: el.offsetHeight }; }))`;
 
 const parseMaybe = (data) => (typeof data === 'string' ? JSON.parse(data) : data);
 
@@ -48,7 +55,8 @@ function hideOverlays(driver, session, report, overlays) {
 
 function dismissThorough(driver, session, report) {
   const hasSteps = (o) => o.dismiss?.length > 0;
-  const dismissed = report.overlays.filter(hasSteps)
+  const dismissed = report.overlays
+    .filter(hasSteps)
     .map((o) => runDismissSteps(driver, session, o));
   const toHide = report.overlays.filter((o) => !hasSteps(o));
   return [...dismissed, ...hideOverlays(driver, session, report, toHide)];

@@ -20,9 +20,11 @@ export function detectSignals(networkLines, healths) {
   const signals = [];
   const joined = networkLines.join('\n').toLowerCase();
 
-  if (joined.includes('server: akamaighost')
-      || joined.includes('server: akamainetstorage')
-      || joined.includes('akamai-grn:')) {
+  if (
+    joined.includes('server: akamaighost') ||
+    joined.includes('server: akamainetstorage') ||
+    joined.includes('akamai-grn:')
+  ) {
     signals.push('akamai-server');
   }
   if (joined.includes('bm_sz') || joined.includes('_abck')) {
@@ -47,8 +49,7 @@ export function detectSignals(networkLines, healths) {
   const healthArr = Array.isArray(healths) ? healths : [healths];
   for (const health of healthArr) {
     const title = (health.title || '').toLowerCase();
-    if (title.includes('just a moment')
-        || title.includes('checking your browser')) {
+    if (title.includes('just a moment') || title.includes('checking your browser')) {
       signals.push('cloudflare-challenge');
     }
     if (title.includes('the request could not be satisfied')) {

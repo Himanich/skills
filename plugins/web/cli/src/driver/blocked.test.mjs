@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  assertNotBlocked, checkHealth, classifyPage, detectSignals, findDocumentChain,
+  assertNotBlocked,
+  checkHealth,
+  classifyPage,
+  detectSignals,
+  findDocumentChain,
 } from './blocked.mjs';
 
 const REDIRECT_REQUESTS = `### Result
@@ -14,9 +18,10 @@ test('findDocumentChain returns redirect hops plus the final document', () => {
 });
 
 test('findDocumentChain ignores the URL fragment', () => {
-  assert.deepEqual(
-    findDocumentChain(REDIRECT_REQUESTS, 'https://www.example.com/#top'), ['1', '2'],
-  );
+  assert.deepEqual(findDocumentChain(REDIRECT_REQUESTS, 'https://www.example.com/#top'), [
+    '1',
+    '2',
+  ]);
 });
 
 test('findDocumentChain throws when the document is missing', () => {

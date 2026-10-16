@@ -13,7 +13,10 @@ import {
 
 const fake = (sessions = []) => {
   const calls = [];
-  const rec = (n) => (...a) => calls.push([n, ...a]);
+  const rec =
+    (n) =>
+    (...a) =>
+      calls.push([n, ...a]);
   return {
     calls,
     open: rec('open'),
@@ -39,7 +42,10 @@ test('withSession ephemeral opens, runs, closes even when fn throws', async () =
     /boom/,
   );
   assert.deepEqual([process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')], before);
-  assert.deepEqual(d.calls.map((c) => c[0]), ['open', 'close']);
+  assert.deepEqual(
+    d.calls.map((c) => c[0]),
+    ['open', 'close'],
+  );
   assert.equal(d.calls[0][1].session, d.calls[1][1]);
 });
 
@@ -79,12 +85,21 @@ test('loadRecipe returns cliConfig.browser and persistent; bad path → USAGE', 
   const file = join(mkdtempSync(join(tmpdir(), 'recipe-')), 'r.json');
   writeFileSync(file, JSON.stringify({ cliConfig: { browser: { a: 1 } }, persistent: true }));
   assert.deepEqual(loadRecipe(file), { config: { a: 1 }, persistent: true });
-  assert.throws(() => loadRecipe('/no/such.json'), (e) => e.code === 'USAGE');
+  assert.throws(
+    () => loadRecipe('/no/such.json'),
+    (e) => e.code === 'USAGE',
+  );
 });
 
 async function signalRun(closeThrows) {
   const d = fake();
-  if (closeThrows) d.close = (...a) => (d.calls.push(['close', ...a]), (() => { throw new Error('x'); })());
+  if (closeThrows)
+    d.close = (...a) => (
+      d.calls.push(['close', ...a]),
+      (() => {
+        throw new Error('x');
+      })()
+    );
   const kills = [];
   const realKill = process.kill;
   process.kill = (...a) => kills.push(a);
@@ -114,17 +129,32 @@ test('signal path with throwing driver.close still re-kills and removes listener
   assert.deepEqual(after, before);
 });
 
-const closeFails = () => ({ open() {}, goto() {}, list: () => [], close() { throw new Error('close boom'); } });
+const closeFails = () => ({
+  open() {},
+  goto() {},
+  list: () => [],
+  close() {
+    throw new Error('close boom');
+  },
+});
 
 test('withSession keeps the original error when close also fails', async (t) => {
   const write = t.mock.method(process.stderr, 'write', () => true);
   await assert.rejects(
-    withSession(closeFails(), {}, () => { throw new Error('real'); }),
+    withSession(closeFails(), {}, () => {
+      throw new Error('real');
+    }),
     /real/,
   );
-  assert.match(write.mock.calls[0].arguments[0], /warning: failed to close session web-.*close boom/);
+  assert.match(
+    write.mock.calls[0].arguments[0],
+    /warning: failed to close session web-.*close boom/,
+  );
 });
 
 test('withSession throws the close error when fn succeeded', async () => {
-  await assert.rejects(withSession(closeFails(), {}, () => 1), /close boom/);
+  await assert.rejects(
+    withSession(closeFails(), {}, () => 1),
+    /close boom/,
+  );
 });

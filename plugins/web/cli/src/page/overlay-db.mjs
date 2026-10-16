@@ -1,4 +1,3 @@
-
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -99,22 +98,21 @@ function extractHideRules(rule, presentSelectors) {
 // default choices. A CMP whose save step is conditional-only gets no dismiss
 // recipe: clicking "options" without saving would leave the banner up.
 function extractDismissActions(rule) {
-  const toActions = (name) => methodSteps(rule, name).flatMap((step) => {
-    if (step.type === 'click' && step.target?.selector) {
-      return [{ action: 'click', selector: stepSelector(step) }];
-    }
-    if (step.type === 'wait' && step.waitTime) return [{ action: 'wait', ms: step.waitTime }];
-    return [];
-  });
+  const toActions = (name) =>
+    methodSteps(rule, name).flatMap((step) => {
+      if (step.type === 'click' && step.target?.selector) {
+        return [{ action: 'click', selector: stepSelector(step) }];
+      }
+      if (step.type === 'wait' && step.waitTime) return [{ action: 'wait', ms: step.waitTime }];
+      return [];
+    });
   const save = toActions('SAVE_CONSENT');
   if (!save.some((a) => a.action === 'click')) return [];
   return [...toActions('OPEN_OPTIONS'), ...save];
 }
 
 function hasDroppedFilters(matchers) {
-  return toArray(matchers).some(
-    (m) => (m.textFilter && m.textFilter.length > 0) || m.childFilter
-  );
+  return toArray(matchers).some((m) => (m.textFilter && m.textFilter.length > 0) || m.childFilter);
 }
 
 export function normalizeCmpRules(rawRules) {
@@ -132,8 +130,7 @@ export function normalizeCmpRules(rawRules) {
     if (allSelectors.length === 0) continue;
 
     const hasPartialCoverage =
-      hasDroppedFilters(detector.presentMatcher) ||
-      hasDroppedFilters(detector.showingMatcher);
+      hasDroppedFilters(detector.presentMatcher) || hasDroppedFilters(detector.showingMatcher);
     if (hasPartialCoverage) partialCoverage.push(name);
 
     cmps[name] = {
@@ -155,7 +152,9 @@ export function isCacheStale(lastFetchPath, maxDays = STALENESS_DAYS) {
     const ms = new Date(timestamp).getTime();
     if (!Number.isFinite(ms)) return true;
     return Date.now() - ms > maxDays * 24 * 60 * 60 * 1000;
-  } catch { return true; }
+  } catch {
+    return true;
+  }
 }
 
 export function buildPatternsJson(cmpResult, genericSelectors) {
@@ -182,8 +181,11 @@ export function buildBundle(patterns, detectScriptSource) {
 
 // --- Fetch URLs ---
 
-const CONSENT_O_MATIC_RULES = 'https://raw.githubusercontent.com/cavi-au/Consent-O-Matic/master/Rules.json';
-const EASYLIST_COOKIE_HIDE = 'https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_general_hide.txt';
+const CONSENT_O_MATIC_RULES =
+  'https://raw.githubusercontent.com/cavi-au/Consent-O-Matic/master/Rules.json';
+const EASYLIST_COOKIE_HIDE =
+  'https://raw.githubusercontent.com/easylist/easylist/master/' +
+  'easylist_cookie/easylist_cookie_general_hide.txt';
 
 export async function fetchConsentOMatic(fetch = globalThis.fetch) {
   const res = await fetch(CONSENT_O_MATIC_RULES);
@@ -207,7 +209,8 @@ export function buildHideExpression(report, ids) {
   const rules = selected.flatMap((o) => o.hide ?? []);
   if (report.scroll_locked && report.scroll_fix) rules.push(report.scroll_fix);
   const css = JSON.stringify(rules.join('\n'));
-  return `document.head.appendChild(Object.assign(document.createElement('style'), { textContent: ${css} })) && 'ok'`;
+  const style = `Object.assign(document.createElement('style'), { textContent: ${css} })`;
+  return `document.head.appendChild(${style}) && 'ok'`;
 }
 
 // --- Loading ---
@@ -237,10 +240,14 @@ async function fetchPatterns(fetch, cached, stderr) {
   if (!rawRules && rawText === undefined) throw new Error('both sources failed');
   const cmpResult = rawRules
     ? normalizeCmpRules(rawRules)
-    : { cmps: cached?.cmps ?? {}, partial_coverage_cmps: cached?.stats?.partial_coverage_cmps ?? [] };
-  const selectors = rawText === undefined
-    ? (cached?.generic_selectors ?? [])
-    : parseAbpHideRules(rawText).slice(0, 1000);
+    : {
+        cmps: cached?.cmps ?? {},
+        partial_coverage_cmps: cached?.stats?.partial_coverage_cmps ?? [],
+      };
+  const selectors =
+    rawText === undefined
+      ? (cached?.generic_selectors ?? [])
+      : parseAbpHideRules(rawText).slice(0, 1000);
   return buildPatternsJson(cmpResult, selectors);
 }
 
@@ -251,7 +258,10 @@ async function fetchPatterns(fetch, cached, stderr) {
  * @returns {Promise<object>} patterns
  */
 export async function loadPatterns({
-  refresh = false, fetch = globalThis.fetch, cacheDir = CACHE_DIR, stderr = process.stderr,
+  refresh = false,
+  fetch = globalThis.fetch,
+  cacheDir = CACHE_DIR,
+  stderr = process.stderr,
 } = {}) {
   const patternsFile = path.join(cacheDir, 'patterns.json');
   const lastFetchFile = path.join(cacheDir, 'last-fetch');

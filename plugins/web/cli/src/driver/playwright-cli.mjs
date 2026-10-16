@@ -189,8 +189,9 @@ export function createDriver({
     },
     cdp(session, method, params = {}) {
       return run(session, {
-        code: `async page => { const s = await page.context().newCDPSession(page); `
-          + `return s.send(${JSON.stringify(method)}, ${JSON.stringify(params)}) }`,
+        code:
+          `async page => { const s = await page.context().newCDPSession(page); ` +
+          `return s.send(${JSON.stringify(method)}, ${JSON.stringify(params)}) }`,
       });
     },
     screenshot(session, { path, fullPage, selector }) {
@@ -204,10 +205,10 @@ export function createDriver({
     pageHealth(session) {
       return evaluate(
         session,
-        '({ title: document.title, url: location.href, '
-          + 'bodyLength: document.body ? document.body.innerText.length : 0, '
-          + "status: performance.getEntriesByType('navigation')[0]?.responseStatus ?? 0, "
-          + "hasMainContent: !!document.querySelector('main, article, [role=main]') })",
+        '({ title: document.title, url: location.href, ' +
+          'bodyLength: document.body ? document.body.innerText.length : 0, ' +
+          "status: performance.getEntriesByType('navigation')[0]?.responseStatus ?? 0, " +
+          "hasMainContent: !!document.querySelector('main, article, [role=main]') })",
       );
     },
     requests(session) {

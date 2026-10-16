@@ -2,13 +2,32 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runCli } from '#src/cli.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
-const BUNDLE = { textFormat: 'r @0 root', data: { a: 1 }, nodeMap: { 0: 'x' }, rootBackground: '#fff' };
-const OK = { title: 'T', url: 'http://x/final', bodyLength: 5000, status: 200, hasMainContent: true };
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
+const BUNDLE = {
+  textFormat: 'r @0 root',
+  data: { a: 1 },
+  nodeMap: { 0: 'x' },
+  rootBackground: '#fff',
+};
+const OK = {
+  title: 'T',
+  url: 'http://x/final',
+  bodyLength: 5000,
+  status: 200,
+  hasMainContent: true,
+};
 
 function run(args, { health = OK, sessions = [] } = {}) {
   const calls = [];
-  const rec = (n, ret) => (...a) => (calls.push([n, ...a]), ret);
+  const rec =
+    (n, ret) =>
+    (...a) => (calls.push([n, ...a]), ret);
   const driver = {
     ensureAvailable: () => {},
     open: rec('open'),
@@ -58,8 +77,13 @@ test('page tree without url and without session exits 2 USAGE', async () => {
 
 test('blocked page exits 3 BLOCKED', async () => {
   const { code, stdout } = await run(['page', 'tree', 'http://x'], {
-    health: { title: 'Access Denied', url: 'http://x', bodyLength: 10, status: 403,
-      hasMainContent: false },
+    health: {
+      title: 'Access Denied',
+      url: 'http://x',
+      bodyLength: 10,
+      status: 403,
+      hasMainContent: false,
+    },
   });
   assert.equal(code, 3);
   assert.equal(JSON.parse(stdout.buf).error.code, 'BLOCKED');

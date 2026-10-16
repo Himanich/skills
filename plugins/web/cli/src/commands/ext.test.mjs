@@ -12,7 +12,13 @@ const MANIFEST = {
   side_panel: { default_path: 'panel.html' },
   action: { default_popup: 'popup.html' },
 };
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
 
 function setup({ manifest = MANIFEST, sessions = [], run } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'ext-test-'));
@@ -20,7 +26,9 @@ function setup({ manifest = MANIFEST, sessions = [], run } = {}) {
   mkdirSync(dist);
   if (manifest) writeFileSync(join(dist, 'manifest.json'), JSON.stringify(manifest));
   const calls = [];
-  const rec = (n, ret) => (...a) => (calls.push([n, ...a]), ret);
+  const rec =
+    (n, ret) =>
+    (...a) => (calls.push([n, ...a]), ret);
   const driver = {
     ensureAvailable: rec('ensureAvailable'),
     open: rec('open'),
@@ -32,8 +40,11 @@ function setup({ manifest = MANIFEST, sessions = [], run } = {}) {
   const stdout = sink();
   const deps = { stdout, stderr: sink(), env: {}, driverFactory: () => driver };
   const exec = (args) =>
-    runCli(['node', 'web', '--output', root, ...args], deps)
-      .then((code) => ({ code, calls, stdout }));
+    runCli(['node', 'web', '--output', root, ...args], deps).then((code) => ({
+      code,
+      calls,
+      stdout,
+    }));
   return { root, dist, exec, stdout };
 }
 
@@ -60,7 +71,10 @@ test('ext launch with missing manifest exits 2 without opening', async () => {
   const { dist, exec } = setup({ manifest: null });
   const { code, calls } = await exec(['ext', 'launch', dist]);
   assert.equal(code, 2);
-  assert.equal(calls.find((c) => c[0] === 'open'), undefined);
+  assert.equal(
+    calls.find((c) => c[0] === 'open'),
+    undefined,
+  );
 });
 
 async function launched(opts) {
@@ -101,7 +115,10 @@ test('ext status reports open:false when the session is gone', async () => {
   const { code } = await exec(['ext', 'status', '--session', 's']);
   assert.equal(code, 0);
   assert.deepEqual(JSON.parse(stdout.buf), {
-    session: 's', open: false, extensionId: null, surfaces: null,
+    session: 's',
+    open: false,
+    extensionId: null,
+    surfaces: null,
   });
 });
 
@@ -132,8 +149,10 @@ test('ext open sidepanel prints url and targetId from the gesture path', async (
 
 test('ext open sidepanel falls back to a tab with a note', async () => {
   const { exec, stdout } = await launched({
-    run: (code) => (code.includes('Runtime.enable')
-      ? { fallback: 'no-content-script' } : 'chrome-extension://abcdef/panel.html'),
+    run: (code) =>
+      code.includes('Runtime.enable')
+        ? { fallback: 'no-content-script' }
+        : 'chrome-extension://abcdef/panel.html',
   });
   const { calls } = await exec(['ext', 'open', 'sidepanel', '--session', 's']);
   const doc = JSON.parse(stdout.buf);

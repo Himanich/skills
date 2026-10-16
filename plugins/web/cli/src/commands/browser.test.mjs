@@ -8,11 +8,19 @@ import { runCli } from '#src/cli.mjs';
 const HINT = 'run: web browser open <url> --session <name>';
 const OPEN = [{ name: 's', status: 'open' }];
 const call = (calls, n) => calls.find((c) => c[0] === n);
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
 
 function run(args, { sessions = [], evalThrows = false } = {}) {
   const calls = [];
-  const rec = (n, ret) => (...a) => (calls.push([n, ...a]), ret);
+  const rec =
+    (n, ret) =>
+    (...a) => (calls.push([n, ...a]), ret);
   const driver = {
     ensureAvailable: rec('ensureAvailable'),
     open: rec('open'),
@@ -23,7 +31,9 @@ function run(args, { sessions = [], evalThrows = false } = {}) {
     run: rec('run', 'ran'),
     screenshot: rec('screenshot'),
     evaluate: evalThrows
-      ? () => { throw new Error('dead'); }
+      ? () => {
+          throw new Error('dead');
+        }
       : rec('evaluate', 'http://x/'),
     cdp: rec('cdp', { ok: 1 }),
   };
@@ -50,11 +60,13 @@ test('browser open prints { session, url, headed }', async () => {
 
 test('browser cdp parses params json and forwards', async () => {
   const sessions = [{ name: 's', status: 'open' }];
-  const { stdout, calls } = await run(
-    ['browser', 'cdp', 'Page.x', '{"a":1}', '--session', 's'],
-    { sessions },
+  const { stdout, calls } = await run(['browser', 'cdp', 'Page.x', '{"a":1}', '--session', 's'], {
+    sessions,
+  });
+  assert.deepEqual(
+    calls.find((c) => c[0] === 'cdp'),
+    ['cdp', 's', 'Page.x', { a: 1 }],
   );
-  assert.deepEqual(calls.find((c) => c[0] === 'cdp'), ['cdp', 's', 'Page.x', { a: 1 }]);
   assert.deepEqual(JSON.parse(stdout.buf), { result: { ok: 1 } });
 });
 
@@ -70,7 +82,10 @@ test('browser list adds url for open sessions only', async () => {
     { name: 'b', status: 'closed', headed: false },
   ];
   const { stdout } = await run(['browser', 'list'], { sessions });
-  assert.deepEqual(JSON.parse(stdout.buf).sessions.map((s) => s.url), ['http://x/', null]);
+  assert.deepEqual(
+    JSON.parse(stdout.buf).sessions.map((s) => s.url),
+    ['http://x/', null],
+  );
 });
 
 test('browser attach prints { session, attached } and forwards cdpUrl', async () => {
@@ -90,14 +105,19 @@ test('browser close prints closed; NO_SESSION with hint when not open', async ()
 });
 
 test('browser close-all prints closed names', async () => {
-  const sessions = [{ name: 'a', status: 'open' }, { name: 'b', status: 'closed' }];
+  const sessions = [
+    { name: 'a', status: 'open' },
+    { name: 'b', status: 'closed' },
+  ];
   const { stdout, calls } = await run(['browser', 'close-all'], { sessions });
   assert.deepEqual(JSON.parse(stdout.buf), { closed: ['a', 'b'] });
   assert.ok(call(calls, 'closeAll'));
 });
 
 test('browser eval prints { result }', async () => {
-  const { stdout, calls } = await run(['browser', 'eval', '1+1', '--session', 's'], { sessions: OPEN });
+  const { stdout, calls } = await run(['browser', 'eval', '1+1', '--session', 's'], {
+    sessions: OPEN,
+  });
   assert.deepEqual(JSON.parse(stdout.buf), { result: 'http://x/' });
   assert.deepEqual(call(calls, 'evaluate'), ['evaluate', 's', '1+1']);
 });
@@ -120,7 +140,9 @@ test('browser screenshot prints timestamped path and forwards flags', async () =
   const { path } = JSON.parse(stdout.buf);
   assert.match(path, /s-screenshot-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z\.png$/);
   assert.deepEqual(call(calls, 'screenshot'), [
-    'screenshot', 's', { path, fullPage: true, selector: 'h1' },
+    'screenshot',
+    's',
+    { path, fullPage: true, selector: 'h1' },
   ]);
 });
 

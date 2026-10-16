@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import { CliError } from './errors.mjs';
 import { createProgram, runCli } from './cli.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
 
 test('unknown option exits 2 and prints help to stderr', async () => {
   const stdout = sink();
@@ -44,7 +50,10 @@ test('a CliError thrown by a command yields its error document and exit code', a
   const stdout = sink();
   const registerTestCommands = thrower(new CliError('BLOCKED', 'm', { hint: 'h' }));
   const code = await runCli(['node', 'web', 'boom'], {
-    stdout, stderr: sink(), env: {}, registerTestCommands,
+    stdout,
+    stderr: sink(),
+    env: {},
+    registerTestCommands,
   });
   assert.equal(code, 3);
   assert.deepEqual(JSON.parse(stdout.buf), { error: { code: 'BLOCKED', message: 'm', hint: 'h' } });
@@ -54,25 +63,45 @@ test('a plain Error is wrapped as INTERNAL with exit 1', async () => {
   const stdout = sink();
   const registerTestCommands = thrower(new Error('boom'));
   const code = await runCli(['node', 'web', 'boom'], {
-    stdout, stderr: sink(), env: {}, registerTestCommands,
+    stdout,
+    stderr: sink(),
+    env: {},
+    registerTestCommands,
   });
   assert.equal(code, 1);
   assert.equal(JSON.parse(stdout.buf).error.code, 'INTERNAL');
 });
 
 const LEAVES = [
-  ['browser', 'open'], ['browser', 'attach'], ['browser', 'list'], ['browser', 'close'],
-  ['browser', 'close-all'], ['browser', 'eval'], ['browser', 'run'], ['browser', 'cdp'],
-  ['browser', 'screenshot'], ['probe'], ['page', 'tree'], ['page', 'reduce'],
-  ['page', 'collect'], ['page', 'langs'], ['page', 'overlays'], ['ext', 'launch'],
-  ['ext', 'open'], ['ext', 'status'], ['ext', 'close'], ['mask'],
+  ['browser', 'open'],
+  ['browser', 'attach'],
+  ['browser', 'list'],
+  ['browser', 'close'],
+  ['browser', 'close-all'],
+  ['browser', 'eval'],
+  ['browser', 'run'],
+  ['browser', 'cdp'],
+  ['browser', 'screenshot'],
+  ['probe'],
+  ['page', 'tree'],
+  ['page', 'reduce'],
+  ['page', 'collect'],
+  ['page', 'langs'],
+  ['page', 'overlays'],
+  ['ext', 'launch'],
+  ['ext', 'open'],
+  ['ext', 'status'],
+  ['ext', 'close'],
+  ['mask'],
 ];
 
 test('--help works for root, groups and every leaf, with Example and Output', async () => {
   const help = async (path) => {
     const stdout = sink();
     const code = await runCli(['node', 'web', ...path, '--help'], {
-      stdout, stderr: sink(), env: {},
+      stdout,
+      stderr: sink(),
+      env: {},
     });
     assert.equal(code, 0, path.join(' '));
     return stdout.buf;

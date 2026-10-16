@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import { emit, fail } from './output.mjs';
 import { CliError } from './errors.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
 
 test('emit json writes one pretty document', () => {
   const stdout = sink();

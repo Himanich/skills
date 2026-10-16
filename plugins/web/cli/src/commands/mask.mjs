@@ -59,7 +59,9 @@ function makeProxy({ target, displayDomain, log }) {
   return (req, res) => {
     const headers = { ...req.headers, host: target.host };
     delete headers['accept-encoding'];
-    const proxyReq = doRequest(new URL(req.url, target.origin), { method: req.method, headers },
+    const proxyReq = doRequest(
+      new URL(req.url, target.origin),
+      { method: req.method, headers },
       (proxyRes) => {
         const out = { ...proxyRes.headers };
         if (out.location) {
@@ -68,7 +70,8 @@ function makeProxy({ target, displayDomain, log }) {
         delete out['strict-transport-security'];
         res.writeHead(proxyRes.statusCode, out);
         proxyRes.pipe(res);
-      });
+      },
+    );
     proxyReq.on('error', (err) => {
       log(`Proxy error: ${err.message}`);
       res.writeHead(502);
@@ -83,7 +86,10 @@ function makeProxy({ target, displayDomain, log }) {
  * @returns {Promise<{ url: string, certDir: string, stop: () => Promise<void> }>}
  */
 export async function startMask({
-  displayDomain, targetUrl, hostsFile = '/etc/hosts', port = 443,
+  displayDomain,
+  targetUrl,
+  hostsFile = '/etc/hosts',
+  port = 443,
   log = (s) => process.stderr.write(`${s}\n`),
 }) {
   const target = new URL(targetUrl);
@@ -93,8 +99,9 @@ export async function startMask({
   const certFile = join(certDir, 'cert.pem');
   let server;
   try {
-    execFileSync('mkcert', ['-key-file', keyFile, '-cert-file', certFile, displayDomain],
-      { stdio: ['ignore', 'ignore', 'inherit'] });
+    execFileSync('mkcert', ['-key-file', keyFile, '-cert-file', certFile, displayDomain], {
+      stdio: ['ignore', 'ignore', 'inherit'],
+    });
     log('Generated trusted certificate via mkcert');
     addHostsEntry(hostsFile, entry, log);
     server = createHttpsServer(
@@ -150,14 +157,17 @@ export function registerMask(program, deps = {}) {
     .description('serve a target URL under a fake local HTTPS domain')
     .argument('<display-domain>', 'domain to show, e.g. wknd.adventures')
     .argument('<target-url>', 'upstream URL to proxy, e.g. https://example.com')
-    .addHelpText('after', `
+    .addHelpText(
+      'after',
+      `
 Example:
   ${SUDO_LINE}
 Output:
   { url, displayDomain, targetUrl }
 Notes:
   Runs in the foreground until Ctrl-C, then restores /etc/hosts and removes certs.
-  Needs sudo (hosts file, port 443) and mkcert. Without root it exits 2 (USAGE).`)
+  Needs sudo (hosts file, port 443) and mkcert. Without root it exits 2 (USAGE).`,
+    )
     .action(async (displayDomain, targetUrl, _opts, command) => {
       if (!validateDisplayDomain(displayDomain)) {
         throw new CliError('USAGE', 'invalid domain name', {

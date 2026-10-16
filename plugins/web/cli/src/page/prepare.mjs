@@ -1,14 +1,16 @@
-const UNPIN = '[...document.body.querySelectorAll(\'*\')].forEach(el => { '
-  + 'const s = getComputedStyle(el); '
-  + 'if (s.position === \'fixed\' || s.position === \'sticky\') el.style.position = \'relative\'; })';
+const UNPIN =
+  "[...document.body.querySelectorAll('*')].forEach(el => { " +
+  'const s = getComputedStyle(el); ' +
+  "if (s.position === 'fixed' || s.position === 'sticky') el.style.position = 'relative'; })";
 
 /** Scroll to the bottom and back so lazy content loads. */
 export function scrollForLazyContent(driver, session, { settleMs = 2000 } = {}) {
   driver.run(session, {
-    code: 'async page => { '
-      + 'await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); '
-      + `await page.waitForTimeout(${Number(settleMs)}); `
-      + 'await page.evaluate(() => window.scrollTo(0, 0)); }',
+    code:
+      'async page => { ' +
+      'await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); ' +
+      `await page.waitForTimeout(${Number(settleMs)}); ` +
+      'await page.evaluate(() => window.scrollTo(0, 0)); }',
   });
 }
 

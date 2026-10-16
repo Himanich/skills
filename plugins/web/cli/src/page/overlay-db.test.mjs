@@ -3,33 +3,46 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import {
-  normalizeCmpRules, buildHideExpression, loadPatterns,
-} from '#src/page/overlay-db.mjs';
+import { normalizeCmpRules, buildHideExpression, loadPatterns } from '#src/page/overlay-db.mjs';
 
 // Shapes taken from Consent-O-Matic Rules.json (methods: [{ name, action }]).
 const rules = {
   withHide: {
-    detectors: [{
-      presentMatcher: { type: 'css', target: { selector: '#cmp-banner' } },
-      showingMatcher: { type: 'css', target: { selector: 'body.cmp-open' } },
-    }],
+    detectors: [
+      {
+        presentMatcher: { type: 'css', target: { selector: '#cmp-banner' } },
+        showingMatcher: { type: 'css', target: { selector: 'body.cmp-open' } },
+      },
+    ],
     methods: [
       { name: 'HIDE_CMP', action: { type: 'hide', target: { selector: '#cmp-root' } } },
       {
         name: 'OPEN_OPTIONS',
-        action: { type: 'list', actions: [
-          { type: 'click', target: { selector: '.cmp-more', textFilter: ['Options', 'Settings'] } },
-          { type: 'wait', waitTime: 250 },
-        ] },
+        action: {
+          type: 'list',
+          actions: [
+            {
+              type: 'click',
+              target: { selector: '.cmp-more', textFilter: ['Options', 'Settings'] },
+            },
+            { type: 'wait', waitTime: 250 },
+          ],
+        },
       },
       {
         name: 'DO_CONSENT',
-        action: { type: 'consent', consents: [{ type: 'A', trueAction: { type: 'click', target: { selector: '#on' } } }] },
+        action: {
+          type: 'consent',
+          consents: [{ type: 'A', trueAction: { type: 'click', target: { selector: '#on' } } }],
+        },
       },
       {
         name: 'SAVE_CONSENT',
-        action: { type: 'click', parent: { selector: '.cmp-footer' }, target: { selector: 'button:first-child' } },
+        action: {
+          type: 'click',
+          parent: { selector: '.cmp-footer' },
+          target: { selector: 'button:first-child' },
+        },
       },
     ],
   },
@@ -39,16 +52,24 @@ const rules = {
       { name: 'OPEN_OPTIONS', action: { type: 'click', target: { selector: '.klaro .cm-link' } } },
       {
         name: 'SAVE_CONSENT',
-        action: { type: 'ifcss', target: { selector: '.cm-btn-accept' }, trueAction: { type: 'click', target: { selector: '.cm-btn-accept' } } },
+        action: {
+          type: 'ifcss',
+          target: { selector: '.cm-btn-accept' },
+          trueAction: { type: 'click', target: { selector: '.cm-btn-accept' } },
+        },
       },
     ],
   },
   withoutHide: {
-    detectors: [{
-      presentMatcher: { type: 'css', target: { selector: 'body.has-cmp' } },
-      showingMatcher: { type: 'css', target: { selector: '.cmp-dialog' } },
-    }],
-    methods: [{ name: 'SAVE_CONSENT', action: { type: 'click', target: { selector: '.cmp-save' } } }],
+    detectors: [
+      {
+        presentMatcher: { type: 'css', target: { selector: 'body.has-cmp' } },
+        showingMatcher: { type: 'css', target: { selector: '.cmp-dialog' } },
+      },
+    ],
+    methods: [
+      { name: 'SAVE_CONSENT', action: { type: 'click', target: { selector: '.cmp-save' } } },
+    ],
   },
 };
 
@@ -86,7 +107,15 @@ const report = {
 
 test('hide expression survives quotes and backslashes in selectors', () => {
   let injected;
-  const doc = { head: { appendChild: (el) => { injected = el.textContent; return el; } }, createElement: () => ({}) };
+  const doc = {
+    head: {
+      appendChild: (el) => {
+        injected = el.textContent;
+        return el;
+      },
+    },
+    createElement: () => ({}),
+  };
   const result = new Function('document', `return (${buildHideExpression(report, ['all'])})`)(doc);
   assert.equal(result, 'ok');
   assert.equal(injected, [...report.overlays.flatMap((o) => o.hide), report.scroll_fix].join('\n'));
@@ -94,14 +123,28 @@ test('hide expression survives quotes and backslashes in selectors', () => {
 
 test('hide expression selects overlays by id; no ids keeps only scroll_fix', () => {
   let injected;
-  const doc = { head: { appendChild: (el) => { injected = el.textContent; return el; } }, createElement: () => ({}) };
+  const doc = {
+    head: {
+      appendChild: (el) => {
+        injected = el.textContent;
+        return el;
+      },
+    },
+    createElement: () => ({}),
+  };
   new Function('document', `return (${buildHideExpression(report, ['overlay-1'])})`)(doc);
   assert.equal(injected, `${report.overlays[1].hide[0]}\n${report.scroll_fix}`);
   new Function('document', `return (${buildHideExpression(report, [])})`)(doc);
   assert.equal(injected, report.scroll_fix);
 });
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
 const RULES = { x: rules.withHide };
 
 function fakeFetch(failing = false) {
@@ -161,7 +204,9 @@ test('loadPatterns without a cache and failing fetch throws FAILURE with hint', 
   const dir = mkdtempSync(join(tmpdir(), 'odb-'));
   await assert.rejects(
     loadPatterns({ fetch: fakeFetch(true).fetch, cacheDir: dir, stderr: sink() }),
-    (e) => e.code === 'FAILURE' && /cannot fetch overlay pattern database/.test(e.message)
-      && /--refresh-db/.test(e.hint),
+    (e) =>
+      e.code === 'FAILURE' &&
+      /cannot fetch overlay pattern database/.test(e.message) &&
+      /--refresh-db/.test(e.hint),
   );
 });

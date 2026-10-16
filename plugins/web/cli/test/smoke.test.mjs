@@ -9,7 +9,8 @@ import { startFixture } from './fixture-server.mjs';
 
 const binPath = fileURLToPath(new URL('../dist/web.mjs', import.meta.url));
 const FILLER = 'Smoke test page body text long enough to look like real content. '.repeat(3);
-const HTML = `<html><head><title>Smoke</title></head><body><main><h1>hi</h1><p>${FILLER}</p></main></body></html>`;
+const HTML = `<html><head><title>Smoke</title></head>
+<body><main><h1>hi</h1><p>${FILLER}</p></main></body></html>`;
 const probe = spawnSync('playwright-cli', ['--version']);
 const available = !probe.error && probe.status === 0;
 const sessionName = `smoke-${process.pid}`;

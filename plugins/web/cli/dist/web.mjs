@@ -3846,25 +3846,34 @@ function registerBrowser(program2, deps) {
       print({ session, attached: true });
     }
   );
-  action(browser.command("list").description("list sessions").addHelpText("after", HELP.LIST), ({ driver, print }) => {
-    const sessions = driver.list().map((s) => ({
-      name: s.name,
-      status: s.status,
-      headed: s.headed,
-      url: sessionUrl(driver, s)
-    }));
-    print({ sessions });
-  });
-  action(browser.command("close").description("close the session").addHelpText("after", HELP.CLOSE), (ctx) => {
-    const session = openSession(ctx);
-    ctx.driver.close(session);
-    ctx.print({ session, status: "closed" });
-  });
-  action(browser.command("close-all").description("close every session").addHelpText("after", HELP.CLOSE_ALL), (ctx) => {
-    const closed = ctx.driver.list().map((s) => s.name);
-    ctx.driver.closeAll();
-    ctx.print({ closed });
-  });
+  action(
+    browser.command("list").description("list sessions").addHelpText("after", HELP.LIST),
+    ({ driver, print }) => {
+      const sessions = driver.list().map((s) => ({
+        name: s.name,
+        status: s.status,
+        headed: s.headed,
+        url: sessionUrl(driver, s)
+      }));
+      print({ sessions });
+    }
+  );
+  action(
+    browser.command("close").description("close the session").addHelpText("after", HELP.CLOSE),
+    (ctx) => {
+      const session = openSession(ctx);
+      ctx.driver.close(session);
+      ctx.print({ session, status: "closed" });
+    }
+  );
+  action(
+    browser.command("close-all").description("close every session").addHelpText("after", HELP.CLOSE_ALL),
+    (ctx) => {
+      const closed = ctx.driver.list().map((s) => s.name);
+      ctx.driver.closeAll();
+      ctx.print({ closed });
+    }
+  );
   action(
     browser.command("eval <expr>").description("evaluate a JS expression").addHelpText("after", HELP.EVAL),
     (ctx, expr) => {
@@ -4514,7 +4523,9 @@ function runProbe(driver, { url, outputDir, log = () => {
     const out = runStep(driver, { url, outputDir, stepDef, log });
     steps.push(out.step);
     networkLines.push(...out.networkLines);
-    log(`  ${stepDef.name}: ${out.step.result} (${out.step.health.title || "no title"}, ${out.step.durationMs}ms)`);
+    log(
+      `  ${stepDef.name}: ${out.step.result} (${out.step.health.title || "no title"}, ${out.step.durationMs}ms)`
+    );
     if (out.step.result === "success") {
       success = { stepDef, browserConfig: out.browserConfig };
       break;
@@ -4525,7 +4536,10 @@ function runProbe(driver, { url, outputDir, log = () => {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
     steps,
     firstSuccess: success?.stepDef.name ?? null,
-    detectedSignals: detectSignals(networkLines, steps.map((s) => s.health))
+    detectedSignals: detectSignals(
+      networkLines,
+      steps.map((s) => s.health)
+    )
   };
   mkdirSync2(outputDir, { recursive: true });
   writeFileSync2(
@@ -4800,9 +4814,18 @@ function registerExt(program2, deps) {
     launch,
     { needs: false }
   );
-  action(ext.command("open <surface>").description("open sidepanel, popup or options").addHelpText("after", HELP3.OPEN), open);
-  action(ext.command("status").description("show extension session state").addHelpText("after", HELP3.STATUS), status);
-  action(ext.command("close").description("close the extension session").addHelpText("after", HELP3.CLOSE), close);
+  action(
+    ext.command("open <surface>").description("open sidepanel, popup or options").addHelpText("after", HELP3.OPEN),
+    open
+  );
+  action(
+    ext.command("status").description("show extension session state").addHelpText("after", HELP3.STATUS),
+    status
+  );
+  action(
+    ext.command("close").description("close the extension session").addHelpText("after", HELP3.CLOSE),
+    close
+  );
 }
 
 // src/commands/mask.mjs
@@ -4892,11 +4915,9 @@ async function startMask({
   const certFile = join4(certDir, "cert.pem");
   let server;
   try {
-    execFileSync(
-      "mkcert",
-      ["-key-file", keyFile, "-cert-file", certFile, displayDomain],
-      { stdio: ["ignore", "ignore", "inherit"] }
-    );
+    execFileSync("mkcert", ["-key-file", keyFile, "-cert-file", certFile, displayDomain], {
+      stdio: ["ignore", "ignore", "inherit"]
+    });
     log("Generated trusted certificate via mkcert");
     addHostsEntry(hostsFile, entry, log);
     server = createHttpsServer(
@@ -4944,14 +4965,17 @@ function waitForSignal(stop) {
 }
 function registerMask(program2, deps = {}) {
   const { stdout = process.stdout } = deps;
-  program2.command("mask").description("serve a target URL under a fake local HTTPS domain").argument("<display-domain>", "domain to show, e.g. wknd.adventures").argument("<target-url>", "upstream URL to proxy, e.g. https://example.com").addHelpText("after", `
+  program2.command("mask").description("serve a target URL under a fake local HTTPS domain").argument("<display-domain>", "domain to show, e.g. wknd.adventures").argument("<target-url>", "upstream URL to proxy, e.g. https://example.com").addHelpText(
+    "after",
+    `
 Example:
   ${SUDO_LINE}
 Output:
   { url, displayDomain, targetUrl }
 Notes:
   Runs in the foreground until Ctrl-C, then restores /etc/hosts and removes certs.
-  Needs sudo (hosts file, port 443) and mkcert. Without root it exits 2 (USAGE).`).action(async (displayDomain, targetUrl, _opts, command) => {
+  Needs sudo (hosts file, port 443) and mkcert. Without root it exits 2 (USAGE).`
+  ).action(async (displayDomain, targetUrl, _opts, command) => {
     if (!validateDisplayDomain(displayDomain)) {
       throw new CliError("USAGE", "invalid domain name", {
         hint: "use letters, digits, dots and hyphens, e.g. wknd.adventures"
@@ -5044,10 +5068,12 @@ function captureTree(driver, session, { minWidth = 900, settleMs } = {}) {
   };
 }
 function registerTree(group, deps) {
-  group.command("tree [url]").description("capture the visual tree of a page").addHelpText("after", HELP4).option("--min-width <n>", "minimum element width in px", parseIntArg, 900).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).action((url, _opts, command) => runPageCommand(command, deps, {
-    url,
-    fn: (driver, session, opts) => captureTree(driver, session, opts)
-  }));
+  group.command("tree [url]").description("capture the visual tree of a page").addHelpText("after", HELP4).option("--min-width <n>", "minimum element width in px", parseIntArg, 900).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).action(
+    (url, _opts, command) => runPageCommand(command, deps, {
+      url,
+      fn: (driver, session, opts) => captureTree(driver, session, opts)
+    })
+  );
 }
 
 // src/commands/page/reduce.mjs
@@ -5083,13 +5109,15 @@ function reducePage(driver, session, { retries = 2, settleMs } = {}) {
   return phase1;
 }
 function registerReduce(group, deps) {
-  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP5).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", parseIntArg, 2).action((url, _opts, command) => runPageCommand(command, deps, {
-    url,
-    fn: (driver, session, opts) => reducePage(driver, session, {
-      retries: opts.retries,
-      settleMs: opts.settleMs
+  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP5).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", parseIntArg, 2).action(
+    (url, _opts, command) => runPageCommand(command, deps, {
+      url,
+      fn: (driver, session, opts) => reducePage(driver, session, {
+        retries: opts.retries,
+        settleMs: opts.settleMs
+      })
     })
-  }));
+  );
 }
 
 // src/commands/page/collect.mjs
@@ -5165,10 +5193,7 @@ function optimizeSvg(svgString, classification) {
   svg = svg.replace(/<metadata[\s\S]*?<\/metadata>/gi, "");
   svg = svg.replace(/<title[\s\S]*?<\/title>/gi, "");
   svg = svg.replace(/<desc[\s\S]*?<\/desc>/gi, "");
-  svg = svg.replace(
-    /\s*(xmlns:xlink|xmlns:sketch|xmlns:dc|xmlns:cc|xmlns:rdf|xmlns:sodipodi|xmlns:inkscape)="[^"]*"/g,
-    ""
-  );
+  svg = svg.replace(/\s*(xmlns:(?:xlink|sketch|dc|cc|rdf|sodipodi|inkscape))="[^"]*"/g, "");
   svg = svg.replace(/\s*(sketch:|sodipodi:|inkscape:)[a-z-]+="[^"]*"/gi, "");
   svg = svg.replace(/\s*data-name="[^"]*"/g, "");
   svg = svg.replace(/\s*(?:class|aria-hidden|focusable|display|style)="[^"]*"/g, "");
@@ -5182,8 +5207,14 @@ function optimizeSvg(svgString, classification) {
   svg = svg.replace(/\s*(?<![\w-])width=["'][^"']*["']/g, "");
   svg = svg.replace(/\s*(?<![\w-])height=["'][^"']*["']/g, "");
   if (classification === "icon") {
-    svg = svg.replace(/\b(fill|stroke)="(?!none|currentColor|transparent)[^"]+"/g, '$1="currentColor"');
-    svg = svg.replace(/\b(fill|stroke)='(?!none|currentColor|transparent)[^']+'/g, "$1='currentColor'");
+    svg = svg.replace(
+      /\b(fill|stroke)="(?!none|currentColor|transparent)[^"]+"/g,
+      '$1="currentColor"'
+    );
+    svg = svg.replace(
+      /\b(fill|stroke)='(?!none|currentColor|transparent)[^']+'/g,
+      "$1='currentColor'"
+    );
   }
   svg = svg.replace(/\s{2,}/g, " ").replace(/>\s+</g, "><").trim();
   return svg;
@@ -5365,9 +5396,7 @@ function primarySubtag(code) {
   return code.toLowerCase().split("-")[0] || null;
 }
 function reconcile(declared, detectedList) {
-  const detectedCodes = new Set(
-    detectedList.filter((r) => r.is_reliable).map((r) => r.language)
-  );
+  const detectedCodes = new Set(detectedList.filter((r) => r.is_reliable).map((r) => r.language));
   const declaredCodes = /* @__PURE__ */ new Set();
   const add = (raw) => {
     const p = primarySubtag(raw);
@@ -5389,10 +5418,12 @@ function detect2(text, detector) {
   const identifier = detector.create(0, MAX_CLD3_BYTES);
   try {
     const pieces = text.split("\n").filter((b) => b.trim()).flatMap(chunks);
-    return aggregate(pieces.map((piece) => ({
-      ...identifier.findLanguage(piece),
-      size: Buffer.byteLength(piece)
-    })));
+    return aggregate(
+      pieces.map((piece) => ({
+        ...identifier.findLanguage(piece),
+        size: Buffer.byteLength(piece)
+      }))
+    );
   } finally {
     identifier.dispose();
   }
@@ -5440,10 +5471,7 @@ function registerLangs(group, deps) {
     const detector = await (deps.loadDetector ?? loadDetector)();
     return runPageCommand(command, deps, {
       url,
-      fn: (driver, session) => detectLanguages(
-        driver.run(session, { code: loadBundle("langs-collect.js") }),
-        detector
-      )
+      fn: (driver, session) => detectLanguages(driver.run(session, { code: loadBundle("langs-collect.js") }), detector)
     });
   });
 }
@@ -5529,9 +5557,7 @@ function extractDismissActions(rule) {
   return [...toActions("OPEN_OPTIONS"), ...save];
 }
 function hasDroppedFilters(matchers) {
-  return toArray(matchers).some(
-    (m) => m.textFilter && m.textFilter.length > 0 || m.childFilter
-  );
+  return toArray(matchers).some((m) => m.textFilter && m.textFilter.length > 0 || m.childFilter);
 }
 function normalizeCmpRules(rawRules) {
   const cmps = {};
@@ -5599,7 +5625,8 @@ function buildHideExpression(report, ids) {
   const rules = selected.flatMap((o) => o.hide ?? []);
   if (report.scroll_locked && report.scroll_fix) rules.push(report.scroll_fix);
   const css = JSON.stringify(rules.join("\n"));
-  return `document.head.appendChild(Object.assign(document.createElement('style'), { textContent: ${css} })) && 'ok'`;
+  const style = `Object.assign(document.createElement('style'), { textContent: ${css} })`;
+  return `document.head.appendChild(${style}) && 'ok'`;
 }
 async function settle(promise, label, stderr) {
   try {
@@ -5623,7 +5650,10 @@ async function fetchPatterns(fetch, cached, stderr) {
     settle(fetchEasyList(fetch), "EasyList", stderr)
   ]);
   if (!rawRules && rawText === void 0) throw new Error("both sources failed");
-  const cmpResult = rawRules ? normalizeCmpRules(rawRules) : { cmps: cached?.cmps ?? {}, partial_coverage_cmps: cached?.stats?.partial_coverage_cmps ?? [] };
+  const cmpResult = rawRules ? normalizeCmpRules(rawRules) : {
+    cmps: cached?.cmps ?? {},
+    partial_coverage_cmps: cached?.stats?.partial_coverage_cmps ?? []
+  };
   const selectors = rawText === void 0 ? cached?.generic_selectors ?? [] : parseAbpHideRules(rawText).slice(0, 1e3);
   return buildPatternsJson(cmpResult, selectors);
 }

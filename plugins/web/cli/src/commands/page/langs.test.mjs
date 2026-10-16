@@ -3,11 +3,28 @@ import assert from 'node:assert/strict';
 import { runCli } from '#src/cli.mjs';
 import { CliError } from '#src/errors.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
-const OK = { title: 'T', url: 'http://x/final', bodyLength: 5000, status: 200, hasMainContent: true };
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
+const OK = {
+  title: 'T',
+  url: 'http://x/final',
+  bodyLength: 5000,
+  status: 200,
+  hasMainContent: true,
+};
 const SIGNALS = {
-  url: 'http://x', htmlLang: 'en', nestedLangs: [], hreflang: [],
-  metaContentLanguage: null, text: 'hello', wordCount: 1,
+  url: 'http://x',
+  htmlLang: 'en',
+  nestedLangs: [],
+  hreflang: [],
+  metaContentLanguage: null,
+  text: 'hello',
+  wordCount: 1,
 };
 const detector = {
   create: () => ({ findLanguage: () => ({ language: 'und', probability: 0 }), dispose() {} }),
@@ -16,8 +33,12 @@ const detector = {
 async function run(deps = {}) {
   const calls = [];
   const driver = {
-    ensureAvailable: () => {}, open: () => {}, close: () => {}, list: () => [],
-    goto: () => {}, pageHealth: () => OK,
+    ensureAvailable: () => {},
+    open: () => {},
+    close: () => {},
+    list: () => [],
+    goto: () => {},
+    pageHealth: () => OK,
     run: (s, o) => (calls.push(['run', s, o]), SIGNALS),
   };
   const stdout = sink();

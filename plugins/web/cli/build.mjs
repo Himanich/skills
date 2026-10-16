@@ -1,11 +1,20 @@
-import { readdirSync, readFileSync, writeFileSync, chmodSync, mkdirSync, existsSync } from 'node:fs';
+import {
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  chmodSync,
+  mkdirSync,
+  existsSync,
+} from 'node:fs';
 import { build } from 'esbuild';
 
 const BUNDLES_DIR = new URL('./src/bundles/', import.meta.url);
 const OUT = new URL('./dist/web.mjs', import.meta.url);
 
 function inlineBundles() {
-  const files = readdirSync(BUNDLES_DIR).filter((f) => f !== 'index.mjs').sort();
+  const files = readdirSync(BUNDLES_DIR)
+    .filter((f) => f !== 'index.mjs')
+    .sort();
   const table = Object.fromEntries(
     files.map((f) => [f, readFileSync(new URL(f, BUNDLES_DIR), 'utf-8')]),
   );

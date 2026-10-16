@@ -4,20 +4,49 @@ import { join } from 'node:path';
 export const ICON_MAX_SIZE = 48;
 
 export const KNOWN_PATTERNS = [
-  'search', 'cart', 'account', 'user', 'menu',
-  'hamburger', 'close', 'globe', 'language', 'phone',
-  'mail', 'email', 'heart', 'star', 'share',
-  'download', 'arrow', 'chevron', 'caret', 'plus',
-  'minus', 'check', 'info', 'warning', 'home',
-  'settings', 'notification', 'bell', 'lock',
+  'search',
+  'cart',
+  'account',
+  'user',
+  'menu',
+  'hamburger',
+  'close',
+  'globe',
+  'language',
+  'phone',
+  'mail',
+  'email',
+  'heart',
+  'star',
+  'share',
+  'download',
+  'arrow',
+  'chevron',
+  'caret',
+  'plus',
+  'minus',
+  'check',
+  'info',
+  'warning',
+  'home',
+  'settings',
+  'notification',
+  'bell',
+  'lock',
 ];
 
 export function classify(entry) {
   const maxDim = Math.max(entry.width, entry.height);
   const allClasses = [
-    entry.parentClass, entry.containerClass,
-    entry.imgClass, entry.svgClass, entry.className,
-  ].filter(Boolean).join(' ').toLowerCase();
+    entry.parentClass,
+    entry.containerClass,
+    entry.imgClass,
+    entry.svgClass,
+    entry.className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
   const alt = (entry.alt || entry.parentAriaLabel || '').toLowerCase();
 
   if (allClasses.includes('logo') || allClasses.includes('brand') || alt.includes('logo')) {
@@ -30,13 +59,18 @@ export function classify(entry) {
 export function deriveName(entry, index) {
   const candidates = [entry.parentAriaLabel, entry.alt, entry.id].filter(Boolean);
   const allClasses = [entry.parentClass, entry.imgClass, entry.svgClass, entry.className]
-    .filter(Boolean).join(' ').toLowerCase();
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 
   for (const pattern of KNOWN_PATTERNS) {
     if (allClasses.includes(pattern)) return { name: pattern, confidence: 'high' };
   }
   for (const candidate of candidates) {
-    const clean = candidate.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const clean = candidate
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
     if (clean.length > 0 && clean.length < 30) return { name: clean, confidence: 'high' };
   }
   return { name: `icon-${index}`, confidence: 'low' };
@@ -49,9 +83,7 @@ export function optimizeSvg(svgString, classification) {
   svg = svg.replace(/<metadata[\s\S]*?<\/metadata>/gi, '');
   svg = svg.replace(/<title[\s\S]*?<\/title>/gi, '');
   svg = svg.replace(/<desc[\s\S]*?<\/desc>/gi, '');
-  svg = svg.replace(
-    /\s*(xmlns:xlink|xmlns:sketch|xmlns:dc|xmlns:cc|xmlns:rdf|xmlns:sodipodi|xmlns:inkscape)="[^"]*"/g, ''
-  );
+  svg = svg.replace(/\s*(xmlns:(?:xlink|sketch|dc|cc|rdf|sodipodi|inkscape))="[^"]*"/g, '');
   svg = svg.replace(/\s*(sketch:|sodipodi:|inkscape:)[a-z-]+="[^"]*"/gi, '');
   svg = svg.replace(/\s*data-name="[^"]*"/g, '');
   svg = svg.replace(/\s*(?:class|aria-hidden|focusable|display|style)="[^"]*"/g, '');
@@ -67,10 +99,19 @@ export function optimizeSvg(svgString, classification) {
   svg = svg.replace(/\s*(?<![\w-])height=["'][^"']*["']/g, '');
 
   if (classification === 'icon') {
-    svg = svg.replace(/\b(fill|stroke)="(?!none|currentColor|transparent)[^"]+"/g, '$1="currentColor"');
-    svg = svg.replace(/\b(fill|stroke)='(?!none|currentColor|transparent)[^']+'/g, "$1='currentColor'");
+    svg = svg.replace(
+      /\b(fill|stroke)="(?!none|currentColor|transparent)[^"]+"/g,
+      '$1="currentColor"',
+    );
+    svg = svg.replace(
+      /\b(fill|stroke)='(?!none|currentColor|transparent)[^']+'/g,
+      "$1='currentColor'",
+    );
   }
-  svg = svg.replace(/\s{2,}/g, ' ').replace(/>\s+</g, '><').trim();
+  svg = svg
+    .replace(/\s{2,}/g, ' ')
+    .replace(/>\s+</g, '><')
+    .trim();
   return svg;
 }
 
@@ -125,9 +166,11 @@ export function writeIcons(svgs, url, iconsDir) {
 
     const context = [
       entry.containerTag ? entry.containerTag.toLowerCase() : '',
-      entry.parentTag    ? entry.parentTag.toLowerCase()    : '',
+      entry.parentTag ? entry.parentTag.toLowerCase() : '',
       entry.parentAriaLabel || '',
-    ].filter(Boolean).join(' ');
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     icons.push({
       name,

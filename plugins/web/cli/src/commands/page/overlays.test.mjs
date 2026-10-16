@@ -5,15 +5,40 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
 
-const sink = () => ({ buf: '', write(c) { this.buf += c; return true; } });
-const OK = { title: 'T', url: 'http://x/final', bodyLength: 5000, status: 200, hasMainContent: true };
+const sink = () => ({
+  buf: '',
+  write(c) {
+    this.buf += c;
+    return true;
+  },
+});
+const OK = {
+  title: 'T',
+  url: 'http://x/final',
+  bodyLength: 5000,
+  status: 200,
+  hasMainContent: true,
+};
 const REPORT = {
   overlays: [
-    { id: 'overlay-0', type: 'cmp-match', cmp: 'acme', selector: '#acme',
+    {
+      id: 'overlay-0',
+      type: 'cmp-match',
+      cmp: 'acme',
+      selector: '#acme',
       hide: ['#acme-hide { display:none!important }'],
-      dismiss: [{ action: 'click', selector: '#acme-save' }, { action: 'wait', ms: 250 }] },
-    { id: 'overlay-1', type: 'heuristic', selector: '.modal',
-      hide: ['.modal-hide { display:none!important }'], dismiss: null },
+      dismiss: [
+        { action: 'click', selector: '#acme-save' },
+        { action: 'wait', ms: 250 },
+      ],
+    },
+    {
+      id: 'overlay-1',
+      type: 'heuristic',
+      selector: '.modal',
+      hide: ['.modal-hide { display:none!important }'],
+      dismiss: null,
+    },
   ],
   scroll_locked: true,
   scroll_fix: 'html { overflow:auto!important }',
@@ -23,11 +48,17 @@ async function run(extra, { runFails = false } = {}) {
   const calls = [];
   const fetchUrls = [];
   const driver = {
-    ensureAvailable: () => {}, open: () => {}, close: () => {}, list: () => [],
-    goto: () => {}, inject: () => {}, pageHealth: () => OK,
+    ensureAvailable: () => {},
+    open: () => {},
+    close: () => {},
+    list: () => [],
+    goto: () => {},
+    inject: () => {},
+    pageHealth: () => OK,
     run: (s, o) => {
       calls.push(['run', o.code]);
-      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0')) throw new Error('boom');
+      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0'))
+        throw new Error('boom');
       if (o.code.includes('r.right > 0')) return '[]';
       return o.code.includes('page.evaluate(') ? JSON.stringify(REPORT) : true;
     },
@@ -90,8 +121,9 @@ test('thorough runs dismiss steps for cmp-match and hides the heuristic one', as
 });
 
 test('thorough marks a failed dismiss run ok:false', async () => {
-  const { code, doc } = await run(['http://x', '--dismiss', '--mode', 'thorough'],
-    { runFails: true });
+  const { code, doc } = await run(['http://x', '--dismiss', '--mode', 'thorough'], {
+    runFails: true,
+  });
   assert.equal(code, 0);
   assert.equal(doc.applied[0].ok, false);
 });

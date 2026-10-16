@@ -4,9 +4,10 @@ import { loadBundle } from '#src/bundles/index.mjs';
 import { preparePage, scrollForLazyContent } from '#src/page/prepare.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
 
-const DETECT = 'window.xp.detectSections(document.body, window, { autoDetect: true, '
-  + 'highlightBoxes: false, highlightSections: false })'
-  + '.then(() => JSON.stringify(window.__reduceForSkill(document.body, window)))';
+const DETECT =
+  'window.xp.detectSections(document.body, window, { autoDetect: true, ' +
+  'highlightBoxes: false, highlightSections: false })' +
+  '.then(() => JSON.stringify(window.__reduceForSkill(document.body, window)))';
 
 function detect(driver, session) {
   const raw = driver.evaluate(session, DETECT);
@@ -59,10 +60,14 @@ export function registerReduce(group, deps) {
     .addHelpText('after', HELP)
     .option('--settle-ms <n>', 'wait after scrolling for lazy content', parseIntArg, 2000)
     .option('--retries <n>', 'rescroll attempts when no sections are found', parseIntArg, 2)
-    .action((url, _opts, command) => runPageCommand(command, deps, {
-      url,
-      fn: (driver, session, opts) => reducePage(driver, session, {
-        retries: opts.retries, settleMs: opts.settleMs,
+    .action((url, _opts, command) =>
+      runPageCommand(command, deps, {
+        url,
+        fn: (driver, session, opts) =>
+          reducePage(driver, session, {
+            retries: opts.retries,
+            settleMs: opts.settleMs,
+          }),
       }),
-    }));
+    );
 }
