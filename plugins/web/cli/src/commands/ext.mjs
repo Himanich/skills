@@ -1,5 +1,14 @@
+import { createHash } from 'node:crypto';
 import { parseIntArg } from '#src/args.mjs';
-import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
@@ -88,16 +97,26 @@ function surfacePath(manifest, surface) {
   return paths[surface];
 }
 
-const FIND_ID_CODE = `async page => {
-  const ctx = page.context();
-  const worker = ctx.serviceWorkers()[0]
-    ?? await ctx.waitForEvent('serviceworker', { timeout: 5000 }).catch(() => null);
-  return worker ? worker.url() : null;
-}`;
+/**
+ * Chrome's extension id for an unpacked extension at `path` (sha256 → a-p alphabet).
+ * @param {string} path real (symlink-resolved) extension directory
+ */
+export function extensionIdForPath(path) {
+  const hex = createHash('sha256').update(path).digest('hex').slice(0, 32);
+  return [...hex].map((c) => String.fromCharCode(97 + Number.parseInt(c, 16))).join('');
+}
 
-function extensionIdFrom(url) {
-  if (typeof url !== 'string') return null;
-  return url.match(/^chrome-extension:\/\/([^/]+)\//)?.[1] ?? null;
+function verifyCode(extensionId) {
+  const url = `chrome-extension://${extensionId}/manifest.json`;
+  return `async page => {
+    const p = await page.context().newPage();
+    try {
+      await p.goto(${JSON.stringify(url)});
+      return JSON.parse(await p.textContent('body'))?.name ?? null;
+    } finally {
+      await p.close();
+    }
+  }`;
 }
 
 function sidepanelCode(extensionId, panelPath) {
@@ -171,10 +190,23 @@ function parseSessionFile(file) {
   }
 }
 
+function verifyLoaded(driver, { session, extensionId, name }) {
+  let found = null;
+  try {
+    found = driver.run(session, { code: verifyCode(extensionId) });
+  } catch {
+    found = null;
+  }
+  if (found === name) return;
+  driver.close(session);
+  throw new CliError('FAILURE', 'extension did not load', { hint: LOAD_FAILED_HINT });
+}
+
 function launch(ctx, distDir) {
   const { opts, driver, print } = ctx;
   const abs = resolve(distDir);
-  const surfaces = availableSurfaces(readManifest(abs));
+  const manifest = readManifest(abs);
+  const surfaces = availableSurfaces(manifest);
   const session = opts.session ?? generateSessionName();
   const { cdpPort } = opts;
   driver.open({
@@ -190,11 +222,8 @@ function launch(ctx, distDir) {
       },
     },
   });
-  const extensionId = extensionIdFrom(driver.run(session, { code: FIND_ID_CODE }));
-  if (!extensionId) {
-    driver.close(session);
-    throw new CliError('FAILURE', 'extension did not load', { hint: LOAD_FAILED_HINT });
-  }
+  const extensionId = extensionIdForPath(realpathSync(abs));
+  verifyLoaded(driver, { session, extensionId, name: manifest.name });
   const info = { session, extensionId, extensionPath: abs, surfaces, cdpPort };
   const file = artifactPath(opts.output, session, 'ext', 'session.json');
   mkdirSync(dirname(file), { recursive: true });

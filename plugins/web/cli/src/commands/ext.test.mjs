@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
+import { extensionIdForPath } from '#src/commands/ext.mjs';
 
 const MANIFEST = {
   manifest_version: 3,
@@ -34,7 +35,7 @@ function setup({ manifest = MANIFEST, sessions = [], run } = {}) {
     open: rec('open'),
     list: () => sessions,
     close: rec('close'),
-    run: (...a) => (calls.push(['run', ...a]), run ? run(a[1].code) : 'chrome-extension://abcdef/'),
+    run: (...a) => (calls.push(['run', ...a]), run ? run(a[1].code) : 'X'),
     cdp: rec('cdp', {}),
   };
   const stdout = sink();
@@ -55,7 +56,7 @@ test('ext launch prints { session, cdpPort, extensionId, surfaces }', async () =
   assert.equal(code, 0);
   const out = JSON.parse(stdout.buf);
   assert.deepEqual(out.surfaces, ['sidepanel', 'popup']);
-  assert.equal(out.extensionId, 'abcdef');
+  assert.match(out.extensionId, /^[a-p]{32}$/);
   assert.equal(out.cdpPort, 9333);
   const opened = calls.find((c) => c[0] === 'open')[1];
   assert.equal(opened.headed, true);
@@ -96,10 +97,10 @@ test('ext open popup runs code containing the popup path', async () => {
   const { code, calls } = await exec(['ext', 'open', 'popup', '--session', 's']);
   assert.equal(code, 0);
   const runs = calls.filter((c) => c[0] === 'run');
-  assert.match(runs.at(-1)[2].code, /chrome-extension:\/\/abcdef\/popup\.html/);
+  assert.match(runs.at(-1)[2].code, /chrome-extension:\/\/[a-p]{32}\/popup\.html/);
   assert.deepEqual(JSON.parse(stdout.buf), {
     surface: 'popup',
-    url: 'chrome-extension://abcdef/',
+    url: 'X',
   });
 });
 
@@ -139,7 +140,7 @@ test('ext launch without --session generates web-xxxx', async () => {
 test('ext open sidepanel prints url and targetId from the gesture path', async () => {
   const side = { url: 'chrome-extension://id/panel.html', targetId: 't1' };
   const { exec, stdout } = await launched({
-    run: (code) => (code.includes('Runtime.enable') ? side : 'chrome-extension://abcdef/'),
+    run: (code) => (code.includes('Runtime.enable') ? side : 'X'),
   });
   const { code, calls } = await exec(['ext', 'open', 'sidepanel', '--session', 's']);
   assert.equal(code, 0);
@@ -152,7 +153,9 @@ test('ext open sidepanel falls back to a tab with a note', async () => {
     run: (code) =>
       code.includes('Runtime.enable')
         ? { fallback: 'no-content-script' }
-        : 'chrome-extension://abcdef/panel.html',
+        : code.includes('manifest.json')
+          ? 'X'
+          : 'chrome-extension://abcdef/panel.html',
   });
   const { calls } = await exec(['ext', 'open', 'sidepanel', '--session', 's']);
   const doc = JSON.parse(stdout.buf);
@@ -167,4 +170,52 @@ test('ext status with a corrupt session file exits FAILURE', async () => {
   const { code } = await exec(['ext', 'status', '--session', 's']);
   assert.equal(code, 1);
   assert.match(JSON.parse(stdout.buf).error.message, /corrupt ext session file/);
+});
+
+test('extensionIdForPath maps sha256 of the path to the a-p alphabet', () => {
+  assert.equal(
+    extensionIdForPath('/private/tmp/ext-spike/ext'),
+    'haofcfdfpdgjbjabnplaomcjcoggcnld',
+  );
+});
+
+test('ext launch works for a popup-only manifest with no service worker', async () => {
+  const manifest = {
+    manifest_version: 3,
+    name: 'P',
+    version: '1',
+    action: { default_popup: 'p.html' },
+  };
+  const { dist, exec, stdout } = setup({ manifest, run: () => 'P' });
+  assert.equal((await exec(['ext', 'launch', dist, '--session', 's'])).code, 0);
+  assert.deepEqual(JSON.parse(stdout.buf).surfaces, ['popup']);
+});
+
+test('ext launch works for a worker-backed manifest', async () => {
+  const manifest = {
+    manifest_version: 3,
+    name: 'W',
+    version: '1',
+    background: { service_worker: 'b.js' },
+  };
+  const { dist, exec } = setup({ manifest, run: () => 'W' });
+  assert.equal((await exec(['ext', 'launch', dist, '--session', 's'])).code, 0);
+});
+
+test('ext launch with a name mismatch exits FAILURE and closes the session', async () => {
+  const { dist, exec, stdout } = setup({ run: () => 'Other' });
+  const { code, calls } = await exec(['ext', 'launch', dist, '--session', 's']);
+  assert.equal(code, 1);
+  assert.equal(JSON.parse(stdout.buf).error.message, 'extension did not load');
+  assert.deepEqual(calls.at(-1), ['close', 's']);
+});
+
+test('ext launch when navigation throws exits FAILURE and closes the session', async () => {
+  const run = () => {
+    throw new Error('ERR_BLOCKED_BY_CLIENT');
+  };
+  const { dist, exec } = setup({ run });
+  const { code, calls } = await exec(['ext', 'launch', dist, '--session', 's']);
+  assert.equal(code, 1);
+  assert.deepEqual(calls.at(-1), ['close', 's']);
 });
