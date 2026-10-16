@@ -1,4 +1,4 @@
-import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execPlaywrightCli } from './exec.mjs';
 import { CliError } from '#src/errors.mjs';
@@ -43,6 +43,16 @@ function toCliError(message) {
   return new CliError('PLAYWRIGHT_CLI', message);
 }
 
+function spawnError(error, args) {
+  if (error.code === 'ETIMEDOUT') {
+    return new CliError('TIMEOUT', `playwright-cli ${args[1] ?? args[0]} timed out`);
+  }
+  if (error.code === 'ENOENT') {
+    return new CliError('PLAYWRIGHT_CLI', 'playwright-cli not found', { hint: INSTALL_HINT });
+  }
+  return new CliError('PLAYWRIGHT_CLI', `playwright-cli failed: ${error.code}: ${error.message}`);
+}
+
 /**
  * @param {{ exec?: typeof execPlaywrightCli, outputDir: string, debug?: boolean }} opts
  */
@@ -56,14 +66,16 @@ export function createDriver({
   function call(args, opts) {
     if (debug) process.stderr.write(`playwright-cli ${args.join(' ')}\n`);
     const res = exec(args, opts);
+    if (res.error) throw spawnError(res.error, args);
     if (res.status === null) {
-      throw new CliError('TIMEOUT', `playwright-cli ${args[1] ?? args[0]} timed out`);
+      throw new CliError('PLAYWRIGHT_CLI', 'playwright-cli terminated by signal');
     }
     const doc = tryParse(res.stdout);
     const failure = doc?.isError ? doc.error : doc?.result?.isError ? doc.result.error : undefined;
     if (failure !== undefined) throw toCliError(String(failure));
     if (res.status !== 0) {
-      throw new CliError('PLAYWRIGHT_CLI', (res.stderr || res.stdout).trim() || `exit ${res.status}`);
+      const detail = (res.stderr || res.stdout).trim();
+      throw new CliError('PLAYWRIGHT_CLI', detail || `exit ${res.status}`);
     }
     return doc ?? {};
   }
@@ -75,7 +87,7 @@ export function createDriver({
     try {
       return fn(path);
     } finally {
-      unlinkSync(path);
+      rmSync(path, { force: true });
     }
   }
 
@@ -95,7 +107,8 @@ export function createDriver({
     if (cdpPort) {
       launchOptions.args = [...(launchOptions.args ?? []), `--remote-debugging-port=${cdpPort}`];
     }
-    return { browser: { ...config, launchOptions, initScript: initScripts } };
+    const initScript = [...(config.initScript ?? []), ...initScripts];
+    return { browser: { ...config, launchOptions, initScript } };
   }
 
   function open({ session, url, headed, config, cdpPort, persistent, initScripts = [] }) {
@@ -135,9 +148,11 @@ export function createDriver({
         throw new CliError('PLAYWRIGHT_CLI', 'playwright-cli not found', { hint: INSTALL_HINT });
       }
       if (!versionAtLeast(found, MIN_VERSION)) {
-        throw new CliError('PLAYWRIGHT_CLI', `playwright-cli ${found} is older than ${MIN_VERSION}`, {
-          hint: INSTALL_HINT,
-        });
+        throw new CliError(
+          'PLAYWRIGHT_CLI',
+          `playwright-cli ${found} is older than ${MIN_VERSION}`,
+          { hint: INSTALL_HINT },
+        );
       }
     },
     open,
@@ -177,7 +192,8 @@ export function createDriver({
     pageHealth(session) {
       return evaluate(
         session,
-        '({ title: document.title, bodyLength: document.body ? document.body.innerText.length : 0, url: location.href })',
+        '({ title: document.title, url: location.href, '
+          + 'bodyLength: document.body ? document.body.innerText.length : 0 })',
       );
     },
   };

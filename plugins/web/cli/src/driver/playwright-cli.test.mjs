@@ -44,7 +44,9 @@ test('evaluate wraps plain expressions as a returned value', () => {
 
 test('not-open error becomes NO_SESSION with open hint', () => {
   const { driver } = setup(() => ({
-    stdout: JSON.stringify({ isError: true, error: "The browser 'x' is not open, please run open first" }),
+    stdout: JSON.stringify({
+      isError: true, error: "The browser 'x' is not open, please run open first",
+    }),
     stderr: '', status: 1,
   }));
   assert.throws(
@@ -57,12 +59,25 @@ test('other error documents become PLAYWRIGHT_CLI', () => {
   const { driver } = setup(() => ({
     stdout: JSON.stringify({ isError: true, error: 'boom' }), stderr: '', status: 1,
   }));
-  assert.throws(() => driver.goto('x', 'http://a'), (e) => e.code === 'PLAYWRIGHT_CLI' && e.message === 'boom');
+  assert.throws(
+    () => driver.goto('x', 'http://a'),
+    (e) => e.code === 'PLAYWRIGHT_CLI' && e.message === 'boom',
+  );
 });
 
-test('null status becomes TIMEOUT', () => {
-  const { driver } = setup(() => ({ stdout: '', stderr: '', status: null }));
-  assert.equal(code(() => driver.goto('x', 'http://a')), 'TIMEOUT');
+test('spawn errors map to TIMEOUT, install hint, or PLAYWRIGHT_CLI', () => {
+  const fail = (errCode) => setup(() => ({
+    stdout: '', stderr: '', status: null, error: Object.assign(new Error('m'), { code: errCode }),
+  })).driver;
+  assert.equal(code(() => fail('ETIMEDOUT').goto('x', 'http://a')), 'TIMEOUT');
+  assert.throws(
+    () => fail('ENOENT').goto('x', 'http://a'),
+    (e) => e.code === 'PLAYWRIGHT_CLI' && /npm install -g/.test(e.hint),
+  );
+  assert.throws(
+    () => fail('ENOBUFS').goto('x', 'http://a'),
+    (e) => e.code === 'PLAYWRIGHT_CLI' && /ENOBUFS: m/.test(e.message),
+  );
 });
 
 test('open refuses an already open session name', () => {
@@ -86,11 +101,13 @@ test('open writes config under outputDir, passes --config, removes it after', ()
   });
   const res = ctx.driver.open({
     session: 'a', url: 'http://x', headed: true, persistent: true,
-    config: { browserName: 'chromium', launchOptions: { channel: 'chrome' } },
+    config: {
+      browserName: 'chromium', initScript: ['/own.js'], launchOptions: { channel: 'chrome' },
+    },
     initScripts: ['/abs/init.js'],
   });
   assert.equal(seen.path, join(ctx.outputDir, 'a-cli-config.json'));
-  assert.deepEqual(seen.body.browser.initScript, ['/abs/init.js']);
+  assert.deepEqual(seen.body.browser.initScript, ['/own.js', '/abs/init.js']);
   assert.equal(seen.body.browser.launchOptions.channel, 'chrome');
   assert.equal(existsSync(seen.path), false);
   const openArgs = ctx.calls.find((c) => c.includes('open'));
@@ -165,7 +182,9 @@ test('pageHealth returns title, bodyLength and url', () => {
 
 test('list maps browsers', () => {
   const { driver } = setup(() => JSON.stringify({
-    browsers: [{ name: 'a', status: 'open', browserType: 'chromium', headed: false, attached: true, pid: 1 }],
+    browsers: [{
+      name: 'a', status: 'open', browserType: 'chromium', headed: false, attached: true, pid: 1,
+    }],
   }));
   assert.deepEqual(driver.list(),
     [{ name: 'a', status: 'open', browserType: 'chromium', headed: false, attached: true }]);
@@ -174,7 +193,7 @@ test('list maps browsers', () => {
 test('ensureAvailable rejects 0.1.19 and missing binary, accepts 0.1.20', () => {
   const old = setup(() => '0.1.19\n').driver;
   assert.equal(code(() => old.ensureAvailable()), 'PLAYWRIGHT_CLI');
-  const missing = setup(() => ({ stdout: '', stderr: 'ENOENT', status: 127 })).driver;
+  const missing = setup(() => ({ stdout: '', stderr: '', status: null })).driver;
   assert.equal(code(() => missing.ensureAvailable()), 'PLAYWRIGHT_CLI');
   assert.doesNotThrow(() => setup(() => '0.1.20\n').driver.ensureAvailable());
   assert.doesNotThrow(() => setup(() => '0.2.0\n').driver.ensureAvailable());

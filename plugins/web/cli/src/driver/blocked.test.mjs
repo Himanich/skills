@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assertNotBlocked, classifyPage, detectSignals, findDocumentChain } from './blocked.mjs';
+import {
+  assertNotBlocked, checkHealth, classifyPage, detectSignals, findDocumentChain,
+} from './blocked.mjs';
 
 const REDIRECT_REQUESTS = `### Result
 1. [GET] http://example.com/ => [301] Moved Permanently
@@ -51,4 +53,12 @@ test('assertNotBlocked throws BLOCKED with a probe hint', () => {
     (e) => e.code === 'BLOCKED' && /web probe/.test(e.hint),
   );
   assert.doesNotThrow(() => assertNotBlocked({ title: 'Home', bodyLength: 900 }));
+});
+
+test('checkHealth blocks status 0, status >= 400 and chrome-error URLs', () => {
+  const ok = { title: 'Home', bodyLength: 500 };
+  assert.equal(checkHealth({ ...ok, status: 0 }), 'blocked');
+  assert.equal(checkHealth({ ...ok, status: 403 }), 'blocked');
+  assert.equal(checkHealth({ ...ok, url: 'chrome-error://chromewebdata/' }), 'blocked');
+  assert.equal(checkHealth({ ...ok, status: 200 }), 'success');
 });

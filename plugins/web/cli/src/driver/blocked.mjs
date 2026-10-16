@@ -5,24 +5,6 @@ export const ERROR_TITLE_PATTERN =
 
 export const MIN_BODY_LENGTH = 100;
 
-export function parseEvalOutput(raw) {
-  const resultIdx = raw.indexOf('### Result');
-  const codeIdx = raw.indexOf('### Ran Playwright code');
-  if (resultIdx === -1) return raw;
-  const start = resultIdx + '### Result'.length;
-  const end = codeIdx !== -1 ? codeIdx : raw.length;
-  let value = raw.slice(start, end).trim();
-  if (value.startsWith('"') && value.endsWith('"')) {
-    try {
-      const parsed = JSON.parse(value);
-      value = typeof parsed === 'string' ? parsed : value.slice(1, -1);
-    } catch {
-      value = value.slice(1, -1);
-    }
-  }
-  return value;
-}
-
 export function checkHealth(health) {
   if (health.url && health.url.startsWith('chrome-error://')) return 'blocked';
   if (health.status === 0) return 'blocked';
