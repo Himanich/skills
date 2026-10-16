@@ -27,10 +27,11 @@ async function run(extra, { runFails = false } = {}) {
     goto: () => {}, inject: () => {}, pageHealth: () => OK,
     run: (s, o) => {
       calls.push(['run', o.code]);
-      if (runFails && !o.code.includes('page.evaluate(')) throw new Error('boom');
+      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0')) throw new Error('boom');
+      if (o.code.includes('r.right > 0')) return '[]';
       return o.code.includes('page.evaluate(') ? JSON.stringify(REPORT) : true;
     },
-    evaluate: (s, expr) => (calls.push(['evaluate', expr]), expr.startsWith('JSON') ? '[]' : 'ok'),
+    evaluate: (s, expr) => (calls.push(['evaluate', expr]), 'ok'),
   };
   const fetch = async (url) => {
     fetchUrls.push(url);
@@ -47,7 +48,7 @@ async function run(extra, { runFails = false } = {}) {
   return { code, calls, fetchUrls, doc: stdout.buf ? JSON.parse(stdout.buf) : null };
 }
 
-const hides = (calls) => calls.filter((c) => c[0] === 'evaluate' && !c[1].startsWith('JSON'));
+const hides = (calls) => calls.filter((c) => c[0] === 'evaluate');
 
 test('report shape has overlays[] and scrollLocked', async () => {
   const { code, doc, calls } = await run(['http://x']);

@@ -71,7 +71,8 @@ export function dismissOverlays(driver, session, report, { mode }) {
 }
 
 function residualBlockers(driver, session) {
-  return parseMaybe(driver.evaluate(session, RESIDUAL_EXPRESSION));
+  const code = `async page => page.evaluate(${JSON.stringify(RESIDUAL_EXPRESSION)})`;
+  return parseMaybe(driver.run(session, { code }));
 }
 
 /**
