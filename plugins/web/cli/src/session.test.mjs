@@ -1,0 +1,81 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  artifactPath,
+  generateSessionName,
+  loadRecipe,
+  requireOpenSession,
+  withSession,
+} from './session.mjs';
+
+const fake = (sessions = []) => {
+  const calls = [];
+  const rec = (n) => (...a) => calls.push([n, ...a]);
+  return {
+    calls,
+    open: rec('open'),
+    close: rec('close'),
+    goto: rec('goto'),
+    list: () => sessions,
+  };
+};
+
+test('generateSessionName matches /^web-[0-9a-f]{4}$/ and differs across calls', () => {
+  const names = new Set(Array.from({ length: 20 }, generateSessionName));
+  for (const n of names) assert.match(n, /^web-[0-9a-f]{4}$/);
+  assert.ok(names.size > 1);
+});
+
+test('withSession ephemeral opens, runs, closes even when fn throws', async () => {
+  const d = fake();
+  await assert.rejects(
+    withSession(d, {}, () => {
+      throw new Error('boom');
+    }),
+    /boom/,
+  );
+  assert.deepEqual(d.calls.map((c) => c[0]), ['open', 'close']);
+  assert.equal(d.calls[0][1].session, d.calls[1][1]);
+});
+
+test('withSession ephemeral returns fn result and removes signal listeners', async () => {
+  const before = process.listenerCount('SIGINT');
+  const d = fake();
+  const out = await withSession(d, {}, () => {
+    assert.equal(process.listenerCount('SIGINT'), before + 1);
+    return 7;
+  });
+  assert.equal(out, 7);
+  assert.equal(process.listenerCount('SIGINT'), before);
+});
+
+test('withSession with --session leaves browser open and does not generate a name', async () => {
+  const d = fake([{ name: 'mine', status: 'open' }]);
+  const out = await withSession(d, { session: 'mine', url: 'http://x' }, (s) => s);
+  assert.equal(out, 'mine');
+  assert.deepEqual(d.calls, [['goto', 'mine', 'http://x']]);
+});
+
+test('requireOpenSession throws NO_SESSION for missing and closed', () => {
+  const d = fake([{ name: 'c', status: 'closed' }]);
+  for (const name of [undefined, 'nope', 'c']) {
+    assert.throws(
+      () => requireOpenSession(d, name),
+      (e) => e.code === 'NO_SESSION' && e.hint === 'run: web browser open <url> --session <name>',
+    );
+  }
+});
+
+test('artifactPath prefixes with session and command', () => {
+  assert.equal(artifactPath('out', 's', 'screenshot', 'a.png'), 'out/s-screenshot-a.png');
+});
+
+test('loadRecipe returns cliConfig.browser and persistent; bad path → USAGE', () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'recipe-')), 'r.json');
+  writeFileSync(file, JSON.stringify({ cliConfig: { browser: { a: 1 } }, persistent: true }));
+  assert.deepEqual(loadRecipe(file), { config: { a: 1 }, persistent: true });
+  assert.throws(() => loadRecipe('/no/such.json'), (e) => e.code === 'USAGE');
+});

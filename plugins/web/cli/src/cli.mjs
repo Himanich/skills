@@ -1,9 +1,9 @@
 import { Command, CommanderError } from 'commander';
 import { CliError, EXIT } from './errors.mjs';
 import { fail } from './output.mjs';
+import { registerBrowser } from '#src/commands/browser.mjs';
 
 const GROUPS = {
-  browser: 'session plumbing: open, attach, list, close, eval, run, cdp, screenshot',
   page: 'analyze a page: tree, reduce, collect, langs, overlays',
   probe: 'detect bot/CDN protection and produce a browser recipe',
   ext: 'pilot a Chrome extension: launch, open, status, close',
@@ -38,6 +38,7 @@ export function createProgram(deps = {}) {
     .showHelpAfterError()
     .showSuggestionAfterError()
     .exitOverride();
+  registerBrowser(program, deps);
   for (const [name, description] of Object.entries(GROUPS)) {
     const group = program.command(name).description(description);
     if (name === 'probe' || name === 'mask') group.action(() => group.help());
