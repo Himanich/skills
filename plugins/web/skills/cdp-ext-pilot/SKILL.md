@@ -3,8 +3,8 @@ name: cdp-ext-pilot
 license: Apache-2.0
 compatibility: Requires Node 22+ and playwright-cli on PATH; uses the web CLI (plugins/web/cli)
 description: >-
-  Launches Chrome with an unpacked extension loaded (installing Chrome for
-  Testing if needed) through `web ext`, opens the extension's side panel, popup,
+  Launches a headed, persistent Chromium (playwright-cli's) with an unpacked
+  extension loaded through `web ext`, opens the extension's side panel, popup,
   or options page, and interacts with it over `web browser eval/cdp`. Handles the
   Chrome 137+ restriction on loading unpacked extensions and the side panel
   user-gesture requirement. Use when testing, automating, or validating a Chrome

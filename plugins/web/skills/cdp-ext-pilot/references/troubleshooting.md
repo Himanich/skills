@@ -15,8 +15,8 @@ target — they are separate CDP targets with separate JS contexts.
 
 `web ext open sidepanel` triggers the panel via a content script context. Extensions
 that declare no `content_scripts` fall back automatically: the sidepanel URL
-is opened as a tab (`chrome-extension://<id>/<path>`) and `context: "tab"` is
-added to the JSON output. The UI renders fully and CDP interaction works
+is opened as a tab (`chrome-extension://<id>/<path>`) and the JSON output
+becomes `{ surface, url, note }`, where `note` says why the gesture path was skipped. The UI renders fully and CDP interaction works
 normally — the only difference is the JS context is `page`, not `sidepanel`,
 so APIs like `chrome.extension.getViews({ type: "popup" })` behave differently.
 
