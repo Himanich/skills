@@ -141,7 +141,8 @@ Output:
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
   <output>/probe-probe-report.json and probe-probe-recipe.json; pass the recipe to
-  other commands with --recipe. Progress goes to stderr.
+  other commands with --recipe. Progress goes to stderr. Always opens its own browsers
+  (it compares configurations): --session and --recipe are rejected; --headed is honoured.
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
 `;
@@ -211,9 +212,21 @@ export function registerProbe(program, deps) {
     .addHelpText('after', HELP)
     .action(async (url, _opts, command) => {
       const { opts, driver, print } = createContext(command, deps);
+      if (opts.session || opts.recipe) {
+        throw new CliError(
+          'USAGE',
+          'probe launches its own browsers; --session and --recipe are not supported',
+          { hint: 'run: web probe <url> [--headed] [--output <dir>]' },
+        );
+      }
       const stderr = deps.stderr ?? process.stderr;
       const log = (msg) => stderr.write(`${msg}\n`);
-      const { report, recipePath } = await runProbe(driver, { url, outputDir: opts.output, log });
+      const { report, recipePath } = await runProbe(driver, {
+        url,
+        outputDir: opts.output,
+        headed: opts.headed,
+        log,
+      });
       if (report.firstSuccess === null) {
         throw new CliError('BLOCKED', 'all probe steps were blocked', {
           hint:

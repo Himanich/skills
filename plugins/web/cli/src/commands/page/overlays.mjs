@@ -102,8 +102,8 @@ Output:
   with --dismiss also: applied: [{ id, strategy, ok, error? }], residual: [{ tag, id, ... }]
 Notes:
   --dismiss quick hides every overlay with CSS. thorough (default) clicks the CMP's dismiss steps
-  and hides overlays that have none or whose dismiss failed; scroll lock is fixed in both. residual[] lists fixed
-  high-z-index elements still covering the viewport: check it is empty.
+  and hides overlays that have none or whose dismiss failed; scroll lock is fixed in both.
+  residual[] lists fixed high-z-index elements still covering the viewport: check it is empty.
 `;
 
 /**

@@ -104,3 +104,45 @@ test('a step whose open fails yields an error step and closes the session', asyn
     report.steps.every((s) => s.result === 'error' && /launch failed/.test(s.health.error)),
   );
 });
+
+test('--session or --recipe exits 2 USAGE without opening a browser', async () => {
+  for (const extra of [
+    ['--session', 'x'],
+    ['--recipe', 'r.json'],
+  ]) {
+    const out = mkdtempSync(join(tmpdir(), 'probe-test-'));
+    let opens = 0;
+    const driver = { ensureAvailable() {}, open: () => (opens += 1) };
+    const stdout = sink();
+    const deps = { stdout, stderr: sink(), env: {}, driverFactory: () => driver };
+    const argv = ['node', 'web', 'probe', 'http://x/', '--output', out, ...extra];
+    assert.equal(await runCli(argv, deps), 2);
+    assert.equal(JSON.parse(stdout.buf).error.code, 'USAGE');
+    assert.equal(opens, 0);
+  }
+});
+
+test('WEB_SESSION in the environment is also rejected', async () => {
+  const stdout = sink();
+  const driver = { ensureAvailable() {}, open() {} };
+  const deps = { stdout, stderr: sink(), env: { WEB_SESSION: 'x' }, driverFactory: () => driver };
+  assert.equal(await runCli(['node', 'web', 'probe', 'http://x/'], deps), 2);
+});
+
+test('--headed reaches every driver.open', async () => {
+  const out = mkdtempSync(join(tmpdir(), 'probe-test-'));
+  const opened = [];
+  const driver = {
+    ensureAvailable() {},
+    open: (a) => opened.push(a),
+    evaluate: () => 'complete',
+    pageHealth: () => BAD,
+    requests: () => '',
+    responseHeaders: () => '',
+    close() {},
+  };
+  const deps = { stdout: sink(), stderr: sink(), env: {}, driverFactory: () => driver };
+  await runCli(['node', 'web', 'probe', 'http://x/', '--output', out, '--headed'], deps);
+  assert.equal(opened.length, 5);
+  assert.ok(opened.every((o) => o.headed === true));
+});

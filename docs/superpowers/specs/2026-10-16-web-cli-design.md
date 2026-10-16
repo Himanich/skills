@@ -133,7 +133,7 @@ Naming rule: groups are nouns an agent reasons about (browser, page, ext);
 leaf commands are verbs or the thing produced. No skill names leak into the
 tree.
 
-`--recipe` is global because ephemeral `page *` and `probe` runs need it as
+`--recipe` is global because ephemeral `page *` runs need it as
 much as `browser open` does. `page *` commands encapsulate every step the old
 SKILL.md orchestrated by hand (scroll to bottom and back for lazy content,
 neutralise fixed/sticky positioning, inject bundle, capture); the agent never
@@ -141,14 +141,14 @@ repeats those steps.
 
 ### Sessions
 
-- Every command that touches a browser takes `--session <name>`; env var
+- Every command that touches a browser, except `probe`, takes `--session <name>`; env var
   `WEB_SESSION` is the fallback so an agent sets it once per run. No shared
   `default` session: two agents on `default` would stomp on each other.
 - `browser open` without `--session` generates `web-<4 hex>` and returns it.
   `browser open --session <name>` where `<name>` is already open exits 2
   (`SESSION_EXISTS`, hint: `web browser close` or pick another name); it never
   silently reuses or replaces a browser.
-- `page *` and `probe` with a `<url>` and no `--session` run **ephemeral**:
+- `page *` with a `<url>` and no `--session` run **ephemeral**:
   open `web-<4 hex>`, work, print, close in `finally` (also on SIGINT/SIGTERM).
   With `--session`, they reuse that session, `<url>` is optional (operate on
   the loaded page) and they leave the browser open.
@@ -156,6 +156,8 @@ repeats those steps.
   fast (exit 2) with `hint: "run: web browser open <url> --session <name>"`.
   No lazy start: eval against about:blank is never intended, and lazy starts
   are how orphans happen.
+- `probe` always opens its own browsers (it compares configurations); `--session` and
+  `--recipe` are rejected (exit 2).
 - Sessions are playwright-cli sessions: `playwright-cli -s <name> snapshot`
   works on a browser `web` opened. Document this as the escape hatch.
 - `ext launch` is a session like any other (`--cdp-port` set); `ext *`
