@@ -1,0 +1,62 @@
+{
+  "skill": "page-collect",
+  "ref": "HEAD",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": false,
+      "latency_s": 13.9,
+      "cost_usd": 0.0244,
+      "timed_out": false,
+      "why": "failed checks: title, og:title, two forms, two videos, four social platforms"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 12.9,
+      "cost_usd": 0.0178,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, forms only",
+      "pass": false,
+      "latency_s": 12.1,
+      "cost_usd": 0.0186,
+      "timed_out": false,
+      "why": "failed checks: two forms, booking form, newsletter form"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": false,
+      "latency_s": 21.5,
+      "cost_usd": 0.0288,
+      "timed_out": false,
+      "why": "failed checks: all six collectors present, page title captured"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 16.3,
+      "cost_usd": 0.0324,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": false,
+      "latency_s": 11.1,
+      "cost_usd": 0.0211,
+      "timed_out": false,
+      "why": "failed checks: organization found"
+    }
+  ]
+}

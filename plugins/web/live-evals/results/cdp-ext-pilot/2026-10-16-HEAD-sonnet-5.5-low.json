@@ -1,0 +1,35 @@
+{
+  "skill": "cdp-ext-pilot",
+  "ref": "HEAD",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 21.6,
+      "cost_usd": 0.0271,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 21.3,
+      "cost_usd": 0.0288,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 19.7,
+      "cost_usd": 0.0275,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

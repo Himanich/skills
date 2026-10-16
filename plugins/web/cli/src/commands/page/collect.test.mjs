@@ -65,7 +65,7 @@ test('all passes null to extract and writes collection + screenshot', async () =
   assert.equal(calls.filter((c) => c[0] === 'screenshot').length, 1);
   const doc = JSON.parse(stdout.buf);
   assert.deepEqual(doc.collectors, { metadata: data.metadata, text: data.text });
-  assert.ok(readdirSync(out).some((f) => f.endsWith('-collect-collection.json')));
+  assert.equal(doc.files.collection, join(out, `${doc.session}-collect`, 'collection.json'));
   assert.equal(JSON.parse(readFileSync(doc.files.collection, 'utf8')).url, 'http://x/final');
 });
 
@@ -91,7 +91,7 @@ test('icons writes manifest under session-prefixed dir', async () => {
   assert.equal(code, 0);
   assert.match(calls.find((c) => c[0] === 'run')[2].code, /\["icons"\]\)$/);
   const doc = JSON.parse(stdout.buf);
-  assert.match(doc.files.icons, new RegExp(`${out}/web-[0-9a-f]{4}-collect-icons$`));
+  assert.match(doc.files.icons, new RegExp(`${out}/web-[0-9a-f]{4}-collect/icons$`));
   assert.deepEqual(readdirSync(doc.files.icons).sort(), ['icons.json', 'search.svg']);
   assert.equal(doc.icons[0].name, 'search');
   assert.equal(doc.url, 'http://x/final');
@@ -105,7 +105,6 @@ test('metadata writes json file and prints fields at top level', async () => {
   assert.equal(code, 0);
   const doc = JSON.parse(stdout.buf);
   assert.equal(doc.title, 'Example');
-  const file = readdirSync(out).find((f) => f.endsWith('-collect-metadata.json'));
-  assert.ok(file && doc.files.metadata === join(out, file));
+  assert.equal(doc.files.metadata, join(out, `${doc.session}-collect`, 'metadata.json'));
   assert.deepEqual(JSON.parse(readFileSync(doc.files.metadata, 'utf8')), { title: 'Example' });
 });

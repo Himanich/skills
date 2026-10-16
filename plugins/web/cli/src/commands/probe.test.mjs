@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
@@ -66,7 +66,7 @@ test('all steps blocked → BLOCKED exit 3, report still written', async () => {
   const r = await run([BAD]);
   assert.equal(r.code, 3);
   assert.equal(JSON.parse(r.stdout.buf).error.code, 'BLOCKED');
-  assert.ok(existsSync(join(r.out, 'probe-probe-report.json')));
+  assert.ok(existsSync(join(r.out, readdirSync(r.out)[0], 'probe-report.json')));
   assert.equal(r.opened.length, 5);
   assert.equal(r.opened[4].persistent, true);
   assert.equal(r.opened[3].config.launchOptions.channel, 'chrome');
@@ -99,7 +99,9 @@ test('a step whose open fails yields an error step and closes the session', asyn
   const code = await runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps);
   assert.equal(code, 3);
   assert.equal(closed.length, 5);
-  const report = JSON.parse(readFileSync(join(out, 'probe-probe-report.json'), 'utf8'));
+  const report = JSON.parse(
+    readFileSync(join(out, readdirSync(out)[0], 'probe-report.json'), 'utf8'),
+  );
   assert.ok(
     report.steps.every((s) => s.result === 'error' && /launch failed/.test(s.health.error)),
   );

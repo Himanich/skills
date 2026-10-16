@@ -28,7 +28,8 @@ Sessions:
   \`playwright-cli -s <session> …\` drives the same browser.
 
 Artifacts:
-  Written under --output (default ./.web) as <session>-<command>-<name>.
+  Written under --output (default ./.web) in a per-session directory
+  <session>-<command>/ with stable file names (metadata.json, probe-report.json, ...).
 
 Requires playwright-cli >= 0.1.20 on PATH (npm install -g @playwright/cli@latest).
 
@@ -36,7 +37,8 @@ Typical flows:
   one-shot:  web page tree <url>
   scripted:  web browser open <url> --session s; web page overlays --session s --dismiss;
              web page tree --session s; web browser close --session s
-  blocked:   web probe <url>, then re-run with --recipe .web/probe-probe-recipe.json
+  blocked:   web probe <url>, then re-run with --recipe <recipePath>
+             (printed by probe, e.g. .web/probe-<id>/browser-recipe.json)
 `;
 
 /**

@@ -50,8 +50,8 @@ It tries up to 5 browser configurations and stops at the first success:
 5. **persistent**: system Chrome + stealth + UA override + persistent profile (cookie/session challenges)
 
 Progress goes to stderr. Files under `--output` (default `./.web`):
-`probe-probe-report.json` and, on success, `probe-probe-recipe.json` (plus
-`probe-probe-stealth-init.js` when the working step uses stealth).
+`probe-<id>/probe-report.json` and, on success, `probe-<id>/browser-recipe.json` (plus
+`stealth-init.js` when the working step uses stealth). The path is printed as `recipePath`.
 
 ## Reading the JSON
 
@@ -93,8 +93,9 @@ Browser probe complete for <url>.
 Pass the recipe to any command, or to `browser open`:
 
 ```bash
-$WEB page tree "$URL" --recipe .web/probe-probe-recipe.json
-$WEB browser open "$URL" --session s1 --recipe .web/probe-probe-recipe.json
+RECIPE=$($WEB probe "$URL" | jq -r .recipePath)
+$WEB page tree "$URL" --recipe "$RECIPE"
+$WEB browser open "$URL" --session s1 --recipe "$RECIPE"
 ```
 
 The recipe is `{ cliConfig: { browser: { browserName, launchOptions, initScript? } }, persistent }`:

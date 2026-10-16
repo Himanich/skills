@@ -1,9 +1,10 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { CliError } from '#src/errors.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { writeIcons } from '#src/page/icons.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
-import { artifactPath } from '#src/session.mjs';
+import { artifactDir } from '#src/session.mjs';
 
 export const COLLECTORS = ['all', 'icons', 'metadata', 'text', 'forms', 'videos', 'socials'];
 const DATA_COLLECTORS = COLLECTORS.slice(2);
@@ -38,8 +39,8 @@ Output:
   all:           { url, collectedAt, screenshot?, collectors: {...}, files, session, durationMs }
 Notes:
   <what> is one of: all, icons, metadata, text, forms, videos, socials. Files go under
-  --output as <session>-collect-<name>; icons are written as a directory of .svg files plus
-  icons.json. Unknown <what> exits 2 (USAGE).
+  --output/<session>-collect/ with stable names (metadata.json, forms.json, collection.json,
+  screenshot.jpg); icons/ holds the .svg files plus icons.json. Unknown <what> exits 2 (USAGE).
 `;
 
 /**
@@ -53,8 +54,8 @@ export function collectPage(driver, session, { what, outputDir, stderr = process
   driver.inject(session, loadBundle('page-collect.js'));
   const data = extract(driver, session, what);
   const { url } = driver.pageHealth(session);
-  const path = (name) => artifactPath(outputDir, session, 'collect', name);
-  mkdirSync(outputDir, { recursive: true });
+  const dir = artifactDir(outputDir, session, 'collect');
+  const path = (name) => join(dir, name);
   const files = {};
   const results = {};
   if (data.svgs) {

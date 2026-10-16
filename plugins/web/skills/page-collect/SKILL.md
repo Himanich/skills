@@ -45,15 +45,15 @@ $WEB page collect metadata --session s1
 
 | Collector | Purpose | Files under `--output` |
 |-----------|---------|------------------------|
-| `all` | Run all collectors | `<session>-collect-collection.json`, screenshot, plus the collector files |
-| `icons` | SVGs, icon fonts, CSS icons → classified SVGs | `<session>-collect-icons/` + `icons.json` |
-| `metadata` | Meta tags, OG, structured data | `<session>-collect-metadata.json` |
-| `text` | Body text, headings, word count | `<session>-collect-text.json` |
-| `forms` | Form structures, fields, actions | `<session>-collect-forms.json` |
-| `videos` | Video embeds, sources | `<session>-collect-videos.json` |
-| `socials` | Social media links | `<session>-collect-socials.json` |
+| `all` | Run all collectors | `<session>-collect/collection.json`, `screenshot.jpg`, plus the collector files |
+| `icons` | SVGs, icon fonts, CSS icons → classified SVGs | `<session>-collect/icons/` + `icons.json` |
+| `metadata` | Meta tags, OG, structured data | `<session>-collect/metadata.json` |
+| `text` | Body text, headings, word count | `<session>-collect/text.json` |
+| `forms` | Form structures, fields, actions | `<session>-collect/forms.json` |
+| `videos` | Video embeds, sources | `<session>-collect/videos.json` |
+| `socials` | Social media links | `<session>-collect/socials.json` |
 
-Default `--output` is `./.web`. Artifacts are named `<session>-collect-*`; the
+Default `--output` is `./.web`. Artifacts live in `<session>-collect/` with stable names; the
 paths are listed in the `files` field. An unknown `<what>` exits 2 (USAGE).
 
 ## Reading the JSON
@@ -100,7 +100,7 @@ replaced with `currentColor` (icons only, not logos); whitespace collapsed.
 
 ## Chaining
 
-- Blocked (exit 3): `browser-probe`, then `--recipe .web/probe-probe-recipe.json`.
+- Blocked (exit 3): `browser-probe`, then `--recipe <recipePath>`.
 - Overlays in the way: `$WEB page overlays --session s1 --dismiss` first.
 
 ## Escape hatch

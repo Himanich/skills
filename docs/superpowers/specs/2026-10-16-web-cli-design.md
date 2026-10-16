@@ -185,8 +185,8 @@ repeats those steps.
 - Commands with several natural outputs nest them in the one document
   (`page tree` → `{ text, tree, nodeMap }`); `--format text` prints the text
   member, or pretty JSON when a command has no text form.
-- Artifacts are named `<session>-<command>-<name>` so concurrent runs sharing
-  a cwd never overwrite each other.
+- Artifacts live under `--output` in a per-session directory `<session>-<command>/`
+  with stable file names, so concurrent runs sharing a cwd never overwrite each other.
 
 ### Browser driver
 

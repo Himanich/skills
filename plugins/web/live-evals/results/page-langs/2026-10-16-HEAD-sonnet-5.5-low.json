@@ -1,0 +1,71 @@
+{
+  "skill": "page-langs",
+  "ref": "HEAD",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 96.4,
+      "cost_usd": 0.0313,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 15.3,
+      "cost_usd": 0.0271,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": false,
+      "latency_s": 19.5,
+      "cost_usd": 0.028,
+      "timed_out": false,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live (English)",
+      "pass": false,
+      "latency_s": 21.6,
+      "cost_usd": 0.0367,
+      "timed_out": false,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": false,
+      "latency_s": 20.3,
+      "cost_usd": 0.0363,
+      "timed_out": false,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 15.5,
+      "cost_usd": 0.0301,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, too little text to detect a language",
+      "pass": true,
+      "latency_s": 92,
+      "cost_usd": 0.0349,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

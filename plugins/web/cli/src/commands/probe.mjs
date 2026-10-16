@@ -1,8 +1,9 @@
-import { resolve } from 'node:path';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { join, resolve } from 'node:path';
+import { rmSync, writeFileSync } from 'node:fs';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
-import { artifactPath, generateSessionName, withSession } from '#src/session.mjs';
+import { artifactDir, withSession } from '#src/session.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { checkHealth, detectSignals, findDocumentChain } from '#src/driver/blocked.mjs';
 
@@ -82,15 +83,14 @@ function collectHeaders(driver, session, health, log) {
   }
 }
 
-async function runStep(driver, { url, outputDir, stepDef, headed, log }) {
-  const stealthPath = artifactPath(outputDir, generateSessionName(), 'probe', 'stealth-init.js');
+async function runStep(driver, { url, dir, stepDef, headed, log }) {
+  const stealthPath = join(dir, `stealth-${stepDef.name}.js`);
   const browserConfig = buildBrowserConfig(stepDef);
   const base = { name: stepDef.name, config: stepDef.config };
   const start = Date.now();
   const initScripts = [];
   try {
     if (stepDef.stealth) {
-      mkdirSync(outputDir, { recursive: true });
       writeFileSync(stealthPath, loadBundle('stealth-init.js'));
       initScripts.push(stealthPath);
     }
@@ -140,8 +140,8 @@ Output:
   { report: { url, timestamp, steps, firstSuccess, detectedSignals }, recipePath }
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
-  <output>/probe-probe-report.json and probe-probe-recipe.json; pass the recipe to
-  other commands with --recipe. Progress goes to stderr. Always opens its own browsers
+  <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
+  them); pass recipePath to other commands with --recipe. Progress goes to stderr. Always opens its own browsers
   (it compares configurations): --session and --recipe are rejected; --headed is honoured.
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
@@ -152,12 +152,13 @@ Exit codes:
  * @returns {{ report: object, recipePath: string|null }}
  */
 export async function runProbe(driver, { url, outputDir, headed, log = () => {} }) {
+  const dir = artifactDir(outputDir, 'probe', randomBytes(2).toString('hex'));
   const steps = [];
   const networkLines = [];
   let success = null;
   for (const stepDef of STEPS) {
     log(`Probing with ${stepDef.name} config...`);
-    const out = await runStep(driver, { url, outputDir, stepDef, headed, log });
+    const out = await runStep(driver, { url, dir, stepDef, headed, log });
     steps.push(out.step);
     networkLines.push(...out.networkLines);
     log(
@@ -179,16 +180,12 @@ export async function runProbe(driver, { url, outputDir, headed, log = () => {} 
       steps.map((s) => s.health),
     ),
   };
-  mkdirSync(outputDir, { recursive: true });
-  writeFileSync(
-    artifactPath(outputDir, 'probe', 'probe', 'report.json'),
-    JSON.stringify(report, null, 2),
-  );
+  writeFileSync(join(dir, 'probe-report.json'), JSON.stringify(report, null, 2));
   if (!success) return { report, recipePath: null };
-  const recipePath = artifactPath(outputDir, 'probe', 'probe', 'recipe.json');
+  const recipePath = join(dir, 'browser-recipe.json');
   const browser = { ...success.browserConfig };
   if (success.stepDef.stealth) {
-    const stealthPath = artifactPath(outputDir, 'probe', 'probe', 'stealth-init.js');
+    const stealthPath = join(dir, 'stealth-init.js');
     writeFileSync(stealthPath, loadBundle('stealth-init.js'));
     browser.initScript = [resolve(stealthPath)];
   }

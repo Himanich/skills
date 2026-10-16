@@ -1,0 +1,62 @@
+{
+  "skill": "cdp-connect",
+  "ref": "HEAD",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fill and submit the greeter form",
+      "pass": true,
+      "latency_s": 8.9,
+      "cost_usd": 0.0155,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "screenshot",
+      "pass": true,
+      "latency_s": 10.1,
+      "cost_usd": 0.0145,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "network request on load",
+      "pass": true,
+      "latency_s": 10.3,
+      "cost_usd": 0.0166,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "accessible buttons",
+      "pass": true,
+      "latency_s": 7.2,
+      "cost_usd": 0.0142,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "several tabs, click in the right one",
+      "pass": true,
+      "latency_s": 7.3,
+      "cost_usd": 0.0159,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "console output after a reload",
+      "pass": true,
+      "latency_s": 16.7,
+      "cost_usd": 0.0235,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

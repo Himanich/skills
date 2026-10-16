@@ -84,7 +84,7 @@ background, children). Show it only if the caller asks; otherwise mention it exi
 - Cookie banners or modals in the way: `$WEB page overlays --session s1 --dismiss`
   first, then `page tree --session s1`.
 - Exit 3 (blocked): run the `browser-probe` skill, then re-run with
-  `--recipe .web/probe-probe-recipe.json`.
+  `--recipe <recipePath printed by probe>`.
 
 ## Escape hatch
 

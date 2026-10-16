@@ -44,7 +44,8 @@ Errors: `{ "error": { "code", "message", "hint" } }`. Main codes: `USAGE`,
 
 Exit codes: `0` ok · `1` failure · `2` usage or environment · `3` blocked by bot protection.
 
-Artifacts are written under `--output` (default `./.web`) as `<session>-<command>-<name>`.
+Artifacts are written under `--output` (default `./.web`) in a per-session directory `<session>-<command>/` with stable file names
+(`metadata.json`, `collection.json`, `probe-report.json`, `browser-recipe.json`); `web probe` prints `recipePath`.
 
 Global options: `--session`, `--format json|text`, `--output`, `--headed`, `--recipe`.
 
@@ -58,7 +59,7 @@ web browser close --session s1
 
 # probe: find a configuration that gets past bot protection
 web probe https://example.com
-web page tree https://example.com --recipe .web/probe-probe-recipe.json
+web page tree https://example.com --recipe <recipePath>   # printed by probe, e.g. .web/probe-<id>/browser-recipe.json
 
 # page: analyze
 web page tree https://example.com --min-width 600
