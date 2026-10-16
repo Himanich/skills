@@ -15,7 +15,7 @@ npm run report                                      # results/ -> REPORT.html, M
   `skill.yaml` (the floor: pass rate and latency a model must reach; sibling skills to load).
 - `scripts/setup.sh`: builds `workspace/<skill>` from a git ref of this repo
   (`SKILLS_REPO`, `SKILLS_PATH`), so the same suite compares a branch with `main`. It also extracts
-  `plugins/web/cli/dist/web.mjs` from that ref to `workspace/<skill>/.web-cli/` with a `bin/web` shim.
+  `plugins/web/cli/dist/web.mjs` from that ref to `workspace/<skill>/.web-cli/` with a `bin/web` shim, and installs the CLI's runtime dependencies (`cld3-asm`) there.
 - `fixtures/`: controlled pages served on http://localhost:8765 by `scripts/fixtures-server.mjs`
   (started by `run.sh`). Each suite mixes fixtures (known ground truth) with real sites.
 - `results/`: one summary per run. Raw promptfoo output stays in `output/` (gitignored); do not use
@@ -48,7 +48,8 @@ tried, and a sweeper kills automation browsers started without `--headless`.
 ## How a run is graded
 
 - Every run gets its own copy of the workspace and its own `playwright-cli` session
-  (`PLAYWRIGHT_CLI_SESSION=run-<id>`), so runs can execute in parallel.
+  (`PLAYWRIGHT_CLI_SESSION=run-<id>`), so runs can execute in parallel. The copies are kept under
+  `/tmp/skill-evals-live/<skill>` (outside the repo, so the agent's cwd never reveals it).
 - Assertions are code, not an LLM judge: they read the files the agent wrote under `./out`, the
   reply, the tools' output, or the agent's own browser session, and compare with ground truth.
   Malformed output is a failure with a reason, never a harness error.

@@ -44,6 +44,9 @@ cli=plugins/web/cli/dist/web.mjs
 cli_dir=$root/workspace/$skill/.web-cli
 mkdir -p "$cli_dir/dist" "$cli_dir/bin"
 git -C "$repo" archive "$ref" "$cli" | tar -x --strip-components=4 -C "$cli_dir/dist"
+git -C "$repo" archive "$ref" plugins/web/cli/package.json plugins/web/cli/package-lock.json |
+  tar -x --strip-components=3 -C "$cli_dir"
+npm ci --omit=dev --ignore-scripts --silent --prefix "$cli_dir"
 printf '#!/bin/sh\nexec node "$(dirname "$0")/../dist/web.mjs" "$@"\n' >"$cli_dir/bin/web"
 chmod +x "$cli_dir/bin/web"
 cli_commit=$(git -C "$repo" log -1 --format=%h "$ref" -- plugins/web/cli)

@@ -12,6 +12,8 @@ const skillsOff = process.env.SKILLS === 'off';
 // The no-skill arm lives outside the repo, under a private $HOME with no skills in it, so an agent that
 // wanders (cd .., ls ~/.claude/skills) finds no skill of any kind. scripts/setup.sh builds it.
 export const NOSKILL_ROOT = '/tmp/skill-evals-noskill';
+// The skill arm's run copies also live outside the repo, so an agent's cwd never reveals it.
+const LIVE_ROOT = '/tmp/skill-evals-live';
 
 /**
  * Builds a promptfoo config for one skill: the models.yaml matrix as providers, the skill
@@ -46,7 +48,7 @@ export function buildConfig({ skill, suiteDir, prompt, tests, assert = [], sibli
       config: {
         model_label: m.label,
         working_dir: workspace,
-        workspace_root: skillsOff ? join(NOSKILL_ROOT, 'live-out', skill) : join(root, 'live-out', skill),
+        workspace_root: skillsOff ? join(NOSKILL_ROOT, 'live-out', skill) : join(LIVE_ROOT, skill),
         skills: skillPaths,
         timeout_ms: timeoutS * 1000,
         shell_env: { PLAYWRIGHT_CLI_SESSION: 'run-{run_id}', ...(skillsOff ? {} : { PATH: `${join(workspace, '.web-cli/bin')}:${process.env.PATH}` }), ...(skillsOff ? { HOME: join(NOSKILL_ROOT, 'home') } : {}), ...shellEnv },
