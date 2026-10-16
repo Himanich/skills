@@ -1,0 +1,89 @@
+{
+  "skill": "page-tree",
+  "ref": "feat-web-cli",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, default capture",
+      "pass": true,
+      "latency_s": 15.6,
+      "cost_usd": 0.0206,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, default capture",
+      "pass": true,
+      "latency_s": 13.4,
+      "cost_usd": 0.0202,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, default capture",
+      "pass": true,
+      "latency_s": 14.5,
+      "cost_usd": 0.0203,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 16.7,
+      "cost_usd": 0.021,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 23.6,
+      "cost_usd": 0.0179,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 14.9,
+      "cost_usd": 0.0183,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, default capture",
+      "pass": true,
+      "latency_s": 14.9,
+      "cost_usd": 0.0175,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, default capture",
+      "pass": true,
+      "latency_s": 14.8,
+      "cost_usd": 0.0168,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, default capture",
+      "pass": true,
+      "latency_s": 14.9,
+      "cost_usd": 0.0179,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

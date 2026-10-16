@@ -1,0 +1,170 @@
+{
+  "skill": "page-collect",
+  "ref": "feat-web-cli",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 17.1,
+      "cost_usd": 0.0259,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 14.9,
+      "cost_usd": 0.0236,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 13.8,
+      "cost_usd": 0.0232,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 16,
+      "cost_usd": 0.0216,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 16.8,
+      "cost_usd": 0.0188,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 16.8,
+      "cost_usd": 0.0183,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 12.4,
+      "cost_usd": 0.0198,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 12.4,
+      "cost_usd": 0.019,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 14.6,
+      "cost_usd": 0.0199,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 20.3,
+      "cost_usd": 0.0266,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 18.1,
+      "cost_usd": 0.0272,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 16,
+      "cost_usd": 0.0243,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 16.8,
+      "cost_usd": 0.029,
+      "timed_out": false,
+      "why": "failed checks: icons recolored to currentColor"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 14.8,
+      "cost_usd": 0.0241,
+      "timed_out": false,
+      "why": "failed checks: icons recolored to currentColor"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 14.9,
+      "cost_usd": 0.0235,
+      "timed_out": false,
+      "why": "failed checks: icons recolored to currentColor"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 11.1,
+      "cost_usd": 0.0183,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.017,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 12.2,
+      "cost_usd": 0.0177,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "skill": "browser-probe",
+  "ref": "feat-web-cli",
+  "arm": "skill",
+  "date": "2026-10-16",
+  "runs": [
+    {
+      "model": "sonnet-5.5-low",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 15.1,
+      "cost_usd": 0.0206,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 120.4,
+      "cost_usd": 0.0162,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 22,
+      "cost_usd": 0.0206,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 11.4,
+      "cost_usd": 0.0183,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 23.2,
+      "cost_usd": 0.0179,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 15.3,
+      "cost_usd": 0.0204,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "adobe",
+      "pass": false,
+      "latency_s": 29.8,
+      "cost_usd": 0.0231,
+      "timed_out": false,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-1f7e8eba eval JSON.stringify({"
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "adobe",
+      "pass": true,
+      "latency_s": 31.8,
+      "cost_usd": 0.0221,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "adobe",
+      "pass": true,
+      "latency_s": 37.9,
+      "cost_usd": 0.022,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 29.3,
+      "cost_usd": 0.0235,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 32.3,
+      "cost_usd": 0.0217,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.013,
+      "timed_out": true,
+      "why": []
+    }
+  ]
+}
