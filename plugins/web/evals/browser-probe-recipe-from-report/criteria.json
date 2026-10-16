@@ -12,7 +12,7 @@
       "name": "consumable_shape",
       "max_score": 15,
       "category": "INTEGRATION",
-      "description": "The recipe has the shape `web probe` writes: `cliConfig.browser` with `browserName` and `launchOptions`, and `cliConfig.browser.initScript` as a list of file paths, so `--recipe` can load it."
+      "description": "The recipe has the shape `web probe` writes: `url`, `cliConfig.browser` with `browserName` and `launchOptions`, and `cliConfig.browser.initScript` as a list of file paths, so `--recipe` can load it."
     },
     {
       "name": "ua_override",

@@ -4538,6 +4538,7 @@ Example:
   web probe https://example.com
 Output:
   { report: { url, timestamp, steps, firstSuccess, detectedSignals }, recipePath }
+  recipe file: { url, cliConfig, persistent }
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
   <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
@@ -4587,6 +4588,7 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
     browser.initScript = [resolve2(stealthPath)];
   }
   const recipe = {
+    url,
     cliConfig: { browser },
     persistent: success.stepDef.persistent
   };

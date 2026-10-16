@@ -105,7 +105,7 @@ $WEB page tree "$URL" --recipe "$RECIPE"
 S=$($WEB browser open "$URL" --recipe "$RECIPE" | jq -r .session)
 ```
 
-The recipe is `{ cliConfig: { browser: { browserName, launchOptions, initScript? } }, persistent }`:
+The recipe is `{ url, cliConfig: { browser: { browserName, launchOptions, initScript? } }, persistent }`:
 the playwright-cli config with the stealth script path already filled in, and
 `persistent: true` when `firstSuccess` is `persistent`.
 
