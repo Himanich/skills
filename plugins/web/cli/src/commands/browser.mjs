@@ -50,7 +50,7 @@ export function registerBrowser(program, deps) {
     browser
       .command('open [url]')
       .description('open a browser session')
-      .option('--cdp-port <n>', 'remote debugging port')
+      .option('--cdp-port <n>', 'remote debugging port', Number)
       .option('--persistent', 'use a persistent profile'),
     ({ opts, driver, print }, url) => {
       const session = opts.session ?? generateSessionName();

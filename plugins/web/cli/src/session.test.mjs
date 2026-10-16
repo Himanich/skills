@@ -31,12 +31,14 @@ test('generateSessionName matches /^web-[0-9a-f]{4}$/ and differs across calls',
 
 test('withSession ephemeral opens, runs, closes even when fn throws', async () => {
   const d = fake();
+  const before = [process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')];
   await assert.rejects(
     withSession(d, {}, () => {
       throw new Error('boom');
     }),
     /boom/,
   );
+  assert.deepEqual([process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')], before);
   assert.deepEqual(d.calls.map((c) => c[0]), ['open', 'close']);
   assert.equal(d.calls[0][1].session, d.calls[1][1]);
 });
@@ -78,4 +80,36 @@ test('loadRecipe returns cliConfig.browser and persistent; bad path → USAGE', 
   writeFileSync(file, JSON.stringify({ cliConfig: { browser: { a: 1 } }, persistent: true }));
   assert.deepEqual(loadRecipe(file), { config: { a: 1 }, persistent: true });
   assert.throws(() => loadRecipe('/no/such.json'), (e) => e.code === 'USAGE');
+});
+
+async function signalRun(closeThrows) {
+  const d = fake();
+  if (closeThrows) d.close = (...a) => (d.calls.push(['close', ...a]), (() => { throw new Error('x'); })());
+  const kills = [];
+  const realKill = process.kill;
+  process.kill = (...a) => kills.push(a);
+  const before = [process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')];
+  try {
+    await withSession(d, {}, () => process.emit('SIGINT'));
+  } catch {
+    // close may throw from the finally block
+  } finally {
+    process.kill = realKill;
+  }
+  const after = [process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')];
+  return { d, kills, before, after };
+}
+
+test('signal path closes the session, re-kills, and removes listeners', async () => {
+  const { d, kills, before, after } = await signalRun(false);
+  assert.equal(d.calls[1][0], 'close');
+  assert.equal(d.calls[1][1], d.calls[0][1].session);
+  assert.deepEqual(kills, [[process.pid, 'SIGINT']]);
+  assert.deepEqual(after, before);
+});
+
+test('signal path with throwing driver.close still re-kills and removes listeners', async () => {
+  const { kills, before, after } = await signalRun(true);
+  assert.deepEqual(kills, [[process.pid, 'SIGINT']]);
+  assert.deepEqual(after, before);
 });

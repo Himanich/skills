@@ -8,11 +8,6 @@ export function generateSessionName() {
   return `web-${randomBytes(2).toString('hex')}`;
 }
 
-/** @param {{ session?: string }} opts */
-export function resolveSession(opts) {
-  return opts.session ?? process.env.WEB_SESSION;
-}
-
 /**
  * Read a probe recipe file.
  * @param {string} recipePath
