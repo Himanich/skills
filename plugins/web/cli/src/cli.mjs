@@ -4,11 +4,9 @@ import { fail } from './output.mjs';
 import { registerBrowser } from '#src/commands/browser.mjs';
 import { registerProbe } from '#src/commands/probe.mjs';
 import { registerExt } from '#src/commands/ext.mjs';
+import { registerMask } from '#src/commands/mask.mjs';
 import { registerPage } from '#src/commands/page.mjs';
 
-const GROUPS = {
-  mask: 'serve a target URL under a fake local HTTPS domain',
-};
 
 const USAGE_ERRORS = new Set([
   'commander.unknownOption',
@@ -18,7 +16,7 @@ const USAGE_ERRORS = new Set([
 ]);
 
 /**
- * Build the root program with the five command groups.
+ * Build the root program with all command groups.
  * @param {{ driverFactory?: Function, env?: NodeJS.ProcessEnv, stdout?: object,
  *   stderr?: object, registerTestCommands?: Function }} [deps]
  */
@@ -42,10 +40,7 @@ export function createProgram(deps = {}) {
   registerProbe(program, deps);
   registerPage(program, deps);
   registerExt(program, deps);
-  for (const [name, description] of Object.entries(GROUPS)) {
-    const group = program.command(name).description(description);
-    if (name === 'mask') group.action(() => group.help());
-  }
+  registerMask(program, deps);
   deps.registerTestCommands?.(program, deps);
   return program;
 }
