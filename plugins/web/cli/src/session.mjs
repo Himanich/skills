@@ -39,7 +39,7 @@ export function requireOpenSession(driver, name) {
 }
 
 /**
- * Run `fn` against a given open session, or against an ephemeral one closed afterwards.
+ * Run `fn` against a given session (opened on demand when a url is given), or against an ephemeral one closed afterwards.
  * Explicit `config`, `persistent`, `initScripts` win over values loaded from `recipePath`.
  * @param {object} driver
  * @param {object} opts session, url, headed, recipePath, config, persistent, initScripts
@@ -48,19 +48,22 @@ export function requireOpenSession(driver, name) {
 export async function withSession(driver, opts, fn) {
   const { session, url, headed, recipePath, ...launch } = opts;
   if (session) {
-    requireOpenSession(driver, session);
-    if (url) driver.goto(session, url);
+    const isOpen = driver.list().some((s) => s.name === session && s.status === 'open');
+    if (!isOpen && url) {
+      driver.open({ session, url, headed, ...resolveLaunch(recipePath, launch) });
+    } else {
+      requireOpenSession(driver, session);
+      if (url) driver.goto(session, url);
+    }
     return fn(session);
   }
   const name = generateSessionName();
-  const explicit = Object.fromEntries(Object.entries(launch).filter(([, v]) => v !== undefined));
-  const recipe = recipePath ? loadRecipe(recipePath) : {};
   const cleanup = installSignalCleanup(driver, name);
   let failed = false;
   let owned = true;
   try {
     try {
-      driver.open({ session: name, url, headed, ...recipe, ...explicit });
+      driver.open({ session: name, url, headed, ...resolveLaunch(recipePath, launch) });
     } catch (err) {
       owned = err?.code !== 'SESSION_EXISTS';
       throw err;
@@ -73,6 +76,11 @@ export async function withSession(driver, opts, fn) {
     cleanup();
     if (owned) closeQuietlyIf(driver, name, failed);
   }
+}
+
+function resolveLaunch(recipePath, launch) {
+  const explicit = Object.fromEntries(Object.entries(launch).filter(([, v]) => v !== undefined));
+  return { ...(recipePath ? loadRecipe(recipePath) : {}), ...explicit };
 }
 
 function installSignalCleanup(driver, name) {

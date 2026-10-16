@@ -150,8 +150,9 @@ repeats those steps.
   silently reuses or replaces a browser.
 - `page *` with a `<url>` and no `--session` run **ephemeral**:
   open `web-<4 hex>`, work, print, close in `finally` (also on SIGINT/SIGTERM).
-  With `--session`, they reuse that session, `<url>` is optional (operate on
-  the loaded page) and they leave the browser open.
+  `--session <name>` reuses an open browser; with a `<url>` it opens one under that
+  name if needed; either way the browser stays open. `<url>` is optional when the
+  session is open (operate on the loaded page); not open and no `<url>` exits 2.
 - `browser eval|run|cdp|screenshot|close` require an open session and fail
   fast (exit 2) with `hint: "run: web browser open <url> --session <name>"`.
   No lazy start: eval against about:blank is never intended, and lazy starts

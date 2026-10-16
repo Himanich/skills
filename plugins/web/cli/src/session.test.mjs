@@ -32,6 +32,25 @@ test('generateSessionName matches /^web-[0-9a-f]{4}$/ and differs across calls',
   assert.ok(names.size > 1);
 });
 
+test('withSession opens a missing named session when a url is given and keeps it', async () => {
+  const d = fake();
+  const got = await withSession(d, { session: 'mine', url: 'https://x.test' }, (n) => n);
+  assert.equal(got, 'mine');
+  assert.equal(d.calls.length, 1);
+  assert.deepEqual(d.calls[0][0], 'open');
+  assert.equal(d.calls[0][1].session, 'mine');
+  assert.equal(d.calls[0][1].url, 'https://x.test');
+});
+
+test('withSession named session not open and no url is NO_SESSION', async () => {
+  const d = fake();
+  await assert.rejects(
+    withSession(d, { session: 'mine' }, () => 1),
+    { code: 'NO_SESSION' },
+  );
+  assert.equal(d.calls.length, 0);
+});
+
 test('withSession ephemeral opens, runs, closes even when fn throws', async () => {
   const d = fake();
   const before = [process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')];

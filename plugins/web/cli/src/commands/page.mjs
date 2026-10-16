@@ -6,7 +6,8 @@ import { registerOverlays } from '#src/commands/page/overlays.mjs';
 
 const GROUP_HELP = `
 Use to analyze a page. Pass a <url> for a one-shot run in an ephemeral browser that is closed
-afterwards, or --session <name> to reuse an open browser (left open). Each command prints one
+afterwards, or --session <name> to reuse an open browser; with a <url> it is opened under that name if
+needed. The session browser is left open. Each command prints one
 JSON document with url, session and durationMs added; --format text is supported on tree.
 `;
 
