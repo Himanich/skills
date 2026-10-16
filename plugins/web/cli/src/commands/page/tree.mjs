@@ -1,6 +1,6 @@
 import { loadBundle } from '#src/bundles/index.mjs';
 import { preparePage } from '#src/page/prepare.mjs';
-import { runPageCommand } from '#src/commands/page.mjs';
+import { runPageCommand } from '#src/page/run.mjs';
 
 /**
  * Capture the visual tree of the current page.
