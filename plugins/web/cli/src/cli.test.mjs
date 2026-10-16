@@ -100,3 +100,24 @@ for (const [label, argv] of [
     assert.ok(error.message);
   });
 }
+
+test('non-integer --cdp-port exits 2 with a USAGE document and opens nothing', async () => {
+  const stdout = sink();
+  const calls = [];
+  const driverFactory = () => ({ open: () => calls.push('open'), list: () => [] });
+  const argv = ['node', 'web', 'browser', 'open', 'http://x', '--cdp-port', 'abc'];
+  const code = await runCli(argv, { stdout, stderr: sink(), env: {}, driverFactory });
+  assert.equal(code, 2);
+  const { error } = JSON.parse(stdout.buf);
+  assert.equal(error.code, 'USAGE');
+  assert.match(error.message, /integer/);
+  assert.deepEqual(calls, []);
+});
+
+test('non-integer --retries exits 2', async () => {
+  const stdout = sink();
+  const argv = ['node', 'web', 'page', 'reduce', 'http://x', '--retries', 'x'];
+  const code = await runCli(argv, { stdout, stderr: sink(), env: {} });
+  assert.equal(code, 2);
+  assert.equal(JSON.parse(stdout.buf).error.code, 'USAGE');
+});

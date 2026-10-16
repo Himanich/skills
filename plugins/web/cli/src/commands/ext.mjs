@@ -1,3 +1,4 @@
+import { parseIntArg } from '#src/args.mjs';
 import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { CliError } from '#src/errors.mjs';
@@ -269,7 +270,7 @@ export function registerExt(program, deps) {
       .command('launch <dist-dir>')
       .description('launch a headed browser with the extension loaded')
       .addHelpText('after', HELP.LAUNCH)
-      .option('--cdp-port <n>', 'remote debugging port', Number),
+      .option('--cdp-port <n>', 'remote debugging port', parseIntArg),
     launch,
     { needs: false },
   );

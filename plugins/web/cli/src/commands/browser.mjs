@@ -1,3 +1,4 @@
+import { parseIntArg } from '#src/args.mjs';
 import { existsSync } from 'node:fs';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
@@ -136,7 +137,7 @@ export function registerBrowser(program, deps) {
     browser
       .command('open [url]')
       .description('open a browser session').addHelpText('after', HELP.OPEN)
-      .option('--cdp-port <n>', 'remote debugging port', Number)
+      .option('--cdp-port <n>', 'remote debugging port', parseIntArg)
       .option('--persistent', 'use a persistent profile'),
     ({ opts, driver, print }, url) => {
       const session = opts.session ?? generateSessionName();

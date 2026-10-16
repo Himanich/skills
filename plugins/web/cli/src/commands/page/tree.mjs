@@ -1,3 +1,4 @@
+import { parseIntArg } from '#src/args.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { preparePage } from '#src/page/prepare.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
@@ -41,8 +42,8 @@ export function registerTree(group, deps) {
     .command('tree [url]')
     .description('capture the visual tree of a page')
     .addHelpText('after', HELP)
-    .option('--min-width <n>', 'minimum element width in px', Number, 900)
-    .option('--settle-ms <n>', 'wait after scrolling for lazy content', Number, 2000)
+    .option('--min-width <n>', 'minimum element width in px', parseIntArg, 900)
+    .option('--settle-ms <n>', 'wait after scrolling for lazy content', parseIntArg, 2000)
     .action((url, _opts, command) => runPageCommand(command, deps, {
       url,
       fn: (driver, session, opts) => captureTree(driver, session, opts),

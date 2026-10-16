@@ -1,3 +1,4 @@
+import { parseIntArg } from '#src/args.mjs';
 import { CliError } from '#src/errors.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { preparePage, scrollForLazyContent } from '#src/page/prepare.mjs';
@@ -56,8 +57,8 @@ export function registerReduce(group, deps) {
     .command('reduce [url]')
     .description('detect page sections (phase 1 of page reduction)')
     .addHelpText('after', HELP)
-    .option('--settle-ms <n>', 'wait after scrolling for lazy content', Number, 2000)
-    .option('--retries <n>', 'rescroll attempts when no sections are found', Number, 2)
+    .option('--settle-ms <n>', 'wait after scrolling for lazy content', parseIntArg, 2000)
+    .option('--retries <n>', 'rescroll attempts when no sections are found', parseIntArg, 2)
     .action((url, _opts, command) => runPageCommand(command, deps, {
       url,
       fn: (driver, session, opts) => reducePage(driver, session, {

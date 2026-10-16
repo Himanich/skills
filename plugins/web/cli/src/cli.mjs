@@ -12,6 +12,7 @@ const USAGE_ERRORS = new Set([
   'commander.missingArgument',
   'commander.excessArguments',
   'commander.unknownCommand',
+  'commander.invalidArgument',
 ]);
 
 const ROOT_HELP = `
