@@ -82,8 +82,8 @@ Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
   with --dismiss also: applied: [{ id, strategy: hide|dismiss, ok }], residual: [{ tag, id, ... }]
 Notes:
-  --dismiss quick hides every overlay with CSS. thorough clicks the CMP's dismiss steps and
-  hides overlays that have none; scroll lock is fixed in both. residual[] lists fixed
+  --dismiss quick hides every overlay with CSS. thorough (default) clicks the CMP's dismiss steps
+  and hides overlays that have none; scroll lock is fixed in both. residual[] lists fixed
   high-z-index elements still covering the viewport: check it is empty.
 `;
 
@@ -98,7 +98,7 @@ export function registerOverlays(group, deps) {
     .description('detect cookie banners and modals; optionally dismiss them')
     .addHelpText('after', HELP)
     .option('--dismiss', 'dismiss or hide the detected overlays')
-    .option('--mode <mode>', `dismissal mode: ${MODES.join(', ')}`, 'quick')
+    .option('--mode <mode>', `dismissal mode: ${MODES.join(', ')}`, 'thorough')
     .option('--refresh-db', 'refresh the overlay pattern database first')
     .action((url, opts, command) => {
       if (!MODES.includes(opts.mode)) {

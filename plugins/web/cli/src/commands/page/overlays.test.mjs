@@ -96,6 +96,13 @@ test('thorough marks a failed dismiss run ok:false', async () => {
   assert.equal(doc.applied[0].ok, false);
 });
 
+test('--dismiss without --mode defaults to thorough', async () => {
+  const { doc, calls } = await run(['http://x', '--dismiss']);
+  const steps = calls.filter((c) => c[0] === 'run' && c[1].includes('#acme-save'));
+  assert.equal(steps.length, 1);
+  assert.equal(doc.applied[0].strategy, 'dismiss');
+});
+
 test('invalid --mode exits 2 without driver calls', async () => {
   const { code, calls } = await run(['http://x', '--dismiss', '--mode', 'bogus']);
   assert.equal(code, 2);
