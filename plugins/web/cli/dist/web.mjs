@@ -4541,8 +4541,10 @@ Output:
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
   <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
-  them); pass recipePath to other commands with --recipe. Progress goes to stderr. Always opens its own browsers
-  (it compares configurations): --session and --recipe are rejected; --headed is honoured.
+  them); pass recipePath to other commands with --recipe. Progress goes to stderr.
+  Always opens its own browsers (it compares configurations): an explicit --session or
+  --recipe is rejected, an exported WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored;
+  --headed is honoured.
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
 `;
@@ -4594,7 +4596,8 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
 function registerProbe(program2, deps) {
   program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action(async (url, _opts, command) => {
     const { opts, driver, print } = createContext(command, deps);
-    if (opts.session || opts.recipe) {
+    const explicit = (name) => command.getOptionValueSourceWithGlobals(name) === "cli";
+    if (explicit("session") || explicit("recipe")) {
       throw new CliError(
         "USAGE",
         "probe launches its own browsers; --session and --recipe are not supported",

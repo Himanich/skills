@@ -8,8 +8,8 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, English page declared en",
       "pass": true,
-      "latency_s": 96.4,
-      "cost_usd": 0.0313,
+      "latency_s": 8.9,
+      "cost_usd": 0.0166,
       "timed_out": false,
       "why": []
     },
@@ -17,55 +17,55 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, es+de body declared en with hreflang fr",
       "pass": true,
-      "latency_s": 15.3,
-      "cost_usd": 0.0271,
+      "latency_s": 14.2,
+      "cost_usd": 0.0175,
       "timed_out": false,
       "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
-      "pass": false,
-      "latency_s": 19.5,
-      "cost_usd": 0.028,
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.0303,
       "timed_out": false,
-      "why": "langs.json missing or invalid"
+      "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "aem.live (English)",
-      "pass": false,
-      "latency_s": 21.6,
-      "cost_usd": 0.0367,
+      "pass": true,
+      "latency_s": 19.8,
+      "cost_usd": 0.0224,
       "timed_out": false,
-      "why": "langs.json missing or invalid"
+      "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "fixture, nested lang attribute (en page with a German block)",
-      "pass": false,
-      "latency_s": 20.3,
-      "cost_usd": 0.0363,
+      "pass": true,
+      "latency_s": 8.6,
+      "cost_usd": 0.0172,
       "timed_out": false,
-      "why": "langs.json missing or invalid"
+      "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "fixture, French page with no language markup",
       "pass": true,
-      "latency_s": 15.5,
-      "cost_usd": 0.0301,
+      "latency_s": 8.7,
+      "cost_usd": 0.0164,
       "timed_out": false,
       "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "fixture, too little text to detect a language",
-      "pass": true,
-      "latency_s": 92,
-      "cost_usd": 0.0349,
+      "pass": false,
+      "latency_s": 8.5,
+      "cost_usd": 0.0168,
       "timed_out": false,
-      "why": []
+      "why": "langs.json missing or invalid"
     }
   ]
 }

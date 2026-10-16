@@ -124,11 +124,24 @@ test('--session or --recipe exits 2 USAGE without opening a browser', async () =
   }
 });
 
-test('WEB_SESSION in the environment is also rejected', async () => {
-  const stdout = sink();
-  const driver = { ensureAvailable() {}, open() {} };
-  const deps = { stdout, stderr: sink(), env: { WEB_SESSION: 'x' }, driverFactory: () => driver };
-  assert.equal(await runCli(['node', 'web', 'probe', 'http://x/'], deps), 2);
+test('an env-derived session is ignored and probe runs', async () => {
+  for (const env of [{ WEB_SESSION: 'x' }, { PLAYWRIGHT_CLI_SESSION: 'y' }]) {
+    let opens = 0;
+    const driver = {
+      ensureAvailable() {},
+      open: () => (opens += 1),
+      evaluate: () => 'complete',
+      pageHealth: () => OK,
+      requests: () => '1. [GET] http://x/ => [200] OK',
+      responseHeaders: () => '',
+      close() {},
+    };
+    const out = mkdtempSync(join(tmpdir(), 'probe-test-'));
+    const deps = { stdout: sink(), stderr: sink(), env, driverFactory: () => driver };
+    const argv = ['node', 'web', 'probe', 'http://x/', '--output', out];
+    assert.equal(await runCli(argv, deps), 0);
+    assert.ok(opens > 0);
+  }
 });
 
 test('--headed reaches every driver.open', async () => {

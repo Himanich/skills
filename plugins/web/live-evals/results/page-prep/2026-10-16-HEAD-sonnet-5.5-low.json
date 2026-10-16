@@ -7,29 +7,29 @@
     {
       "model": "sonnet-5.5-low",
       "case": "fixture, cookie banner (reject, never accept)",
-      "pass": false,
-      "latency_s": 32.5,
-      "cost_usd": 0.036,
+      "pass": true,
+      "latency_s": 13.6,
+      "cost_usd": 0.0241,
       "timed_out": false,
-      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=run-6802bb3d eval JSON.stringify((() => { const el = document.querySelector(\"#cookie-banner\"); return !el || getComputedStyle(el).display === 'none' || el.getBoundingClientRect().height === 0; })())"
+      "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "fixture, newsletter modal with scroll lock",
-      "pass": false,
-      "latency_s": 26.1,
-      "cost_usd": 0.0379,
+      "pass": true,
+      "latency_s": 16.4,
+      "cost_usd": 0.0244,
       "timed_out": false,
-      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=run-40cf9116 eval JSON.stringify((() => { const el = document.querySelector(\"#backdrop\"); return !el || getComputedStyle(el).display === 'none' || el.getBoundingClientRect().height === 0; })())"
+      "why": []
     },
     {
       "model": "sonnet-5.5-low",
       "case": "20minutes.fr consent wall",
-      "pass": false,
-      "latency_s": 31,
-      "cost_usd": 0.0376,
+      "pass": true,
+      "latency_s": 26,
+      "cost_usd": 0.0336,
       "timed_out": false,
-      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=run-a928e81e eval JSON.stringify(([...document.querySelectorAll('*')].filter((el) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.position === 'fixed' && parseInt(s.zIndex) > 1000 && r.width > 300 && r.height > 50 && r.bottom > 0 && r.top < innerHeight && s.display !== 'none' && s.visibility !== 'hidden'; }).map((el) => el.id || el.className || el.tagName)).length === 0)"
+      "why": []
     }
   ]
 }

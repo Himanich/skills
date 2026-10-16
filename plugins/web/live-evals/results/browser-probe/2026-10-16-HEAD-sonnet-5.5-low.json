@@ -8,8 +8,8 @@
       "model": "sonnet-5.5-low",
       "case": "wknd",
       "pass": false,
-      "latency_s": 23.1,
-      "cost_usd": 0.0299,
+      "latency_s": 15.3,
+      "cost_usd": 0.0219,
       "timed_out": false,
       "why": "probe-report.json missing or invalid"
     },
@@ -17,8 +17,8 @@
       "model": "sonnet-5.5-low",
       "case": "astrazeneca",
       "pass": false,
-      "latency_s": 17.9,
-      "cost_usd": 0.0307,
+      "latency_s": 19.5,
+      "cost_usd": 0.0245,
       "timed_out": false,
       "why": "probe-report.json missing or invalid"
     },
@@ -26,8 +26,8 @@
       "model": "sonnet-5.5-low",
       "case": "adobe",
       "pass": false,
-      "latency_s": 32.4,
-      "cost_usd": 0.0312,
+      "latency_s": 28.2,
+      "cost_usd": 0.0243,
       "timed_out": false,
       "why": "probe-report.json missing or invalid"
     },
@@ -35,10 +35,10 @@
       "model": "sonnet-5.5-low",
       "case": "bd",
       "pass": false,
-      "latency_s": 41.7,
-      "cost_usd": 0.0347,
+      "latency_s": 37.5,
+      "cost_usd": 0.0317,
       "timed_out": false,
-      "why": "probe-report.json missing or invalid"
+      "why": "no recipe to load with"
     }
   ]
 }
