@@ -23,8 +23,8 @@ Sessions:
   With a <url> and no --session, a browser is opened and closed for that one command.
   --session <name> reuses an open browser; with a <url> it opens one under that
   name if needed; either way the browser stays open. WEB_SESSION, then
-  PLAYWRIGHT_CLI_SESSION, is the default for --session. Sessions are scoped to the working
-  directory. The escape hatch
+  PLAYWRIGHT_CLI_SESSION, is the default for --session. Session names are global per
+  user and machine. The escape hatch
   \`playwright-cli -s <session> …\` drives the same browser.
 
 Artifacts:

@@ -76,8 +76,9 @@ clean up anything you put in the output directory.
 
 ## Session Naming
 
-Session names passed via `-s <name>` persist across calls in the same
-working directory. Always close sessions explicitly with
+Session names passed via `-s <name>` are global per user and machine
+(not scoped to the working directory) and persist until closed. Always close sessions
+explicitly with
 `playwright-cli -s <name> close` to avoid stale sessions blocking future runs.
 
 ## `--json` Envelope

@@ -59,8 +59,8 @@ command to run, how to read its output.
 - playwright-cli facts the driver must absorb (see
   `plugins/web/docs/playwright-cli-constraints.md`, kept and extended):
   `eval` takes a single expression (no `;`, no `return`); files handed to
-  playwright-cli live under the output dir or `.playwright-cli/`; sessions are
-  scoped to the working directory; a session must be `open`ed before any other
+  playwright-cli live under the output dir or `.playwright-cli/`; session names are
+  global per user and machine (any directory); a session must be `open`ed before any other
   command; `screenshot` takes `--filename`, not a positional path.
 - Repo conventions: `AGENTS.md` at `~/.pi/agent` applies (≤100 lines/function,
   absolute imports, no dead code, zero warnings). Per-skill semantic-release

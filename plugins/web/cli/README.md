@@ -31,7 +31,7 @@ npx -y @adobe/web-cli …                      # 3. when published
 - `--session <name>` reuses an open browser; with a `<url>` it opens one under that name if
   needed; either way the browser stays open. `WEB_SESSION`, then
   `PLAYWRIGHT_CLI_SESSION`, is the default for `--session`. Names without a value are generated as `web-<4 hex>`.
-- Sessions are scoped to the working directory. `playwright-cli -s <session> …`
+- Session names are global per user and machine, not per working directory. `playwright-cli -s <session> …`
   drives the same browser.
 
 ## Output contract
