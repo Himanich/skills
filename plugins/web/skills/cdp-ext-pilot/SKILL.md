@@ -3,7 +3,7 @@ name: cdp-ext-pilot
 license: Apache-2.0
 compatibility: Requires Node 22+ and playwright-cli on PATH; uses the web CLI (plugins/web/cli)
 description: >-
-  Launches a headed, persistent Chromium (playwright-cli's) with an unpacked
+  Launches a persistent, headless-by-default Chromium (playwright-cli's) with an unpacked
   extension loaded through `web ext`, opens the extension's side panel, popup,
   or options page, and interacts with it over `web browser eval/cdp`. Handles the
   Chrome 137+ restriction on loading unpacked extensions and the side panel
@@ -36,7 +36,7 @@ as `$WEB …`.
 $WEB ext launch <path-to-extension-dist> --session ext1 [--cdp-port 9222]
 ```
 
-Forces a headed, persistent Chrome with the extension loaded. Output:
+Launches a persistent Chromium with the extension loaded, headless unless `--headed`. Output:
 `{ session, extensionId, extensionPath, surfaces, cdpPort? }`; `surfaces` lists
 what the manifest declares (sidepanel, popup, options).
 

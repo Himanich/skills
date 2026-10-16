@@ -3667,19 +3667,22 @@ function requireOpenSession(driver, name) {
 async function withSession(driver, opts, fn) {
   const { session, url, headed, recipePath, ...launch2 } = opts;
   if (session) {
-    requireOpenSession(driver, session);
-    if (url) driver.goto(session, url);
+    const isOpen = driver.list().some((s) => s.name === session && s.status === "open");
+    if (!isOpen && url) {
+      driver.open({ session, url, headed, ...resolveLaunch(recipePath, launch2) });
+    } else {
+      requireOpenSession(driver, session);
+      if (url) driver.goto(session, url);
+    }
     return fn(session);
   }
   const name = generateSessionName();
-  const explicit = Object.fromEntries(Object.entries(launch2).filter(([, v]) => v !== void 0));
-  const recipe = recipePath ? loadRecipe(recipePath) : {};
   const cleanup = installSignalCleanup(driver, name);
   let failed = false;
   let owned = true;
   try {
     try {
-      driver.open({ session: name, url, headed, ...recipe, ...explicit });
+      driver.open({ session: name, url, headed, ...resolveLaunch(recipePath, launch2) });
     } catch (err) {
       owned = err?.code !== "SESSION_EXISTS";
       throw err;
@@ -3692,6 +3695,10 @@ async function withSession(driver, opts, fn) {
     cleanup();
     if (owned) closeQuietlyIf(driver, name, failed);
   }
+}
+function resolveLaunch(recipePath, launch2) {
+  const explicit = Object.fromEntries(Object.entries(launch2).filter(([, v]) => v !== void 0));
+  return { ...recipePath ? loadRecipe(recipePath) : {}, ...explicit };
 }
 function installSignalCleanup(driver, name) {
   const handlers = ["SIGINT", "SIGTERM"].map((signal) => {
@@ -4629,8 +4636,8 @@ Example:
 Output:
   { session, extensionId, extensionPath, surfaces, cdpPort? }
 Notes:
-  Forces a headed, persistent Chrome with the unpacked extension loaded. surfaces lists
-  what the manifest declares (sidepanel, popup, options). Exits 1 if the extension
+  Launches a persistent Chromium with the unpacked extension loaded, headless by default;
+  pass --headed to watch. surfaces lists what the manifest declares (sidepanel, popup, options). Exits 1 if the extension
   does not load.
 `,
   OPEN: `
@@ -4798,12 +4805,13 @@ function launch(ctx, distDir) {
   driver.open({
     session,
     url: "about:blank",
-    headed: true,
+    headed: Boolean(opts.headed),
     persistent: true,
     cdpPort,
     config: {
       browserName: "chromium",
       launchOptions: {
+        channel: "chromium",
         args: [`--load-extension=${abs}`, `--disable-extensions-except=${abs}`]
       }
     }
@@ -4867,7 +4875,7 @@ function registerExt(program2, deps) {
     await fn(ctx, ...args.slice(0, -2));
   });
   action(
-    ext.command("launch <dist-dir>").description("launch a headed browser with the extension loaded").addHelpText("after", HELP3.LAUNCH).option("--cdp-port <n>", "remote debugging port", parseIntArg),
+    ext.command("launch <dist-dir>").description("launch a browser (headless unless --headed) with the extension loaded").addHelpText("after", HELP3.LAUNCH).option("--cdp-port <n>", "remote debugging port", parseIntArg),
     launch,
     { needs: false }
   );
@@ -5851,7 +5859,8 @@ function registerOverlays(group, deps) {
 // src/commands/page.mjs
 var GROUP_HELP3 = `
 Use to analyze a page. Pass a <url> for a one-shot run in an ephemeral browser that is closed
-afterwards, or --session <name> to reuse an open browser (left open). Each command prints one
+afterwards, or --session <name> to reuse an open browser; with a <url> it is opened under that name if
+needed. The session browser is left open. Each command prints one
 JSON document with url, session and durationMs added; --format text is supported on tree.
 `;
 function registerPage(program2, deps) {
@@ -5878,8 +5887,10 @@ Exit codes:
 
 Sessions:
   With a <url> and no --session, a browser is opened and closed for that one command.
-  --session <name> reuses an open browser and leaves it open. WEB_SESSION is the default
-  for --session. Sessions are scoped to the working directory. The escape hatch
+  --session <name> reuses an open browser; with a <url> it opens one under that
+  name if needed; either way the browser stays open. WEB_SESSION, then
+  PLAYWRIGHT_CLI_SESSION, is the default for --session. Sessions are scoped to the working
+  directory. The escape hatch
   \`playwright-cli -s <session> \u2026\` drives the same browser.
 
 Artifacts:
@@ -5895,7 +5906,11 @@ Typical flows:
 `;
 function createProgram(deps = {}) {
   const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
-  const program2 = new Command("web").description("Drive a browser and analyze pages").option("--session <name>", "browser session name", env.WEB_SESSION).addOption(
+  const program2 = new Command("web").description("Drive a browser and analyze pages").option(
+    "--session <name>",
+    "browser session name",
+    env.WEB_SESSION ?? env.PLAYWRIGHT_CLI_SESSION
+  ).addOption(
     new Option("--format <format>", "output format: json or text").choices(["json", "text"]).default("json")
   ).option("--output <dir>", "directory for artifacts", "./.web").option("--headed", "show the browser window").option("--recipe <file>", "browser recipe produced by `web probe`").configureOutput({
     writeOut: (s) => stdout.write(s),

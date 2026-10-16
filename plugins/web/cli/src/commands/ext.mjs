@@ -21,8 +21,8 @@ Example:
 Output:
   { session, extensionId, extensionPath, surfaces, cdpPort? }
 Notes:
-  Forces a headed, persistent Chrome with the unpacked extension loaded. surfaces lists
-  what the manifest declares (sidepanel, popup, options). Exits 1 if the extension
+  Launches a persistent Chromium with the unpacked extension loaded, headless by default;
+  pass --headed to watch. surfaces lists what the manifest declares (sidepanel, popup, options). Exits 1 if the extension
   does not load.
 `,
   OPEN: `
@@ -212,12 +212,13 @@ function launch(ctx, distDir) {
   driver.open({
     session,
     url: 'about:blank',
-    headed: true,
+    headed: Boolean(opts.headed),
     persistent: true,
     cdpPort,
     config: {
       browserName: 'chromium',
       launchOptions: {
+        channel: 'chromium',
         args: [`--load-extension=${abs}`, `--disable-extensions-except=${abs}`],
       },
     },
@@ -294,7 +295,7 @@ export function registerExt(program, deps) {
   action(
     ext
       .command('launch <dist-dir>')
-      .description('launch a headed browser with the extension loaded')
+      .description('launch a browser (headless unless --headed) with the extension loaded')
       .addHelpText('after', HELP.LAUNCH)
       .option('--cdp-port <n>', 'remote debugging port', parseIntArg),
     launch,

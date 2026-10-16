@@ -59,7 +59,8 @@ test('ext launch prints { session, cdpPort, extensionId, surfaces }', async () =
   assert.match(out.extensionId, /^[a-p]{32}$/);
   assert.equal(out.cdpPort, 9333);
   const opened = calls.find((c) => c[0] === 'open')[1];
-  assert.equal(opened.headed, true);
+  assert.equal(opened.headed, false);
+  assert.equal(opened.config.launchOptions.channel, 'chromium');
   assert.equal(opened.persistent, true);
   assert.deepEqual(opened.config.launchOptions.args, [
     `--load-extension=${dist}`,
@@ -109,6 +110,12 @@ test('ext open without a session file exits NO_SESSION', async () => {
   const { code } = await exec(['ext', 'open', 'popup', '--session', 's']);
   assert.equal(code, 2);
   assert.equal(JSON.parse(stdout.buf).error.code, 'NO_SESSION');
+});
+
+test('ext launch --headed shows the window', async () => {
+  const { dist, exec } = setup();
+  const { calls } = await exec(['ext', 'launch', dist, '--session', 's', '--headed']);
+  assert.equal(calls.find((c) => c[0] === 'open')[1].headed, true);
 });
 
 test('ext status reports open:false when the session is gone', async () => {
