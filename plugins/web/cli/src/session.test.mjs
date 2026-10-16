@@ -158,3 +158,42 @@ test('withSession throws the close error when fn succeeded', async () => {
     /close boom/,
   );
 });
+
+test('withSession closes the generated session when open throws after launching', async () => {
+  const d = fake();
+  d.open = () => {
+    throw new Error('launch half-failed');
+  };
+  await assert.rejects(
+    withSession(d, {}, () => 1),
+    /half-failed/,
+  );
+  assert.equal(d.calls.length, 1);
+  assert.match(d.calls[0][1], /^web-[0-9a-f]{4}$/);
+});
+
+test('withSession does not close when open throws SESSION_EXISTS', async () => {
+  const d = fake();
+  d.open = () => {
+    throw Object.assign(new Error('exists'), { code: 'SESSION_EXISTS' });
+  };
+  await assert.rejects(
+    withSession(d, {}, () => 1),
+    /exists/,
+  );
+  assert.deepEqual(d.calls, []);
+});
+
+test('withSession passes explicit launch options, which win over the recipe', async () => {
+  const d = fake();
+  await withSession(d, { config: { a: 1 }, persistent: true, initScripts: ['/x.js'] }, () => 1);
+  const { config, persistent, initScripts } = d.calls[0][1];
+  assert.deepEqual(
+    { config, persistent, initScripts },
+    {
+      config: { a: 1 },
+      persistent: true,
+      initScripts: ['/x.js'],
+    },
+  );
+});

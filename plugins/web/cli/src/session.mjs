@@ -40,21 +40,43 @@ export function requireOpenSession(driver, name) {
 
 /**
  * Run `fn` against a given open session, or against an ephemeral one closed afterwards.
+ * Explicit `config`, `persistent`, `initScripts` win over values loaded from `recipePath`.
  * @param {object} driver
- * @param {{ session?: string, url?: string, headed?: boolean, recipePath?: string }} opts
+ * @param {object} opts session, url, headed, recipePath, config, persistent, initScripts
  * @param {(session: string) => unknown} fn
  */
-export async function withSession(driver, { session, url, headed, recipePath }, fn) {
+export async function withSession(driver, opts, fn) {
+  const { session, url, headed, recipePath, ...launch } = opts;
   if (session) {
     requireOpenSession(driver, session);
     if (url) driver.goto(session, url);
     return fn(session);
   }
   const name = generateSessionName();
+  const explicit = Object.fromEntries(Object.entries(launch).filter(([, v]) => v !== undefined));
   const recipe = recipePath ? loadRecipe(recipePath) : {};
-  driver.open({ session: name, url, headed, ...recipe });
-  const signals = ['SIGINT', 'SIGTERM'];
-  const handlers = signals.map((signal) => {
+  const cleanup = installSignalCleanup(driver, name);
+  let failed = false;
+  let owned = true;
+  try {
+    try {
+      driver.open({ session: name, url, headed, ...recipe, ...explicit });
+    } catch (err) {
+      owned = err?.code !== 'SESSION_EXISTS';
+      throw err;
+    }
+    return await fn(name);
+  } catch (err) {
+    failed = true;
+    throw err;
+  } finally {
+    cleanup();
+    if (owned) closeQuietlyIf(driver, name, failed);
+  }
+}
+
+function installSignalCleanup(driver, name) {
+  const handlers = ['SIGINT', 'SIGTERM'].map((signal) => {
     const handler = () => {
       cleanup();
       try {
@@ -68,16 +90,7 @@ export async function withSession(driver, { session, url, headed, recipePath }, 
   });
   const cleanup = () => handlers.forEach(([s, h]) => process.removeListener(s, h));
   handlers.forEach(([s, h]) => process.once(s, h));
-  let failed = false;
-  try {
-    return await fn(name);
-  } catch (err) {
-    failed = true;
-    throw err;
-  } finally {
-    cleanup();
-    closeQuietlyIf(driver, name, failed);
-  }
+  return cleanup;
 }
 
 function closeQuietlyIf(driver, name, failed) {

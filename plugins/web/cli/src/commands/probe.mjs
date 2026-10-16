@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
-import { artifactPath, generateSessionName } from '#src/session.mjs';
+import { artifactPath, generateSessionName, withSession } from '#src/session.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { checkHealth, detectSignals, findDocumentChain } from '#src/driver/blocked.mjs';
 
@@ -82,33 +82,34 @@ function collectHeaders(driver, session, health, log) {
   }
 }
 
-function runStep(driver, { url, outputDir, stepDef, log }) {
-  const session = generateSessionName();
-  const start = Date.now();
-  const stealthPath = artifactPath(outputDir, session, 'probe', 'stealth-init.js');
+async function runStep(driver, { url, outputDir, stepDef, headed, log }) {
+  const stealthPath = artifactPath(outputDir, generateSessionName(), 'probe', 'stealth-init.js');
   const browserConfig = buildBrowserConfig(stepDef);
   const base = { name: stepDef.name, config: stepDef.config };
+  const start = Date.now();
+  const initScripts = [];
   try {
-    const initScripts = [];
     if (stepDef.stealth) {
       mkdirSync(outputDir, { recursive: true });
       writeFileSync(stealthPath, loadBundle('stealth-init.js'));
       initScripts.push(stealthPath);
     }
-    driver.open({
-      session,
+    const launch = {
       url,
+      headed,
       config: browserConfig,
       persistent: stepDef.persistent,
       initScripts,
-    });
-    waitForStable(driver, session);
-    const health = driver.pageHealth(session);
-    const result = checkHealth(health);
-    const { networkLines, headerError } = collectHeaders(driver, session, health, log);
-    const step = { ...base, result, health, durationMs: Date.now() - start };
-    if (headerError) step.headerError = headerError;
-    return { step, networkLines, browserConfig };
+    };
+    const out = await withSession(driver, launch, (session) => observe(driver, session, log));
+    const step = {
+      ...base,
+      result: out.result,
+      health: out.health,
+      durationMs: Date.now() - start,
+    };
+    if (out.headerError) step.headerError = out.headerError;
+    return { step, networkLines: out.networkLines, browserConfig };
   } catch (err) {
     const health = {
       title: '',
@@ -121,13 +122,15 @@ function runStep(driver, { url, outputDir, stepDef, log }) {
     const step = { ...base, result: 'error', health, durationMs: Date.now() - start };
     return { step, networkLines: [], browserConfig };
   } finally {
-    try {
-      driver.close(session);
-    } catch (err) {
-      log(`  warning: could not close ${session}: ${err.message}`);
-    }
     rmSync(stealthPath, { force: true });
   }
+}
+
+function observe(driver, session, log) {
+  waitForStable(driver, session);
+  const health = driver.pageHealth(session);
+  const result = checkHealth(health);
+  return { result, health, ...collectHeaders(driver, session, health, log) };
 }
 
 const HELP = `
@@ -147,13 +150,13 @@ Exit codes:
  * Try each probe step until a page loads unblocked.
  * @returns {{ report: object, recipePath: string|null }}
  */
-export function runProbe(driver, { url, outputDir, log = () => {} }) {
+export async function runProbe(driver, { url, outputDir, headed, log = () => {} }) {
   const steps = [];
   const networkLines = [];
   let success = null;
   for (const stepDef of STEPS) {
     log(`Probing with ${stepDef.name} config...`);
-    const out = runStep(driver, { url, outputDir, stepDef, log });
+    const out = await runStep(driver, { url, outputDir, stepDef, headed, log });
     steps.push(out.step);
     networkLines.push(...out.networkLines);
     log(
@@ -206,11 +209,11 @@ export function registerProbe(program, deps) {
     .command('probe <url>')
     .description('detect bot/CDN protection and produce a browser recipe')
     .addHelpText('after', HELP)
-    .action((url, _opts, command) => {
+    .action(async (url, _opts, command) => {
       const { opts, driver, print } = createContext(command, deps);
       const stderr = deps.stderr ?? process.stderr;
       const log = (msg) => stderr.write(`${msg}\n`);
-      const { report, recipePath } = runProbe(driver, { url, outputDir: opts.output, log });
+      const { report, recipePath } = await runProbe(driver, { url, outputDir: opts.output, log });
       if (report.firstSuccess === null) {
         throw new CliError('BLOCKED', 'all probe steps were blocked', {
           hint:

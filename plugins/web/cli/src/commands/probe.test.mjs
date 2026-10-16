@@ -84,3 +84,23 @@ test('each step closes its session and removes the stealth file', async () => {
   assert.equal(r.opened[1].initExisted[0], true);
   assert.equal(existsSync(stealth), false);
 });
+
+test('a step whose open fails yields an error step and closes the session', async () => {
+  const out = mkdtempSync(join(tmpdir(), 'probe-test-'));
+  const closed = [];
+  const driver = {
+    ensureAvailable() {},
+    open() {
+      throw new Error('launch failed');
+    },
+    close: (s) => closed.push(s),
+  };
+  const deps = { stdout: sink(), stderr: sink(), env: {}, driverFactory: () => driver };
+  const code = await runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps);
+  assert.equal(code, 3);
+  assert.equal(closed.length, 5);
+  const report = JSON.parse(readFileSync(join(out, 'probe-probe-report.json'), 'utf8'));
+  assert.ok(
+    report.steps.every((s) => s.result === 'error' && /launch failed/.test(s.health.error)),
+  );
+});

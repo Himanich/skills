@@ -3664,17 +3664,37 @@ function requireOpenSession(driver, name) {
     });
   }
 }
-async function withSession(driver, { session, url, headed, recipePath }, fn) {
+async function withSession(driver, opts, fn) {
+  const { session, url, headed, recipePath, ...launch2 } = opts;
   if (session) {
     requireOpenSession(driver, session);
     if (url) driver.goto(session, url);
     return fn(session);
   }
   const name = generateSessionName();
+  const explicit = Object.fromEntries(Object.entries(launch2).filter(([, v]) => v !== void 0));
   const recipe = recipePath ? loadRecipe(recipePath) : {};
-  driver.open({ session: name, url, headed, ...recipe });
-  const signals = ["SIGINT", "SIGTERM"];
-  const handlers = signals.map((signal) => {
+  const cleanup = installSignalCleanup(driver, name);
+  let failed = false;
+  let owned = true;
+  try {
+    try {
+      driver.open({ session: name, url, headed, ...recipe, ...explicit });
+    } catch (err) {
+      owned = err?.code !== "SESSION_EXISTS";
+      throw err;
+    }
+    return await fn(name);
+  } catch (err) {
+    failed = true;
+    throw err;
+  } finally {
+    cleanup();
+    if (owned) closeQuietlyIf(driver, name, failed);
+  }
+}
+function installSignalCleanup(driver, name) {
+  const handlers = ["SIGINT", "SIGTERM"].map((signal) => {
     const handler = () => {
       cleanup();
       try {
@@ -3687,16 +3707,7 @@ async function withSession(driver, { session, url, headed, recipePath }, fn) {
   });
   const cleanup = () => handlers.forEach(([s, h]) => process.removeListener(s, h));
   handlers.forEach(([s, h]) => process.once(s, h));
-  let failed = false;
-  try {
-    return await fn(name);
-  } catch (err) {
-    failed = true;
-    throw err;
-  } finally {
-    cleanup();
-    closeQuietlyIf(driver, name, failed);
-  }
+  return cleanup;
 }
 function closeQuietlyIf(driver, name, failed) {
   try {
@@ -4461,33 +4472,34 @@ function collectHeaders(driver, session, health, log) {
     return { networkLines: [], headerError };
   }
 }
-function runStep(driver, { url, outputDir, stepDef, log }) {
-  const session = generateSessionName();
-  const start = Date.now();
-  const stealthPath = artifactPath(outputDir, session, "probe", "stealth-init.js");
+async function runStep(driver, { url, outputDir, stepDef, headed, log }) {
+  const stealthPath = artifactPath(outputDir, generateSessionName(), "probe", "stealth-init.js");
   const browserConfig = buildBrowserConfig(stepDef);
   const base = { name: stepDef.name, config: stepDef.config };
+  const start = Date.now();
+  const initScripts = [];
   try {
-    const initScripts = [];
     if (stepDef.stealth) {
       mkdirSync2(outputDir, { recursive: true });
       writeFileSync2(stealthPath, loadBundle("stealth-init.js"));
       initScripts.push(stealthPath);
     }
-    driver.open({
-      session,
+    const launch2 = {
       url,
+      headed,
       config: browserConfig,
       persistent: stepDef.persistent,
       initScripts
-    });
-    waitForStable(driver, session);
-    const health = driver.pageHealth(session);
-    const result = checkHealth(health);
-    const { networkLines, headerError } = collectHeaders(driver, session, health, log);
-    const step = { ...base, result, health, durationMs: Date.now() - start };
-    if (headerError) step.headerError = headerError;
-    return { step, networkLines, browserConfig };
+    };
+    const out = await withSession(driver, launch2, (session) => observe(driver, session, log));
+    const step = {
+      ...base,
+      result: out.result,
+      health: out.health,
+      durationMs: Date.now() - start
+    };
+    if (out.headerError) step.headerError = out.headerError;
+    return { step, networkLines: out.networkLines, browserConfig };
   } catch (err) {
     const health = {
       title: "",
@@ -4500,13 +4512,14 @@ function runStep(driver, { url, outputDir, stepDef, log }) {
     const step = { ...base, result: "error", health, durationMs: Date.now() - start };
     return { step, networkLines: [], browserConfig };
   } finally {
-    try {
-      driver.close(session);
-    } catch (err) {
-      log(`  warning: could not close ${session}: ${err.message}`);
-    }
     rmSync2(stealthPath, { force: true });
   }
+}
+function observe(driver, session, log) {
+  waitForStable(driver, session);
+  const health = driver.pageHealth(session);
+  const result = checkHealth(health);
+  return { result, health, ...collectHeaders(driver, session, health, log) };
 }
 var HELP2 = `
 Example:
@@ -4520,14 +4533,14 @@ Notes:
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
 `;
-function runProbe(driver, { url, outputDir, log = () => {
+async function runProbe(driver, { url, outputDir, headed, log = () => {
 } }) {
   const steps = [];
   const networkLines = [];
   let success = null;
   for (const stepDef of STEPS) {
     log(`Probing with ${stepDef.name} config...`);
-    const out = runStep(driver, { url, outputDir, stepDef, log });
+    const out = await runStep(driver, { url, outputDir, stepDef, headed, log });
     steps.push(out.step);
     networkLines.push(...out.networkLines);
     log(
@@ -4569,12 +4582,12 @@ function runProbe(driver, { url, outputDir, log = () => {
   return { report, recipePath };
 }
 function registerProbe(program2, deps) {
-  program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action((url, _opts, command) => {
+  program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action(async (url, _opts, command) => {
     const { opts, driver, print } = createContext(command, deps);
     const stderr = deps.stderr ?? process.stderr;
     const log = (msg) => stderr.write(`${msg}
 `);
-    const { report, recipePath } = runProbe(driver, { url, outputDir: opts.output, log });
+    const { report, recipePath } = await runProbe(driver, { url, outputDir: opts.output, log });
     if (report.firstSuccess === null) {
       throw new CliError("BLOCKED", "all probe steps were blocked", {
         hint: "see report.steps for per-step health; the site may require a persistent profile or manual login"
