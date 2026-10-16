@@ -21,8 +21,9 @@ Exit codes:
 
 Sessions:
   With a <url> and no --session, a browser is opened and closed for that one command.
-  --session <name> reuses an open browser and leaves it open. WEB_SESSION is the default
-  for --session. Sessions are scoped to the working directory. The escape hatch
+  --session <name> reuses an open browser and leaves it open. WEB_SESSION, then
+  PLAYWRIGHT_CLI_SESSION, is the default for --session. Sessions are scoped to the working
+  directory. The escape hatch
   \`playwright-cli -s <session> …\` drives the same browser.
 
 Artifacts:
@@ -46,7 +47,11 @@ export function createProgram(deps = {}) {
   const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
   const program = new Command('web')
     .description('Drive a browser and analyze pages')
-    .option('--session <name>', 'browser session name', env.WEB_SESSION)
+    .option(
+      '--session <name>',
+      'browser session name',
+      env.WEB_SESSION ?? env.PLAYWRIGHT_CLI_SESSION,
+    )
     .addOption(
       new Option('--format <format>', 'output format: json or text')
         .choices(['json', 'text'])

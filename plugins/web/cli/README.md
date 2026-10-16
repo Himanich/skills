@@ -28,8 +28,8 @@ npx -y @adobe/web-cli …                      # 3. when published
 ## Sessions
 
 - A `<url>` with no `--session` opens a browser for that one command and closes it.
-- `--session <name>` reuses an open browser and leaves it open. `WEB_SESSION` is the
-  default for `--session`. Names without a value are generated as `web-<4 hex>`.
+- `--session <name>` reuses an open browser and leaves it open. `WEB_SESSION`, then
+  `PLAYWRIGHT_CLI_SESSION`, is the default for `--session`. Names without a value are generated as `web-<4 hex>`.
 - Sessions are scoped to the working directory. `playwright-cli -s <session> …`
   drives the same browser.
 

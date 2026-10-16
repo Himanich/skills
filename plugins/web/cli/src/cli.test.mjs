@@ -34,6 +34,13 @@ test('WEB_SESSION env fills --session default', () => {
   assert.equal(program.opts().session, 'from-env');
 });
 
+test('PLAYWRIGHT_CLI_SESSION is the fallback; WEB_SESSION wins', () => {
+  const only = createProgram({ env: { PLAYWRIGHT_CLI_SESSION: 'pw' } });
+  assert.equal(only.opts().session, 'pw');
+  const both = createProgram({ env: { WEB_SESSION: 'web', PLAYWRIGHT_CLI_SESSION: 'pw' } });
+  assert.equal(both.opts().session, 'web');
+});
+
 test('mask --help prints usage and exit 0', async () => {
   const stdout = sink();
   const code = await runCli(['node', 'web', 'mask', '--help'], { stdout, stderr: sink(), env: {} });

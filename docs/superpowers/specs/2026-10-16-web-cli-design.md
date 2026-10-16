@@ -142,7 +142,7 @@ repeats those steps.
 ### Sessions
 
 - Every command that touches a browser, except `probe`, takes `--session <name>`; env var
-  `WEB_SESSION` is the fallback so an agent sets it once per run. No shared
+  `WEB_SESSION`, then `PLAYWRIGHT_CLI_SESSION`, is the fallback so an agent sets it once per run. No shared
   `default` session: two agents on `default` would stomp on each other.
 - `browser open` without `--session` generates `web-<4 hex>` and returns it.
   `browser open --session <name>` where `<name>` is already open exits 2
