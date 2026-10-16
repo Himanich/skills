@@ -19,9 +19,11 @@ const USAGE_ERRORS = new Set([
 
 /**
  * Build the root program with the five command groups.
- * @param {{ driverFactory?: Function, env?: NodeJS.ProcessEnv, stdout?: object, stderr?: object }} [deps]
+ * @param {{ driverFactory?: Function, env?: NodeJS.ProcessEnv, stdout?: object,
+ *   stderr?: object, registerTestCommands?: Function }} [deps]
  */
-export function createProgram({ driverFactory, env = process.env, stdout = process.stdout, stderr = process.stderr } = {}) {
+export function createProgram(deps = {}) {
+  const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
   const program = new Command('web')
     .description('Drive a browser and analyze pages')
     .option('--session <name>', 'browser session name', env.WEB_SESSION)
@@ -36,10 +38,11 @@ export function createProgram({ driverFactory, env = process.env, stdout = proce
     .showHelpAfterError()
     .showSuggestionAfterError()
     .exitOverride();
-  program.driverFactory = driverFactory;
   for (const [name, description] of Object.entries(GROUPS)) {
-    program.command(name).description(description);
+    const group = program.command(name).description(description);
+    if (name === 'probe' || name === 'mask') group.action(() => group.help());
   }
+  deps.registerTestCommands?.(program, deps);
   return program;
 }
 
@@ -56,10 +59,12 @@ export async function runCli(argv, deps = {}) {
     return EXIT.OK;
   } catch (err) {
     if (err instanceof CommanderError) {
-      if (err.code === 'commander.helpDisplayed' || err.code === 'commander.version') return EXIT.OK;
+      const help = err.code === 'commander.helpDisplayed' || err.code === 'commander.help';
+      if (help || err.code === 'commander.version') return EXIT.OK;
       if (USAGE_ERRORS.has(err.code)) return EXIT.USAGE;
       return err.exitCode || EXIT.USAGE;
     }
-    return fail(err instanceof Error ? err : new CliError('INTERNAL', String(err)), { stdout, stderr });
+    const wrapped = err instanceof Error ? err : new CliError('INTERNAL', String(err));
+    return fail(wrapped, { stdout, stderr });
   }
 }
