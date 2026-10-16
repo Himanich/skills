@@ -29,6 +29,13 @@ Resolve paths from the current working directory with `<skill-dir>` made
 absolute; don't `cd` into the skill directory. Every example below is written
 as `$WEB …`.
 
+**Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
+`--session`: every `web` command uses that browser and leaves it open. Otherwise
+either run one-shot (`$WEB page tree "$URL"` opens and closes its own browser) or
+start a browser and reuse the generated name:
+`S=$($WEB browser open "$URL" | jq -r .session)` then `--session "$S"`.
+Never invent a fixed session name.
+
 ## When to Use
 
 Before page decomposition, overlay detection, or brand extraction, or when the
@@ -39,7 +46,7 @@ user asks for a page's visual hierarchy or layout.
 ```bash
 $WEB page tree "$URL" [--min-width 900] [--settle-ms 2000]
 $WEB page tree "$URL" --format text      # only the indented tree
-$WEB page tree --session s1              # reuse an open browser
+$WEB page tree --session "$S"              # reuse an open browser
 ```
 
 | Option | Default | Description |
@@ -81,8 +88,8 @@ background, children). Show it only if the caller asks; otherwise mention it exi
 
 ## Chaining
 
-- Cookie banners or modals in the way: `$WEB page overlays --session s1 --dismiss`
-  first, then `page tree --session s1`.
+- Cookie banners or modals in the way: `$WEB page overlays --session "$S" --dismiss`
+  first, then `page tree --session "$S"`.
 - Exit 3 (blocked): run the `browser-probe` skill, then re-run with
   `--recipe <recipePath printed by probe>`.
 

@@ -31,6 +31,13 @@ Resolve paths from the current working directory with `<skill-dir>` made
 absolute; don't `cd` into the skill directory. Every example below is written
 as `$WEB …`.
 
+**Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
+`--session`: every `web` command uses that browser and leaves it open. Otherwise
+either run one-shot (`$WEB page tree "$URL"` opens and closes its own browser) or
+start a browser and reuse the generated name:
+`S=$($WEB browser open "$URL" | jq -r .session)` then `--session "$S"`.
+Never invent a fixed session name.
+
 ## When to Use
 
 Migrating a page to AEM Edge Delivery Services, extracting a page blueprint, or
@@ -49,10 +56,10 @@ $WEB page reduce "$URL" [--settle-ms 2000] [--retries 2] > phase1-output.json
 For a page with overlays, use one session so they are gone before detection:
 
 ```bash
-$WEB browser open "$URL" --session s1
-$WEB page overlays --session s1 --dismiss
-$WEB page reduce --session s1 > phase1-output.json
-$WEB browser close --session s1
+S=$($WEB browser open "$URL" | jq -r .session)
+$WEB page overlays --session "$S" --dismiss
+$WEB page reduce --session "$S" > phase1-output.json
+$WEB browser close --session "$S"
 ```
 
 The CLI scrolls for lazy content, unpins fixed/sticky elements, detects sections,
@@ -113,7 +120,7 @@ forms and navs, strip overlay panels, and re-type sections.
 
 - Number of sections detected, and their types (note any re-typings)
 - Size stats: original HTML, Phase 1, Phase 2 skeleton
-  (original: `$WEB browser eval "document.documentElement.outerHTML.length" --session s1`)
+  (original: `$WEB browser eval "document.documentElement.outerHTML.length" --session "$S"`)
 - Paths to the output files
 
 ## Chaining

@@ -17,7 +17,7 @@ import { artifactPath, generateSessionName, requireOpenSession } from '#src/sess
 const HELP = {
   LAUNCH: `
 Example:
-  web ext launch ./dist --session ext1
+  S=$(web ext launch ./dist | jq -r .session)
 Output:
   { session, extensionId, extensionPath, surfaces, cdpPort? }
 Notes:
@@ -27,7 +27,7 @@ Notes:
 `,
   OPEN: `
 Example:
-  web ext open sidepanel --session ext1
+  web ext open sidepanel --session "$S"
 Output:
   { surface, url, targetId?, note? }
 Notes:
@@ -37,7 +37,7 @@ Notes:
 `,
   STATUS: `
 Example:
-  web ext status --session ext1
+  web ext status --session "$S"
 Output:
   { session, open, extensionId, surfaces }
 Notes:
@@ -45,7 +45,7 @@ Notes:
 `,
   CLOSE: `
 Example:
-  web ext close --session ext1
+  web ext close --session "$S"
 Output:
   { session, status }
 `,

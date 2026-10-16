@@ -29,11 +29,18 @@ Resolve paths from the current working directory with `<skill-dir>` made
 absolute; don't `cd` into the skill directory. Every example below is written
 as `$WEB …`.
 
+**Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
+`--session`: every `web` command uses that browser and leaves it open. Otherwise
+either run one-shot (`$WEB page tree "$URL"` opens and closes its own browser) or
+start a browser and reuse the generated name:
+`S=$($WEB browser open "$URL" | jq -r .session)` then `--session "$S"`.
+Never invent a fixed session name.
+
 
 ## Phase 1: Setup
 
 ```bash
-$WEB ext launch <path-to-extension-dist> --session ext1 [--cdp-port 9222]
+S=$($WEB ext launch <path-to-extension-dist> [--cdp-port 9222] | jq -r .session)
 ```
 
 Launches a persistent Chromium with the extension loaded, headless unless `--headed`. Output:
@@ -42,7 +49,7 @@ what the manifest declares (sidepanel, popup, options).
 
 **Verify:** `extensionId` is non-null. Exit 1 means the extension did not load:
 check the path has a valid `manifest.json`, that no other Chrome is on the same
-port (`lsof -i :9222`), then `$WEB ext close --session ext1` and retry.
+port (`lsof -i :9222`), then `$WEB ext close --session "$S"` and retry.
 
 ## Phase 2: Open UI
 
@@ -50,9 +57,9 @@ For the side panel, navigate the tab to a real page first, then open it:
 
 ```bash
 playwright-cli -s ext1 goto https://example.com
-$WEB ext open sidepanel --session ext1
-$WEB ext open popup --session ext1      # opens popup as a tab
-$WEB ext open options --session ext1    # opens options page as a tab
+$WEB ext open sidepanel --session "$S"
+$WEB ext open popup --session "$S"      # opens popup as a tab
+$WEB ext open options --session "$S"    # opens options page as a tab
 ```
 
 Output: `{ surface, url, targetId?, note? }`. `sidepanel` needs a content script and
@@ -64,21 +71,21 @@ A surface the manifest lacks exits 2 (USAGE).
 Drive the same browser with `web browser eval/cdp` on the session:
 
 ```bash
-$WEB browser eval "document.title" --session ext1
-$WEB browser eval "document.querySelector('button').click()" --session ext1
-$WEB browser cdp Accessibility.getFullAXTree --session ext1
-$WEB browser screenshot --session ext1
+$WEB browser eval "document.title" --session "$S"
+$WEB browser eval "document.querySelector('button').click()" --session "$S"
+$WEB browser cdp Accessibility.getFullAXTree --session "$S"
+$WEB browser screenshot --session "$S"
 ```
 
 `eval` takes one expression (no `;`, no `return`); for statements use
-`$WEB browser run "async page => {…}" --session ext1`. Further interaction
+`$WEB browser run "async page => {…}" --session "$S"`. Further interaction
 (click, type, snapshots) with `playwright-cli -s ext1 …`, the escape hatch.
 
 ## Cleanup
 
 ```bash
-$WEB ext status --session ext1    # { session, open, extensionId, surfaces }
-$WEB ext close --session ext1     # kills Chrome, removes the profile
+$WEB ext status --session "$S"    # { session, open, extensionId, surfaces }
+$WEB ext close --session "$S"     # kills Chrome, removes the profile
 ```
 
 ## Tips
@@ -86,7 +93,7 @@ $WEB ext close --session ext1     # kills Chrome, removes the profile
 - **React inputs:** assigning `.value` directly is ignored by React's change
   tracking. Use the native setter:
   ```bash
-  $WEB browser eval "(() => { const el = document.querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, 'text'); el.dispatchEvent(new Event('input', { bubbles: true })); return el.value; })()" --session ext1
+  $WEB browser eval "(() => { const el = document.querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, 'text'); el.dispatchEvent(new Event('input', { bubbles: true })); return el.value; })()" --session "$S"
   ```
   Use `HTMLTextAreaElement.prototype` for a `<textarea>`.
 - **Port already in use:** another Chrome is on that port. Run `ext close` first,

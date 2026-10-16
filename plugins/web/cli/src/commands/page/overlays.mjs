@@ -114,7 +114,7 @@ function residualBlockers(driver, session) {
 
 const HELP = `
 Example:
-  web page overlays --session s1 --dismiss --mode thorough
+  web page overlays --session "$S" --dismiss --mode thorough
 Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
   with --dismiss also: applied: [{ id, strategy, ok, error? }], scrollUnlocked, residual: [{ tag, id, ... }]

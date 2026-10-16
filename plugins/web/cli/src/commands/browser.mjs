@@ -12,7 +12,7 @@ import {
 const HELP = {
   OPEN: `
 Example:
-  web browser open https://example.com --session s1 --headed
+  S=$(web browser open https://example.com --headed | jq -r .session)
 Output:
   { session, url, headed, cdpPort? }
 Notes:
@@ -21,7 +21,7 @@ Notes:
 `,
   ATTACH: `
 Example:
-  web browser attach http://127.0.0.1:9222 --session mine
+  S=$(web browser attach http://127.0.0.1:9222 | jq -r .session)
 Output:
   { session, attached }
 Notes:
@@ -37,7 +37,7 @@ Notes:
 `,
   CLOSE: `
 Example:
-  web browser close --session s1
+  web browser close --session "$S"
 Output:
   { session, status }
 Exit codes:
@@ -51,7 +51,7 @@ Output:
 `,
   EVAL: `
 Example:
-  web browser eval "document.title" --session s1
+  web browser eval "document.title" --session "$S"
 Output:
   { result }
 Notes:
@@ -60,7 +60,7 @@ Notes:
 `,
   RUN: `
 Example:
-  web browser run "async page => page.title()" --session s1
+  web browser run "async page => page.title()" --session "$S"
 Output:
   { result }
 Notes:
@@ -69,8 +69,8 @@ Notes:
 `,
   CDP: `
 Example:
-  web browser cdp Page.getLayoutMetrics --session s1
-  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session s1
+  web browser cdp Page.getLayoutMetrics --session "$S"
+  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session "$S"
 Output:
   { result }
 Notes:
@@ -78,7 +78,7 @@ Notes:
 `,
   SHOT: `
 Example:
-  web browser screenshot --full-page --session s1
+  web browser screenshot --full-page --session "$S"
 Output:
   { path }
 Notes:

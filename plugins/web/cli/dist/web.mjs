@@ -3738,7 +3738,7 @@ function artifactDir(outputDir, session, command) {
 var HELP = {
   OPEN: `
 Example:
-  web browser open https://example.com --session s1 --headed
+  S=$(web browser open https://example.com --headed | jq -r .session)
 Output:
   { session, url, headed, cdpPort? }
 Notes:
@@ -3747,7 +3747,7 @@ Notes:
 `,
   ATTACH: `
 Example:
-  web browser attach http://127.0.0.1:9222 --session mine
+  S=$(web browser attach http://127.0.0.1:9222 | jq -r .session)
 Output:
   { session, attached }
 Notes:
@@ -3763,7 +3763,7 @@ Notes:
 `,
   CLOSE: `
 Example:
-  web browser close --session s1
+  web browser close --session "$S"
 Output:
   { session, status }
 Exit codes:
@@ -3777,7 +3777,7 @@ Output:
 `,
   EVAL: `
 Example:
-  web browser eval "document.title" --session s1
+  web browser eval "document.title" --session "$S"
 Output:
   { result }
 Notes:
@@ -3786,7 +3786,7 @@ Notes:
 `,
   RUN: `
 Example:
-  web browser run "async page => page.title()" --session s1
+  web browser run "async page => page.title()" --session "$S"
 Output:
   { result }
 Notes:
@@ -3795,8 +3795,8 @@ Notes:
 `,
   CDP: `
 Example:
-  web browser cdp Page.getLayoutMetrics --session s1
-  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session s1
+  web browser cdp Page.getLayoutMetrics --session "$S"
+  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session "$S"
 Output:
   { result }
 Notes:
@@ -3804,7 +3804,7 @@ Notes:
 `,
   SHOT: `
 Example:
-  web browser screenshot --full-page --session s1
+  web browser screenshot --full-page --session "$S"
 Output:
   { path }
 Notes:
@@ -4634,7 +4634,7 @@ import { dirname, join as join4, resolve as resolve3 } from "node:path";
 var HELP3 = {
   LAUNCH: `
 Example:
-  web ext launch ./dist --session ext1
+  S=$(web ext launch ./dist | jq -r .session)
 Output:
   { session, extensionId, extensionPath, surfaces, cdpPort? }
 Notes:
@@ -4644,7 +4644,7 @@ Notes:
 `,
   OPEN: `
 Example:
-  web ext open sidepanel --session ext1
+  web ext open sidepanel --session "$S"
 Output:
   { surface, url, targetId?, note? }
 Notes:
@@ -4654,7 +4654,7 @@ Notes:
 `,
   STATUS: `
 Example:
-  web ext status --session ext1
+  web ext status --session "$S"
 Output:
   { session, open, extensionId, surfaces }
 Notes:
@@ -4662,7 +4662,7 @@ Notes:
 `,
   CLOSE: `
 Example:
-  web ext close --session ext1
+  web ext close --session "$S"
 Output:
   { session, status }
 `
@@ -5835,7 +5835,7 @@ function residualBlockers(driver, session) {
 }
 var HELP8 = `
 Example:
-  web page overlays --session s1 --dismiss --mode thorough
+  web page overlays --session "$S" --dismiss --mode thorough
 Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
   with --dismiss also: applied: [{ id, strategy, ok, error? }], scrollUnlocked, residual: [{ tag, id, ... }]
@@ -5910,7 +5910,8 @@ Sessions:
   --session <name> reuses an open browser; with a <url> it opens one under that
   name if needed; either way the browser stays open. WEB_SESSION, then
   PLAYWRIGHT_CLI_SESSION, is the default for --session. Session names are global per
-  user and machine. The escape hatch
+  user and machine: never invent a fixed name, reuse the name browser open returns.
+  The escape hatch
   \`playwright-cli -s <session> \u2026\` drives the same browser.
 
 Artifacts:
@@ -5921,8 +5922,9 @@ Requires playwright-cli >= 0.1.20 on PATH (npm install -g @playwright/cli@latest
 
 Typical flows:
   one-shot:  web page tree <url>
-  scripted:  web browser open <url> --session s; web page overlays --session s --dismiss;
-             web page tree --session s; web browser close --session s
+  scripted:  S=$(web browser open <url> | jq -r .session)   # generated name, never a fixed one
+             web page overlays --session "$S" --dismiss; web page tree --session "$S";
+             web browser close --session "$S"
   blocked:   web probe <url>, then re-run with --recipe <recipePath>
              (printed by probe, e.g. .web/probe-<id>/browser-recipe.json)
 `;

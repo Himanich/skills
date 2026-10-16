@@ -31,6 +31,7 @@ npx -y @adobe/web-cli …                      # 3. when published
 - `--session <name>` reuses an open browser; with a `<url>` it opens one under that name if
   needed; either way the browser stays open. `WEB_SESSION`, then
   `PLAYWRIGHT_CLI_SESSION`, is the default for `--session`. Names without a value are generated as `web-<4 hex>`.
+- Never invent a fixed session name (names are global per user and machine, so parallel agents collide): if `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, pass no `--session`; otherwise run one-shot or reuse the generated name with `S=$(web browser open <url> | jq -r .session)`.
 - Session names are global per user and machine, not per working directory. `playwright-cli -s <session> …`
   drives the same browser.
 
@@ -53,9 +54,9 @@ Global options: `--session`, `--format json|text`, `--output`, `--headed`, `--re
 
 ```bash
 # browser: session plumbing
-web browser open https://example.com --session s1
-web browser eval "document.title" --session s1
-web browser close --session s1
+S=$(web browser open https://example.com | jq -r .session)
+web browser eval "document.title" --session "$S"
+web browser close --session "$S"
 
 # probe: find a configuration that gets past bot protection
 web probe https://example.com
@@ -66,11 +67,11 @@ web page tree https://example.com --min-width 600
 web page reduce https://example.com --retries 3
 web page collect metadata https://example.com
 web page langs https://example.com
-web page overlays --session s1 --dismiss --mode thorough
+web page overlays --session "$S" --dismiss --mode thorough
 
 # ext: pilot an unpacked extension
-web ext launch ./dist --session ext1
-web ext open sidepanel --session ext1
+S=$(web ext launch ./dist | jq -r .session)
+web ext open sidepanel --session "$S"
 
 # mask: serve a URL under a fake local HTTPS domain
 sudo env CAROOT="$(mkcert -CAROOT)" web mask wknd.adventures https://example.com

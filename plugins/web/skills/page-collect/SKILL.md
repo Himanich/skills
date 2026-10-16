@@ -28,6 +28,13 @@ Resolve paths from the current working directory with `<skill-dir>` made
 absolute; don't `cd` into the skill directory. Every example below is written
 as `$WEB …`.
 
+**Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
+`--session`: every `web` command uses that browser and leaves it open. Otherwise
+either run one-shot (`$WEB page tree "$URL"` opens and closes its own browser) or
+start a browser and reuse the generated name:
+`S=$($WEB browser open "$URL" | jq -r .session)` then `--session "$S"`.
+Never invent a fixed session name.
+
 ## When to Use
 
 Migrating pages to Edge Delivery Services, auditing a site, or extracting a
@@ -38,7 +45,7 @@ page's icons, metadata, or other assets.
 ```bash
 $WEB page collect <what> "$URL" [--output <dir>]
 $WEB page collect all "$URL" --output ./collected
-$WEB page collect metadata --session s1
+$WEB page collect metadata --session "$S"
 ```
 
 `<what>` is one of:
@@ -101,7 +108,7 @@ replaced with `currentColor` (icons only, not logos); whitespace collapsed.
 ## Chaining
 
 - Blocked (exit 3): `browser-probe`, then `--recipe <recipePath>`.
-- Overlays in the way: `$WEB page overlays --session s1 --dismiss` first.
+- Overlays in the way: `$WEB page overlays --session "$S" --dismiss` first.
 
 ## Escape hatch
 

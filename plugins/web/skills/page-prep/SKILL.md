@@ -30,6 +30,13 @@ Resolve paths from the current working directory with `<skill-dir>` made
 absolute; don't `cd` into the skill directory. Every example below is written
 as `$WEB …`.
 
+**Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
+`--session`: every `web` command uses that browser and leaves it open. Otherwise
+either run one-shot (`$WEB page tree "$URL"` opens and closes its own browser) or
+start a browser and reuse the generated name:
+`S=$($WEB browser open "$URL" | jq -r .session)` then `--session "$S"`.
+Never invent a fixed session name.
+
 
 ## When to Use
 
@@ -40,18 +47,18 @@ overlays, or when the user asks to dismiss cookie banners or popups.
 
 ```bash
 $WEB page overlays "$URL"                         # detect only
-$WEB page overlays --session s1 --dismiss         # thorough (default)
-$WEB page overlays --session s1 --dismiss --mode quick
-$WEB page overlays --session s1 --refresh-db      # refresh the pattern database first
+$WEB page overlays --session "$S" --dismiss         # thorough (default)
+$WEB page overlays --session "$S" --dismiss --mode quick
+$WEB page overlays --session "$S" --refresh-db      # refresh the pattern database first
 ```
 
 Overlays are dismissed in the page of an open session, so open one first:
 
 ```bash
-$WEB browser open "$URL" --session s1
-$WEB page overlays --session s1 --dismiss
-$WEB page tree --session s1                       # or reduce / collect / langs
-$WEB browser close --session s1
+S=$($WEB browser open "$URL" | jq -r .session)
+$WEB page overlays --session "$S" --dismiss
+$WEB page tree --session "$S"                       # or reduce / collect / langs
+$WEB browser close --session "$S"
 ```
 
 ## Mode
@@ -94,10 +101,10 @@ Via the escape hatch on the same browser, in order:
 1. **Escape key**: `playwright-cli -s s1 press Escape`; check if the overlay is gone.
 2. **Close buttons**: click the first matching `[aria-label*="close" i]`,
    `[aria-label*="dismiss" i]`, `.close`, `button:has(svg)`, `button[class*="close"]`.
-3. **Element removal**: `$WEB browser eval "document.querySelector('<selector>')?.remove()" --session s1`.
+3. **Element removal**: `$WEB browser eval "document.querySelector('<selector>')?.remove()" --session "$S"`.
 
 For `thorough` mode also take a viewport screenshot
-(`$WEB browser screenshot --session s1`, no `--full-page`), view it, and confirm no
+(`$WEB browser screenshot --session "$S"`, no `--full-page`), view it, and confirm no
 overlay, banner, modal or backdrop dimming remains. At most 2 retries, then report
 what is left without blocking.
 

@@ -29,6 +29,13 @@ Resolve paths from the current working directory with `<skill-dir>` made
 absolute; don't `cd` into the skill directory. Every example below is written
 as `$WEB …`.
 
+**Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
+`--session`: every `web` command uses that browser and leaves it open. Otherwise
+either run one-shot (`$WEB page tree "$URL"` opens and closes its own browser) or
+start a browser and reuse the generated name:
+`S=$($WEB browser open "$URL" | jq -r .session)` then `--session "$S"`.
+Never invent a fixed session name.
+
 
 ## When to Use
 
@@ -95,7 +102,7 @@ Pass the recipe to any command, or to `browser open`:
 ```bash
 RECIPE=$($WEB probe "$URL" | jq -r .recipePath)
 $WEB page tree "$URL" --recipe "$RECIPE"
-$WEB browser open "$URL" --session s1 --recipe "$RECIPE"
+S=$($WEB browser open "$URL" --recipe "$RECIPE" | jq -r .session)
 ```
 
 The recipe is `{ cliConfig: { browser: { browserName, launchOptions, initScript? } }, persistent }`:

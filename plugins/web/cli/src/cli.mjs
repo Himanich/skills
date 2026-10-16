@@ -24,7 +24,8 @@ Sessions:
   --session <name> reuses an open browser; with a <url> it opens one under that
   name if needed; either way the browser stays open. WEB_SESSION, then
   PLAYWRIGHT_CLI_SESSION, is the default for --session. Session names are global per
-  user and machine. The escape hatch
+  user and machine: never invent a fixed name, reuse the name browser open returns.
+  The escape hatch
   \`playwright-cli -s <session> …\` drives the same browser.
 
 Artifacts:
@@ -35,8 +36,9 @@ Requires playwright-cli >= 0.1.20 on PATH (npm install -g @playwright/cli@latest
 
 Typical flows:
   one-shot:  web page tree <url>
-  scripted:  web browser open <url> --session s; web page overlays --session s --dismiss;
-             web page tree --session s; web browser close --session s
+  scripted:  S=$(web browser open <url> | jq -r .session)   # generated name, never a fixed one
+             web page overlays --session "$S" --dismiss; web page tree --session "$S";
+             web browser close --session "$S"
   blocked:   web probe <url>, then re-run with --recipe <recipePath>
              (printed by probe, e.g. .web/probe-<id>/browser-recipe.json)
 `;
