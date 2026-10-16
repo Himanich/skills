@@ -28,8 +28,8 @@ test('WEB_SESSION env fills --session default', () => {
   assert.equal(program.opts().session, 'from-env');
 });
 
-test('probe and mask print their own help and exit 0', async () => {
-  for (const g of ['probe', 'mask']) {
+test('mask prints its own help and exit 0', async () => {
+  for (const g of ['mask']) {
     const stdout = sink();
     const code = await runCli(['node', 'web', g], { stdout, stderr: sink(), env: {} });
     assert.equal(code, 0);

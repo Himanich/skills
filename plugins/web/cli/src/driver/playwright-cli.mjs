@@ -193,8 +193,16 @@ export function createDriver({
       return evaluate(
         session,
         '({ title: document.title, url: location.href, '
-          + 'bodyLength: document.body ? document.body.innerText.length : 0 })',
+          + 'bodyLength: document.body ? document.body.innerText.length : 0, '
+          + "status: performance.getEntriesByType('navigation')[0]?.responseStatus ?? 0, "
+          + "hasMainContent: !!document.querySelector('main, article, [role=main]') })",
       );
+    },
+    requests(session) {
+      return call([`-s=${session}`, 'requests', '--static', '--json']).result;
+    },
+    responseHeaders(session, index) {
+      return call([`-s=${session}`, 'response-headers', String(index), '--json']).result;
     },
   };
 }

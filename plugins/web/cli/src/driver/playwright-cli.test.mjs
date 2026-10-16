@@ -173,11 +173,24 @@ test('screenshot builds selector, filename and full-page args', () => {
   assert.deepEqual(calls[0], ['-s=s', 'screenshot', 'h1', '--filename=/o/a.png', '--full-page']);
 });
 
-test('pageHealth returns title, bodyLength and url', () => {
-  const { driver } = setup(() => JSON.stringify({
-    result: JSON.stringify({ title: 'T', bodyLength: 5, url: 'u' }),
-  }));
-  assert.deepEqual(driver.pageHealth('s'), { title: 'T', bodyLength: 5, url: 'u' });
+test('pageHealth returns title, bodyLength, url, status and hasMainContent', () => {
+  const health = { title: 'T', bodyLength: 5, url: 'u', status: 200, hasMainContent: true };
+  const { driver, calls } = setup(() => JSON.stringify({ result: JSON.stringify(health) }));
+  assert.deepEqual(driver.pageHealth('s'), health);
+  assert.match(calls[0][2], /responseStatus/);
+  assert.match(calls[0][2], /main, article, \[role=main\]/);
+});
+
+test('requests returns the static request listing text', () => {
+  const { driver, calls } = setup(() => '{"result":"1. [GET] http://x/ => [200] OK"}');
+  assert.equal(driver.requests('s'), '1. [GET] http://x/ => [200] OK');
+  assert.deepEqual(calls[0], ['-s=s', 'requests', '--static', '--json']);
+});
+
+test('responseHeaders returns header text for a request index', () => {
+  const { driver, calls } = setup(() => '{"result":"server: nginx\\ncf-ray: abc"}');
+  assert.equal(driver.responseHeaders('s', '2'), 'server: nginx\ncf-ray: abc');
+  assert.deepEqual(calls[0], ['-s=s', 'response-headers', '2', '--json']);
 });
 
 test('list maps browsers', () => {

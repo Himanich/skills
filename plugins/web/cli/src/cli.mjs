@@ -2,10 +2,10 @@ import { Command, CommanderError } from 'commander';
 import { CliError, EXIT } from './errors.mjs';
 import { fail } from './output.mjs';
 import { registerBrowser } from '#src/commands/browser.mjs';
+import { registerProbe } from '#src/commands/probe.mjs';
 
 const GROUPS = {
   page: 'analyze a page: tree, reduce, collect, langs, overlays',
-  probe: 'detect bot/CDN protection and produce a browser recipe',
   ext: 'pilot a Chrome extension: launch, open, status, close',
   mask: 'serve a target URL under a fake local HTTPS domain',
 };
@@ -39,9 +39,10 @@ export function createProgram(deps = {}) {
     .showSuggestionAfterError()
     .exitOverride();
   registerBrowser(program, deps);
+  registerProbe(program, deps);
   for (const [name, description] of Object.entries(GROUPS)) {
     const group = program.command(name).description(description);
-    if (name === 'probe' || name === 'mask') group.action(() => group.help());
+    if (name === 'mask') group.action(() => group.help());
   }
   deps.registerTestCommands?.(program, deps);
   return program;
