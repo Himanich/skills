@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Skill evals: lowest model per skill</title>
+<style>
+  body { font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #f4f6fb; margin: 0; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 48px; }
+  h1 { font-size: 24px; margin: 0 0 4px; } p { margin: 4px 0 16px; color: #55627a; }
+  table { border-collapse: separate; border-spacing: 4px; width: 100%; }
+  th, td { padding: 10px 12px; text-align: center; border-radius: 6px; background: #fff; }
+  thead th { background: none; font-weight: 600; } th small { display: block; font-weight: 400; color: #55627a; }
+  tbody th { text-align: left; background: none; font-weight: 600; }
+  td b { display: block; font-size: 17px; } td small { display: block; color: #55627a; font-size: 12px; }
+  .ok { background: #dff5e7; } .near { background: #fdf0d2; } .bad { background: #fbdcd8; } .none { color: #99a; }
+  small.cost { color: #3b5bb5; } .flaky { color: #b4561d; font-weight: 600; } .headline { font-size: 16px; color: #172033; background: #fff; padding: 12px 16px; border-radius: 8px; }
+  h2 { font-size: 20px; margin: 40px 0 4px; } table.cmp tbody th small { font-weight: 400; }
+  .delta { background: #fff; } .verdict.same { background: #eef0f4; } .verdict.adds { background: #e0eafd; } .verdict.hurts { background: #fde7d3; } .verdict.none { background: #fbdcd8; }
+  .floor { background: #e8eefc; } .legend span { display: inline-block; padding: 2px 10px; border-radius: 4px; margin-right: 8px; font-size: 13px; }
+  footer a { color: #2157d6; }
+  footer { margin-top: 20px; color: #55627a; font-size: 13px; }
+</style></head><body><main>
+<h1>Which model does each skill need?</h1>
+<p>Share of runs that pass within the skill's time budget, with average run time, cost per run and stability. Every case runs several times (usually three) per model; a case is <span class="flaky">flaky</span> when its repeats disagree. The last column is the lowest-tier model that meets the skill's floor.</p>
+<p class="headline">Using the lowest sufficient model for each skill costs about <b>8%</b> of always using opus-5.5-low (average cost per run, summed over 8 skills).</p>
+<p class="legend"><span class="ok">meets the floor</span><span class="near">within 20 points</span><span class="bad">well below</span><span class="none">not run</span></p>
+<table><thead><tr><th>Skill</th><th>gemma-4-26b-cf</th><th>qwen3.8-27b-cf</th><th>haiku-5.5-low</th><th>gpt-6-sol-low</th><th>sonnet-5.5-low<small>baseline</small></th><th>opus-5.5-low</th><th>Lowest model meeting the floor</th></tr></thead>
+<tbody>
+<tr><th>browser-probe</th><td class="bad"><b>50%</b><small>6/12 · 104 s</small><small class="cost">$0.0054/run</small><small><span class="flaky">2 of 4 cases flaky</span></small></td><td class="bad"><b>42%</b><small>5/12 · 145 s</small><small class="cost">$0.048/run</small><small><span class="flaky">3 of 4 cases flaky</span></small></td><td class="ok"><b>100%</b><small>24/24 · 28 s</small><small class="cost">$0.0021/run</small><small>stable</small></td><td class="ok"><b>92%</b><small>11/12 · 26 s</small><small class="cost">$0.023/run</small><small><span class="flaky">1 of 4 cases flaky</span></small></td><td class="ok"><b>100%</b><small>12/12 · 31 s</small><small class="cost">$0.035/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>12/12 · 35 s</small><small class="cost">$0.059/run</small><small>stable</small></td><td class="floor"><b>haiku-5.5-low</b><small class="cost">$0.0021/run, 28× cheaper than opus-5.5-low</small></td></tr>
+<tr><th>cdp-connect</th><td class="ok"><b>94%</b><small>17/18 · 51 s</small><small class="cost">$0.0028/run</small><small><span class="flaky">1 of 6 cases flaky</span></small></td><td class="ok"><b>94%</b><small>17/18 · 56 s</small><small class="cost">$0.013/run</small><small><span class="flaky">1 of 6 cases flaky</span></small></td><td class="ok"><b>100%</b><small>18/18 · 12 s</small><small class="cost">$0.0010/run</small><small>stable</small></td><td class="ok"><b>94%</b><small>17/18 · 16 s</small><small class="cost">$0.014/run</small><small><span class="flaky">1 of 6 cases flaky</span></small></td><td class="ok"><b>100%</b><small>18/18 · 11 s</small><small class="cost">$0.019/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>18/18 · 13 s</small><small class="cost">$0.036/run</small><small>stable</small></td><td class="floor"><b>gemma-4-26b-cf</b><small class="cost">$0.0028/run, 13× cheaper than opus-5.5-low</small></td></tr>
+<tr><th>cdp-ext-pilot</th><td class="ok"><b>100%</b><small>9/9 · 57 s</small><small class="cost">$0.0052/run</small><small>stable</small></td><td class="near"><b>89%</b><small>8/9 · 98 s</small><small class="cost">$0.021/run</small><small><span class="flaky">1 of 3 cases flaky</span></small></td><td class="ok"><b>100%</b><small>9/9 · 11 s</small><small class="cost">$0.0015/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 15 s</small><small class="cost">$0.020/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 13 s</small><small class="cost">$0.023/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 15 s</small><small class="cost">$0.041/run</small><small>stable</small></td><td class="floor"><b>gemma-4-26b-cf</b><small class="cost">$0.0052/run, 7.8× cheaper than opus-5.5-low</small></td></tr>
+<tr><th>page-collect</th><td class="near"><b>72%</b><small>13/18 · 38 s</small><small class="cost">$0.0022/run</small><small><span class="flaky">1 of 6 cases flaky</span></small></td><td class="near"><b>72%</b><small>13/18 · 89 s</small><small class="cost">$0.018/run</small><small><span class="flaky">1 of 6 cases flaky</span></small></td><td class="near"><b>78%</b><small>14/18 · 13 s</small><small class="cost">$0.0015/run</small><small><span class="flaky">3 of 6 cases flaky</span></small></td><td class="ok"><b>100%</b><small>18/18 · 13 s</small><small class="cost">$0.020/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>18/18 · 11 s</small><small class="cost">$0.023/run</small><small>stable</small></td><td class="ok"><b>94%</b><small>17/18 · 14 s</small><small class="cost">$0.040/run</small><small><span class="flaky">1 of 6 cases flaky</span></small></td><td class="floor"><b>gpt-6-sol-low</b><small class="cost">$0.020/run, 2.0× cheaper than opus-5.5-low</small></td></tr>
+<tr><th>page-langs</th><td class="ok"><b>95%</b><small>20/21 · 70 s</small><small class="cost">$0.0051/run</small><small><span class="flaky">1 of 7 cases flaky</span></small></td><td class="near"><b>76%</b><small>16/21 · 75 s</small><small class="cost">$0.021/run</small><small><span class="flaky">4 of 7 cases flaky</span></small></td><td class="ok"><b>100%</b><small>21/21 · 9 s</small><small class="cost">$0.0013/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>21/21 · 14 s</small><small class="cost">$0.020/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>21/21 · 9 s</small><small class="cost">$0.018/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>21/21 · 12 s</small><small class="cost">$0.038/run</small><small>stable</small></td><td class="floor"><b>gemma-4-26b-cf</b><small class="cost">$0.0051/run, 7.5× cheaper than opus-5.5-low</small></td></tr>
+<tr><th>page-prep</th><td class="bad"><b>22%</b><small>2/9 · 93 s</small><small class="cost">$0.012/run</small><small><span class="flaky">1 of 3 cases flaky</span></small></td><td class="bad"><b>33%</b><small>3/9 · 116 s</small><small class="cost">$0.055/run</small><small><span class="flaky">2 of 3 cases flaky</span></small></td><td class="ok"><b>100%</b><small>9/9 · 31 s</small><small class="cost">$0.0072/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 27 s</small><small class="cost">$0.055/run</small><small>stable</small></td><td class="ok"><b>93%</b><small>25/27 · 33 s</small><small class="cost">$0.091/run</small><small><span class="flaky">1 of 3 cases flaky</span></small></td><td class="ok"><b>100%</b><small>9/9 · 39 s</small><small class="cost">$0.236/run</small><small>stable</small></td><td class="floor"><b>haiku-5.5-low</b><small class="cost">$0.0072/run, 33× cheaper than opus-5.5-low</small></td></tr>
+<tr><th>page-reduce</th><td class="bad"><b>33%</b><small>3/9 · 112 s</small><small class="cost">$0.0060/run</small><small>stable</small></td><td class="bad"><b>33%</b><small>3/9 · 116 s</small><small class="cost">$0.025/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 35 s</small><small class="cost">$0.0054/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 35 s</small><small class="cost">$0.050/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 23 s</small><small class="cost">$0.061/run</small><small>stable</small></td><td class="near"><b>78%</b><small>7/9 · 42 s</small><small class="cost">$0.126/run</small><small><span class="flaky">2 of 3 cases flaky</span></small></td><td class="floor"><b>haiku-5.5-low</b><small class="cost">$0.0054/run, 23× cheaper than opus-5.5-low (which misses the floor)</small></td></tr>
+<tr><th>page-tree</th><td class="bad"><b>44%</b><small>4/9 · 112 s</small><small class="cost">$0.0067/run</small><small><span class="flaky">3 of 3 cases flaky</span></small></td><td class="near"><b>78%</b><small>7/9 · 108 s</small><small class="cost">$0.026/run</small><small><span class="flaky">2 of 3 cases flaky</span></small></td><td class="ok"><b>100%</b><small>9/9 · 16 s</small><small class="cost">$0.0017/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 20 s</small><small class="cost">$0.021/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 13 s</small><small class="cost">$0.027/run</small><small>stable</small></td><td class="ok"><b>100%</b><small>9/9 · 17 s</small><small class="cost">$0.053/run</small><small>stable</small></td><td class="floor"><b>haiku-5.5-low</b><small class="cost">$0.0017/run, 31× cheaper than opus-5.5-low</small></td></tr>
+</tbody></table>
+
+<h2>Is the skill needed at all?</h2>
+<p>The same cases without the skill: Pi loads none, the agent works in an empty folder with no skills on disk, and the prompt only adds the output format. Only two models are run this way. Without the skill, <b>7 of 14</b> skill and model pairs still meet the floor.</p>
+<table class="cmp"><thead><tr><th>Skill and model</th><th>With the skill</th><th>Without the skill</th><th>Time and cost change without the skill</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><th>browser-probe<small>haiku-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>24/24 · 28 s · $0.0021</small></td>
+<td class="bad"><b>58%</b><small>7/12 · 63 s · $0.0032</small></td>
+<td class="delta"><b>+35 s</b><small>+$0.0011 per run</small></td>
+<td class="verdict adds"><b>skill adds value</b><small>Clearly better with the skill</small></td></tr>
+<tr><th>browser-probe<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>12/12 · 31 s · $0.035</small></td>
+<td class="ok"><b>100%</b><small>12/12 · 24 s · $0.025</small></td>
+<td class="delta"><b>−7 s</b><small>−$0.0096 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>cdp-connect<small>haiku-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>18/18 · 12 s · $0.0010</small></td>
+<td class="near"><b>89%</b><small>16/18 · 12 s · $0.0013</small></td>
+<td class="delta"><b>+0 s</b><small>+$0.0002 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>cdp-connect<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>18/18 · 11 s · $0.019</small></td>
+<td class="ok"><b>94%</b><small>17/18 · 10 s · $0.014</small></td>
+<td class="delta"><b>−1 s</b><small>−$0.0045 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>page-collect<small>haiku-5.5-low</small></th>
+<td class="near"><b>78%</b><small>14/18 · 13 s · $0.0015</small></td>
+<td class="ok"><b>100%</b><small>18/18 · 29 s · $0.0047</small></td>
+<td class="delta"><b>+16 s</b><small>+$0.0032 per run</small></td>
+<td class="verdict hurts"><b>skill not helping</b><small>Clearly better without the skill</small></td></tr>
+<tr><th>page-collect<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>18/18 · 11 s · $0.023</small></td>
+<td class="ok"><b>100%</b><small>18/18 · 18 s · $0.039</small></td>
+<td class="delta"><b>+7 s</b><small>+$0.017 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>page-langs<small>haiku-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>18/18 · 9 s · $0.0013</small></td>
+<td class="ok"><b>100%</b><small>18/18 · 13 s · $0.0017</small></td>
+<td class="delta"><b>+3 s</b><small>+$0.0003 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>page-langs<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>18/18 · 9 s · $0.018</small></td>
+<td class="near"><b>83%</b><small>15/18 · 10 s · $0.016</small></td>
+<td class="delta"><b>+0 s</b><small>−$0.0023 per run</small></td>
+<td class="verdict adds"><b>skill adds value</b><small>Clearly better with the skill</small></td></tr>
+<tr><th>page-prep<small>haiku-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>9/9 · 31 s · $0.0072</small></td>
+<td class="ok"><b>100%</b><small>9/9 · 25 s · $0.0017</small></td>
+<td class="delta"><b>−6 s</b><small>−$0.0055 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>page-prep<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>93%</b><small>25/27 · 33 s · $0.091</small></td>
+<td class="ok"><b>100%</b><small>9/9 · 12 s · $0.013</small></td>
+<td class="delta"><b>−21 s</b><small>−$0.078 per run</small></td>
+<td class="verdict same"><b>no clear difference</b><small>Similar pass rates with and without</small></td></tr>
+<tr><th>page-reduce<small>haiku-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>6/6 · 44 s · $0.0073</small></td>
+<td class="near"><b>83%</b><small>5/6 · 29 s · $0.0044</small></td>
+<td class="delta"><b>−15 s</b><small>−$0.0029 per run</small></td>
+<td class="verdict adds"><b>skill adds value</b><small>Clearly better with the skill</small></td></tr>
+<tr><th>page-reduce<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>6/6 · 28 s · $0.077</small></td>
+<td class="bad"><b>50%</b><small>3/6 · 19 s · $0.045</small></td>
+<td class="delta"><b>−9 s</b><small>−$0.033 per run</small></td>
+<td class="verdict adds"><b>skill adds value</b><small>Clearly better with the skill</small></td></tr>
+<tr><th>page-tree<small>haiku-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>9/9 · 16 s · $0.0017</small></td>
+<td class="bad"><b>44%</b><small>4/9 · 38 s · $0.0035</small></td>
+<td class="delta"><b>+22 s</b><small>+$0.0018 per run</small></td>
+<td class="verdict adds"><b>skill adds value</b><small>Clearly better with the skill</small></td></tr>
+<tr><th>page-tree<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>9/9 · 13 s · $0.027</small></td>
+<td class="near"><b>78%</b><small>7/9 · 21 s · $0.037</small></td>
+<td class="delta"><b>+8 s</b><small>+$0.0093 per run</small></td>
+<td class="verdict adds"><b>skill adds value</b><small>Clearly better with the skill</small></td></tr>
+</tbody></table>
+<p class="legend" style="margin-top:10px"><span class="ok">meets the floor</span><span class="near">within 20 points</span><span class="bad">well below</span></p>
+<footer>8 skills, 6 models, 660 runs, generated 2026-10-08. Floor: pass rate and time budget per skill (skills/&lt;skill&gt;/skill.yaml), usually 90% within 120 s.
+Models run in tier order; the baseline must meet the floor first. Cost is the average per run at the list prices configured in Pi (per-token estimates, not an invoice). Small samples (9 to 27 runs per cell): gaps of a few points are noise.
+How this was measured: <a href="methodology.html">methodology and stack</a>. Source and per-case results: <a href="https://github.com/aem-growth-adoption/skill-evals">GitHub repo</a>.</footer>
+</main></body></html>
