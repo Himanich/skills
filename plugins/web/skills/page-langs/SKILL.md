@@ -18,16 +18,16 @@ Detect all languages used on a webpage, declared and in the body text, with
 ## Requirements
 
 Node 22+ and `playwright-cli` >= 0.1.20 on PATH (`playwright-cli --version`).
-Resolve the `web` CLI once and call it `WEB`, first match wins:
+Locate the `web` CLI once:
 
-1. `web` on PATH
-2. `node "<skill-dir>/../../cli/dist/web.mjs"`, where `<skill-dir>` is the
-   directory containing this SKILL.md (plugin layout)
-3. `npx -y @adobe/web-cli` (when published)
+```bash
+# <skill-dir> is the directory containing this SKILL.md
+WEB=$(command -v web || echo "node <skill-dir>/../../cli/dist/web.mjs")
+```
 
-Resolve paths from the current working directory with `<skill-dir>` made
-absolute; don't `cd` into the skill directory. Every example below is written
-as `$WEB …`.
+then run `$WEB …`; it prints exactly one JSON document on stdout,
+so `$WEB … > file.json` is safe.
+Fallback when published: `npx -y @adobe/web-cli`. Use an absolute `<skill-dir>`; don't `cd` into it.
 
 **Sessions.** If `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, do not pass
 `--session`: every `web` command uses that browser and leaves it open. Otherwise

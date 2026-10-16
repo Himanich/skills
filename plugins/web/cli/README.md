@@ -15,67 +15,16 @@ of `playwright-cli` in the plugin (`src/driver/playwright-cli.mjs`).
 
 ## Install / run
 
-Resolve `WEB` once, first match wins:
+Locate `web` once:
 
 ```bash
-web …                                        # 1. on PATH
-node "<plugin-dir>/cli/dist/web.mjs" …       # 2. plugin layout: <skill-dir>/../../cli/dist/web.mjs
-npx -y @adobe/web-cli …                      # 3. when published
+# <skill-dir> is a skill directory under <plugin-dir>/skills/
+WEB=$(command -v web || echo "node <skill-dir>/../../cli/dist/web.mjs")
 ```
 
-`dist/web.mjs` is a committed single-file bundle.
-
-## Sessions
-
-- A `<url>` with no `--session` opens a browser for that one command and closes it.
-- `--session <name>` reuses an open browser; with a `<url>` it opens one under that name if
-  needed; either way the browser stays open. `WEB_SESSION`, then
-  `PLAYWRIGHT_CLI_SESSION`, is the default for `--session`. Names without a value are generated as `web-<4 hex>`.
-- Never invent a fixed session name (names are global per user and machine, so parallel agents collide): if `WEB_SESSION` or `PLAYWRIGHT_CLI_SESSION` is set, pass no `--session`; otherwise run one-shot or reuse the generated name with `S=$(web browser open <url> | jq -r .session)`.
-- Session names are global per user and machine, not per working directory. `playwright-cli -s <session> …`
-  drives the same browser.
-
-## Output contract
-
-stdout is one JSON document (or one text block with `--format text`); stderr carries
-progress and logs. `WEB_DEBUG=1` echoes every playwright-cli call to stderr.
-Errors: `{ "error": { "code", "message", "hint" } }`. Main codes: `USAGE`,
-`NO_SESSION`, `SESSION_EXISTS`, `PLAYWRIGHT_CLI`, `BLOCKED`, `TIMEOUT`,
-`UNSUPPORTED`, `EMPTY_RESULT`.
-
-Exit codes: `0` ok · `1` failure · `2` usage or environment · `3` blocked by bot protection.
-
-Artifacts are written under `--output` (default `./.web`) in a per-session directory `<session>-<command>/` with stable file names
-(`metadata.json`, `collection.json`, `probe-report.json`, `browser-recipe.json`); `web probe` prints `recipePath`.
-
-Global options: `--session`, `--format json|text`, `--output`, `--headed`, `--recipe`.
-
-## Examples
-
-```bash
-# browser: session plumbing
-S=$(web browser open https://example.com | jq -r .session)
-web browser eval "document.title" --session "$S"
-web browser close --session "$S"
-
-# probe: find a configuration that gets past bot protection
-web probe https://example.com
-web page tree https://example.com --recipe <recipePath>   # printed by probe, e.g. .web/probe-<id>/browser-recipe.json
-
-# page: analyze
-web page tree https://example.com --min-width 600
-web page reduce https://example.com --retries 3
-web page collect metadata https://example.com
-web page langs https://example.com
-web page overlays --session "$S" --dismiss --mode thorough
-
-# ext: pilot an unpacked extension
-S=$(web ext launch ./dist | jq -r .session)
-web ext open sidepanel --session "$S"
-
-# mask: serve a URL under a fake local HTTPS domain
-sudo env CAROOT="$(mkcert -CAROOT)" web mask wknd.adventures https://example.com
-```
+then run `$WEB …`; it prints exactly one JSON document on stdout,
+so `$WEB … > file.json` is safe.
+Fallback when published: `npx -y @adobe/web-cli …`.
 
 `web --help`, `web <group> --help` and `web <group> <command> --help` list every
 option, output shape and exit code.

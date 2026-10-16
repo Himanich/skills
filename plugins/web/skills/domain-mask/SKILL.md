@@ -19,13 +19,16 @@ Trusted certificate via mkcert, no browser warnings.
 ## Requirements
 
 - Node 22+, mkcert (`brew install mkcert && mkcert -install`), sudo (port 443 and `/etc/hosts`)
-- The `web` CLI, resolved once as `WEB`, first match wins: (1) `web` on PATH;
-  (2) `node "<skill-dir>/../../cli/dist/web.mjs"`, where `<skill-dir>` is the
-  directory containing this SKILL.md (plugin layout); (3) `npx -y @adobe/web-cli`
-  (when published). `playwright-cli` is not needed for this command.
+- The `web` CLI (`playwright-cli` is not needed for this command). Locate it once:
 
-Resolve paths from the current working directory with `<skill-dir>` made
-absolute; don't `cd` into the skill directory.
+```bash
+# <skill-dir> is the directory containing this SKILL.md
+WEB=$(command -v web || echo "node <skill-dir>/../../cli/dist/web.mjs")
+```
+
+then run `$WEB …`; it prints exactly one JSON document on stdout,
+so `$WEB … > file.json` is safe.
+Fallback when published: `npx -y @adobe/web-cli`. Use an absolute `<skill-dir>`; don't `cd` into it.
 
 ## Workflow
 
