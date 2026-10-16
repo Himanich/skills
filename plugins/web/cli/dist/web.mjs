@@ -4529,7 +4529,8 @@ Output:
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
   <output>/probe-probe-report.json and probe-probe-recipe.json; pass the recipe to
-  other commands with --recipe. Progress goes to stderr.
+  other commands with --recipe. Progress goes to stderr. Always opens its own browsers
+  (it compares configurations): --session and --recipe are rejected; --headed is honoured.
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
 `;
@@ -4584,10 +4585,22 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
 function registerProbe(program2, deps) {
   program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action(async (url, _opts, command) => {
     const { opts, driver, print } = createContext(command, deps);
+    if (opts.session || opts.recipe) {
+      throw new CliError(
+        "USAGE",
+        "probe launches its own browsers; --session and --recipe are not supported",
+        { hint: "run: web probe <url> [--headed] [--output <dir>]" }
+      );
+    }
     const stderr = deps.stderr ?? process.stderr;
     const log = (msg) => stderr.write(`${msg}
 `);
-    const { report, recipePath } = await runProbe(driver, { url, outputDir: opts.output, log });
+    const { report, recipePath } = await runProbe(driver, {
+      url,
+      outputDir: opts.output,
+      headed: opts.headed,
+      log
+    });
     if (report.firstSuccess === null) {
       throw new CliError("BLOCKED", "all probe steps were blocked", {
         hint: "see report.steps for per-step health; the site may require a persistent profile or manual login"
@@ -5748,20 +5761,26 @@ function detectOverlays(driver, session, patterns) {
 function stepCode(step) {
   if (step.action === "click") {
     const sel = JSON.stringify(step.selector);
-    return `await page.locator(${sel}).first().click({ timeout: 2000 }).catch(() => {});`;
+    return `{ const l = page.locator(${sel}).first(); if ((await l.count()) === 0) { skipped++; } else { await l.click({ timeout: 2000 }); clicked++; } }`;
   }
   return `await page.waitForTimeout(${Number(step.ms)});`;
 }
-function runDismissSteps(driver, session, overlay) {
-  const body = overlay.dismiss.map(stepCode).join("\n");
-  try {
-    driver.run(session, { code: `async page => {
+function dismissCode(steps) {
+  const body = steps.map(stepCode).join("\n");
+  return `async page => {
+let clicked = 0, skipped = 0;
 ${body}
-return true;
-}` });
-    return { id: overlay.id, strategy: "dismiss", ok: true };
-  } catch {
-    return { id: overlay.id, strategy: "dismiss", ok: false };
+return { clicked, skipped };
+}`;
+}
+function runDismissSteps(driver, session, overlay) {
+  const base = { id: overlay.id, strategy: "dismiss" };
+  try {
+    const result = parseMaybe(driver.run(session, { code: dismissCode(overlay.dismiss) }));
+    if (result?.clicked > 0) return { ...base, ok: true };
+    return { ...base, ok: false, error: "no dismiss selector matched" };
+  } catch (err) {
+    return { ...base, ok: false, error: err.message };
   }
 }
 function hideOverlays(driver, session, report, overlays) {
@@ -5772,7 +5791,8 @@ function hideOverlays(driver, session, report, overlays) {
 function dismissThorough(driver, session, report) {
   const hasSteps = (o) => o.dismiss?.length > 0;
   const dismissed = report.overlays.filter(hasSteps).map((o) => runDismissSteps(driver, session, o));
-  const toHide = report.overlays.filter((o) => !hasSteps(o));
+  const failed = new Set(dismissed.filter((d) => !d.ok).map((d) => d.id));
+  const toHide = report.overlays.filter((o) => !hasSteps(o) || failed.has(o.id));
   return [...dismissed, ...hideOverlays(driver, session, report, toHide)];
 }
 function dismissOverlays(driver, session, report, { mode }) {
@@ -5791,11 +5811,11 @@ Example:
   web page overlays --session s1 --dismiss --mode thorough
 Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
-  with --dismiss also: applied: [{ id, strategy: hide|dismiss, ok }], residual: [{ tag, id, ... }]
+  with --dismiss also: applied: [{ id, strategy, ok, error? }], residual: [{ tag, id, ... }]
 Notes:
   --dismiss quick hides every overlay with CSS. thorough (default) clicks the CMP's dismiss steps
-  and hides overlays that have none; scroll lock is fixed in both. residual[] lists fixed
-  high-z-index elements still covering the viewport: check it is empty.
+  and hides overlays that have none or whose dismiss failed; scroll lock is fixed in both.
+  residual[] lists fixed high-z-index elements still covering the viewport: check it is empty.
 `;
 function registerOverlays(group, deps) {
   group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").addHelpText("after", HELP8).option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "thorough").option("--refresh-db", "refresh the overlay pattern database first").action((url, opts, command) => {
@@ -5844,13 +5864,6 @@ function registerPage(program2, deps) {
 }
 
 // src/cli.mjs
-var USAGE_ERRORS = /* @__PURE__ */ new Set([
-  "commander.unknownOption",
-  "commander.missingArgument",
-  "commander.excessArguments",
-  "commander.unknownCommand",
-  "commander.invalidArgument"
-]);
 var ROOT_HELP = `
 Output contract:
   stdout is one JSON document (or one text block with --format text); stderr carries
@@ -5905,12 +5918,9 @@ async function runCli(argv, deps = {}) {
     if (err instanceof CommanderError) {
       const help = err.code === "commander.helpDisplayed" || err.code === "commander.help";
       if (help || err.code === "commander.version") return EXIT.OK;
-      if (USAGE_ERRORS.has(err.code)) {
-        const message = err.message.replace(/^error: /, "").trimEnd();
-        const usage = new CliError("USAGE", message, { hint: "run: web <command> --help" });
-        return fail(usage, { stdout, stderr });
-      }
-      return err.exitCode || EXIT.USAGE;
+      const message = err.message.replace(/^error: /, "").trimEnd();
+      const usage = new CliError("USAGE", message, { hint: "run: web <command> --help" });
+      return fail(usage, { stdout, stderr });
     }
     const wrapped = err instanceof Error ? err : new CliError("INTERNAL", String(err));
     return fail(wrapped, { stdout, stderr });
