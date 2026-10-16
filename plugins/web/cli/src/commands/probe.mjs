@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
@@ -185,7 +186,7 @@ export function runProbe(driver, { url, outputDir, log = () => {} }) {
   if (success.stepDef.stealth) {
     const stealthPath = artifactPath(outputDir, 'probe', 'probe', 'stealth-init.js');
     writeFileSync(stealthPath, loadBundle('stealth-init.js'));
-    browser.initScript = [stealthPath];
+    browser.initScript = [resolve(stealthPath)];
   }
   const recipe = {
     cliConfig: { browser },

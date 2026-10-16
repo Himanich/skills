@@ -3424,7 +3424,7 @@ import { existsSync } from "node:fs";
 
 // src/driver/playwright-cli.mjs
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 // src/driver/exec.mjs
 import { spawnSync } from "node:child_process";
@@ -3537,7 +3537,7 @@ function createDriver({
     if (cdpPort) {
       launchOptions.args = [...launchOptions.args ?? [], `--remote-debugging-port=${cdpPort}`];
     }
-    const initScript = [...config.initScript ?? [], ...initScripts];
+    const initScript = [...config.initScript ?? [], ...initScripts].map((p) => resolve(p));
     return { browser: { ...config, launchOptions, initScript } };
   }
   function open2({ session, url, headed, config, cdpPort, persistent, initScripts = [] }) {
@@ -3912,6 +3912,7 @@ function registerBrowser(program2, deps) {
 }
 
 // src/commands/probe.mjs
+import { resolve as resolve2 } from "node:path";
 import { mkdirSync as mkdirSync2, rmSync as rmSync2, writeFileSync as writeFileSync2 } from "node:fs";
 
 // inline:inline-bundles
@@ -4558,7 +4559,7 @@ function runProbe(driver, { url, outputDir, log = () => {
   if (success.stepDef.stealth) {
     const stealthPath = artifactPath(outputDir, "probe", "probe", "stealth-init.js");
     writeFileSync2(stealthPath, loadBundle("stealth-init.js"));
-    browser.initScript = [stealthPath];
+    browser.initScript = [resolve2(stealthPath)];
   }
   const recipe = {
     cliConfig: { browser },
@@ -4585,7 +4586,7 @@ function registerProbe(program2, deps) {
 
 // src/commands/ext.mjs
 import { existsSync as existsSync2, mkdirSync as mkdirSync3, readFileSync as readFileSync2, statSync, unlinkSync, writeFileSync as writeFileSync3 } from "node:fs";
-import { dirname, join as join3, resolve } from "node:path";
+import { dirname, join as join3, resolve as resolve3 } from "node:path";
 var HELP3 = {
   LAUNCH: `
 Example:
@@ -4737,7 +4738,7 @@ function parseSessionFile(file) {
 }
 function launch(ctx, distDir) {
   const { opts, driver, print } = ctx;
-  const abs = resolve(distDir);
+  const abs = resolve3(distDir);
   const surfaces = availableSurfaces(readManifest(abs));
   const session = opts.session ?? generateSessionName();
   const { cdpPort } = opts;
@@ -4930,9 +4931,9 @@ async function startMask({
       { key: readFileSync3(keyFile), cert: readFileSync3(certFile) },
       makeProxy({ target, displayDomain, log })
     );
-    await new Promise((resolve2, reject) => {
+    await new Promise((resolve4, reject) => {
       server.once("error", reject);
-      server.listen(port, resolve2);
+      server.listen(port, resolve4);
     });
   } catch (err) {
     removeHostsEntry(hostsFile, entry, log);
@@ -4944,8 +4945,8 @@ async function startMask({
   log(`${url} -> ${target.origin}`);
   const stop = async () => {
     log("Shutting down...");
-    await new Promise((resolve2) => {
-      server.close(resolve2);
+    await new Promise((resolve4) => {
+      server.close(resolve4);
       server.closeAllConnections();
     });
     removeHostsEntry(hostsFile, entry, log);
@@ -4958,12 +4959,12 @@ async function startMask({
   return { url, certDir, stop };
 }
 function waitForSignal(stop) {
-  return new Promise((resolve2) => {
+  return new Promise((resolve4) => {
     const handler = async () => {
       process.off("SIGINT", handler);
       process.off("SIGTERM", handler);
       await stop();
-      resolve2();
+      resolve4();
     };
     process.on("SIGINT", handler);
     process.on("SIGTERM", handler);

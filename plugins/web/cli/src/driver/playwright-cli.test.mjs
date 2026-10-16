@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { createDriver } from './playwright-cli.mjs';
 
 function setup(responder = () => '{}', { debug = false } = {}) {
@@ -282,4 +282,19 @@ test('debug echoes argv to stderr', (t) => {
   const { driver } = setup(() => '{}', { debug: true });
   driver.goto('s', 'http://a');
   assert.equal(write.mock.calls[0].arguments[0], 'playwright-cli -s=s goto http://a\n');
+});
+
+test('open writes absolute initScript paths even when given relative ones', () => {
+  let body;
+  const { driver } = setup((args) => {
+    const flag = args.find((a) => a.startsWith('--config='));
+    if (flag) body = JSON.parse(readFileSync(flag.slice(9), 'utf8'));
+    return '{"browsers":[]}';
+  });
+  driver.open({
+    session: 'a',
+    config: { initScript: ['.web/own.js'] },
+    initScripts: ['.web/init.js'],
+  });
+  assert.deepEqual(body.browser.initScript, [resolve('.web/own.js'), resolve('.web/init.js')]);
 });

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
 
 const OK = { title: 'Home', url: 'http://x/', bodyLength: 500, status: 200, hasMainContent: true };
@@ -57,6 +57,7 @@ test('stops at first successful step and writes recipe for it', async () => {
   assert.deepEqual(rest, cfg);
   assert.equal(recipe.persistent, false);
   assert.equal(cfg.browserName, 'chromium');
+  assert.ok(isAbsolute(initScript[0]));
   assert.ok(existsSync(initScript[0]));
   assert.match(r.stderr.buf, /Probing with default config/);
 });

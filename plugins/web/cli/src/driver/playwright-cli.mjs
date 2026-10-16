@@ -1,5 +1,5 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { execPlaywrightCli } from './exec.mjs';
 import { CliError } from '#src/errors.mjs';
 
@@ -112,7 +112,7 @@ export function createDriver({
     if (cdpPort) {
       launchOptions.args = [...(launchOptions.args ?? []), `--remote-debugging-port=${cdpPort}`];
     }
-    const initScript = [...(config.initScript ?? []), ...initScripts];
+    const initScript = [...(config.initScript ?? []), ...initScripts].map((p) => resolve(p));
     return { browser: { ...config, launchOptions, initScript } };
   }
 
