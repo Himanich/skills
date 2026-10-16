@@ -121,3 +121,11 @@ test('non-integer --retries exits 2', async () => {
   assert.equal(code, 2);
   assert.equal(JSON.parse(stdout.buf).error.code, 'USAGE');
 });
+
+test('--format yaml exits 2 with a USAGE document', async () => {
+  const stdout = sink();
+  const argv = ['node', 'web', 'browser', 'list', '--format', 'yaml'];
+  const code = await runCli(argv, { stdout, stderr: sink(), env: {} });
+  assert.equal(code, 2);
+  assert.equal(JSON.parse(stdout.buf).error.code, 'USAGE');
+});

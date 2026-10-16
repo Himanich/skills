@@ -1,4 +1,4 @@
-import { Command, CommanderError } from 'commander';
+import { Command, CommanderError, Option } from 'commander';
 import { CliError, EXIT } from '#src/errors.mjs';
 import { fail } from '#src/output.mjs';
 import { registerBrowser } from '#src/commands/browser.mjs';
@@ -53,7 +53,11 @@ export function createProgram(deps = {}) {
   const program = new Command('web')
     .description('Drive a browser and analyze pages')
     .option('--session <name>', 'browser session name', env.WEB_SESSION)
-    .option('--format <format>', 'output format: json or text', 'json')
+    .addOption(
+      new Option('--format <format>', 'output format: json or text')
+        .choices(['json', 'text'])
+        .default('json'),
+    )
     .option('--output <dir>', 'directory for artifacts', './.web')
     .option('--headed', 'show the browser window')
     .option('--recipe <file>', 'browser recipe produced by `web probe`')
