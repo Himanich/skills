@@ -31,7 +31,12 @@ function unwrapResult(doc) {
 }
 
 function wrapExpression(expr) {
-  return expr.includes(';') ? `(() => { ${expr} })()` : `(() => { return (${expr}); })()`;
+  try {
+    new Function(`return (${expr}\n)`);
+    return expr;
+  } catch {
+    return `(() => { ${expr} })()`;
+  }
 }
 
 function toCliError(message) {
@@ -129,6 +134,13 @@ export function createDriver({
     return { session, url, headed, cdpPort };
   }
 
+  /**
+   * Evaluate JS in the page. `expr` is passed through unchanged when it compiles as a single
+   * expression (playwright-cli parenthesizes it); otherwise it is wrapped as `(() => { EXPR })()`
+   * so callers may write statements with an explicit `return`.
+   * @param {string} session
+   * @param {string} expr
+   */
   function evaluate(session, expr) {
     return unwrapResult(call([`-s=${session}`, 'eval', wrapExpression(expr)]));
   }
@@ -199,10 +211,10 @@ export function createDriver({
       );
     },
     requests(session) {
-      return call([`-s=${session}`, 'requests', '--static', '--json']).result;
+      return call([`-s=${session}`, 'requests', '--static']).result;
     },
     responseHeaders(session, index) {
-      return call([`-s=${session}`, 'response-headers', String(index), '--json']).result;
+      return call([`-s=${session}`, 'response-headers', String(index)]).result;
     },
   };
 }

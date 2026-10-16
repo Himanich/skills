@@ -39,7 +39,20 @@ test('evaluate wraps statements in an IIFE', () => {
 test('evaluate wraps plain expressions as a returned value', () => {
   const { driver, calls } = setup(() => '{"result":"1"}');
   driver.evaluate('s', 'document.title');
-  assert.equal(calls[0][2], '(() => { return (document.title); })()');
+  assert.equal(calls[0][2], 'document.title');
+});
+
+test('evaluate passes an expression with nested semicolons through unwrapped', () => {
+  const { driver, calls } = setup(() => '{"result":"1"}');
+  const expr = "[...document.querySelectorAll('*')].filter(el => { var s = getComputedStyle(el); return s.position === 'fixed'; }).length";
+  driver.evaluate('s', expr);
+  assert.equal(calls[0][2], expr);
+});
+
+test('evaluate wraps statements with return in an IIFE', () => {
+  const { driver, calls } = setup(() => '{"result":"2"}');
+  driver.evaluate('s', 'const a = 1; return a + 1');
+  assert.equal(calls[0][2], '(() => { const a = 1; return a + 1 })()');
 });
 
 test('not-open error becomes NO_SESSION with open hint', () => {
@@ -184,13 +197,13 @@ test('pageHealth returns title, bodyLength, url, status and hasMainContent', () 
 test('requests returns the static request listing text', () => {
   const { driver, calls } = setup(() => '{"result":"1. [GET] http://x/ => [200] OK"}');
   assert.equal(driver.requests('s'), '1. [GET] http://x/ => [200] OK');
-  assert.deepEqual(calls[0], ['-s=s', 'requests', '--static', '--json']);
+  assert.deepEqual(calls[0], ['-s=s', 'requests', '--static']);
 });
 
 test('responseHeaders returns header text for a request index', () => {
   const { driver, calls } = setup(() => '{"result":"server: nginx\\ncf-ray: abc"}');
   assert.equal(driver.responseHeaders('s', '2'), 'server: nginx\ncf-ray: abc');
-  assert.deepEqual(calls[0], ['-s=s', 'response-headers', '2', '--json']);
+  assert.deepEqual(calls[0], ['-s=s', 'response-headers', '2']);
 });
 
 test('list maps browsers', () => {
