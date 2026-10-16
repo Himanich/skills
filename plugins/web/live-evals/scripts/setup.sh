@@ -3,12 +3,12 @@
 # Builds workspace/<skill>/.claude/skills/{<skill>,<siblings>} from a ref of the skills repo.
 # Siblings come from skills/<skill>/skill.yaml (`siblings: [...]`).
 # SKILLS=off builds an empty workspace for the no-skill arm.
-# SKILLS_REPO (default ~/repos/ai/adobe/skills) must be a clone containing the ref;
+# SKILLS_REPO (default: this repo) must contain the ref; the web CLI bundle comes from the same ref.
 # SKILLS_PATH (default plugins/web/skills) is where skills live inside it.
 set -euo pipefail
 skill=${1:?usage: setup.sh <skill> [git-ref]}
-ref=${2:-origin/main}
-repo=${SKILLS_REPO:-$HOME/repos/ai/adobe/skills}
+ref=${2:-HEAD}
+repo=${SKILLS_REPO:-$(git -C "$(dirname "$0")" rev-parse --show-toplevel)}
 path=${SKILLS_PATH:-plugins/web/skills}
 root=$(cd "$(dirname "$0")/.." && pwd)
 base=$root/workspace/$skill/.claude/skills
@@ -40,4 +40,11 @@ for s in "$skill" $siblings; do
     npm ci --prefix "$base/$s" --silent
   fi
 done
-echo "$skill (+ ${siblings:-no siblings}) @ $(git -C "$repo" rev-parse --short "$ref") -> $base"
+cli=plugins/web/cli/dist/web.mjs
+cli_dir=$root/workspace/$skill/.web-cli
+mkdir -p "$cli_dir/dist" "$cli_dir/bin"
+git -C "$repo" archive "$ref" "$cli" | tar -x --strip-components=4 -C "$cli_dir/dist"
+printf '#!/bin/sh\nexec node "$(dirname "$0")/../dist/web.mjs" "$@"\n' >"$cli_dir/bin/web"
+chmod +x "$cli_dir/bin/web"
+cli_commit=$(git -C "$repo" log -1 --format=%h "$ref" -- plugins/web/cli)
+echo "$skill (+ ${siblings:-no siblings}) @ $(git -C "$repo" rev-parse --short "$ref") -> $base, web CLI @ $cli_commit"

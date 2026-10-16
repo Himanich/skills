@@ -1,19 +1,21 @@
-# skill-evals
+# live-evals (plugins/web/live-evals)
 
 Live, real-world evals for agent skills, run with promptfoo through Pi, plus a report of the
 lowest model that is good enough per skill (`REPORT.md`). Fixture-based scenarios (Tessl) stay in
-the skills repo.
+`plugins/web/evals`.
 
 ```
-scripts/run.sh <skill> [git-ref] [provider-regex]   # set up workspace, run 3x per case, store summary
+cd plugins/web/live-evals && npm ci
+scripts/run.sh <skill> [ref] [provider-regex]       # ref defaults to HEAD of this repo; 3x per case
 npm run report                                      # results/ -> REPORT.html, METHODOLOGY.html, REPORT.md, REPORT-detail.html
 ```
 
 - `models.yaml`: model matrix, ranked low to high. Credentials come from your local Pi setup.
 - `skills/<skill>/`: `promptfooconfig.mjs` (built with `lib/config.mjs`), cases, assertions and
   `skill.yaml` (the floor: pass rate and latency a model must reach; sibling skills to load).
-- `scripts/setup.sh`: builds `workspace/<skill>` from a git ref of the skills repo
-  (`SKILLS_REPO`, `SKILLS_PATH`), so the same suite compares a branch with `main`.
+- `scripts/setup.sh`: builds `workspace/<skill>` from a git ref of this repo
+  (`SKILLS_REPO`, `SKILLS_PATH`), so the same suite compares a branch with `main`. It also extracts
+  `plugins/web/cli/dist/web.mjs` from that ref to `workspace/<skill>/.web-cli/` with a `bin/web` shim.
 - `fixtures/`: controlled pages served on http://localhost:8765 by `scripts/fixtures-server.mjs`
   (started by `run.sh`). Each suite mixes fixtures (known ground truth) with real sites.
 - `results/`: one summary per run. Raw promptfoo output stays in `output/` (gitignored); do not use
@@ -38,13 +40,10 @@ the output format (file names and fields, never the method). A grader fails any 
 from disk. Cases that hinge on a skill's own method have `metadata: { noskill: skip }`. Results are stored with
 `arm: no-skill` and shown in the "Without the skill" table of `REPORT.md`.
 
+The no-skill arm has no `web` CLI either: the point is no skill tooling.
+
 All browsers are headless in both arms: agent shells refuse `--headed` and `open`, a grader fails runs that
 tried, and a sweeper kills automation browsers started without `--headless`.
-
-## Publishing the report
-
-`.github/workflows/pages.yml` publishes `REPORT.html` (index) and `METHODOLOGY.html` whenever either
-changes on `main`, or on manual dispatch. Pages is enabled with source "GitHub Actions".
 
 ## How a run is graded
 
@@ -55,8 +54,11 @@ changes on `main`, or on manual dispatch. Pages is enabled with source "GitHub A
   Malformed output is a failure with a reason, never a harness error.
 - A run that exceeds the time budget (`timeoutS`, 120 s by default) is aborted and counts as a
   failure. `skill-used` checks that the model really loaded the skill.
-- All browsers are headless. `cdp-ext-pilot` normally opens a headed Chromium, so `pre.sh` plants a
-  headless shim for it; `cdp-connect` starts its own headless Chrome on port 9222.
+- Skills call the `web` CLI. The skill arm puts `workspace/<skill>/.web-cli/bin` on PATH (exported
+  before every agent shell command), so `web` resolves first. The CLI takes its session from
+  `PLAYWRIGHT_CLI_SESSION`, so each run's browser is `run-<id>`; the hook also closes leftover `web-*` sessions.
+- All browsers are headless: `web ext launch` is headless by default; `cdp-connect`'s `pre.sh` starts its own
+  headless Chrome on port 9222. Sessions are global per machine, not per workspace.
 
 ## Coverage of the web plugin
 
@@ -68,8 +70,8 @@ changes on `main`, or on manual dispatch. Pages is enabled with source "GitHub A
 | page-tree | 2 fixture, 1 real | grid, gradient, image background, fixed banner, `minWidth` |
 | page-reduce | 2 fixture, 1 real | 5 sections, `{REPEAT:2}`, no scripts, phase 1 only |
 | page-prep | 2 fixtures, 1 real | checked in the agent's own browser: overlay gone, nothing accepted |
-| cdp-connect | 4 fixture tasks | headless Chrome on 9222: form, screenshot, network, accessibility |
-| cdp-ext-pilot | 3 fixture tasks | tiny MV3 extension: side panel, options page, extension id |
+| cdp-connect | 4 fixture tasks | pointer skill → `web browser attach/eval/cdp`; Chrome on 9222: form, screenshot, network, accessibility |
+| cdp-ext-pilot | 3 fixture tasks | headless via the CLI, no shim; tiny MV3 extension: side panel, options page, extension id |
 | domain-mask | none | needs sudo, `/etc/hosts` and port 443; not run unattended |
 
 Add a model: one entry in `models.yaml`. Add a skill: `skills/<name>/` with a config, cases,

@@ -16,4 +16,17 @@ export async function extensionHook(hookName, context) {
       // session was never opened or is already gone
     }
   }
+  closeEphemeralWebSessions();
+}
+
+/** The web CLI closes its own ephemeral `web-*` sessions; close any it could not (best effort). */
+function closeEphemeralWebSessions() {
+  try {
+    const { browsers = [] } = JSON.parse(execFileSync('playwright-cli', ['list', '--json'], { encoding: 'utf-8', timeout: 30_000 }));
+    for (const { name } of browsers.filter((b) => b.name?.startsWith('web-'))) {
+      execFileSync('playwright-cli', [`-s=${name}`, 'close'], { stdio: 'ignore', timeout: 30_000 });
+    }
+  } catch {
+    // playwright-cli missing, no sessions, or already closed
+  }
 }

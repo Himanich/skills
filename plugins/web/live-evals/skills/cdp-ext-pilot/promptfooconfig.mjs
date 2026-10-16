@@ -18,8 +18,6 @@ Put any files in ./out/ (relative to your working directory), then answer briefl
   assert: [{ file: 'assert.mjs', fn: 'extensionTaskDone' }],
   extensions: [`file://${join(suiteDir, 'hooks.mjs')}:extensionHook`],
   siblings: ['cdp-connect'],
-  // The skill looks for Chrome for Testing under $HOME/.cache; pre.sh plants a headless shim there.
-  shellEnv: { HOME: join(root, 'workspace/cdp-ext-pilot-home') },
-  concurrency: 1, // one headed Chromium on port 9222 at a time
+  concurrency: 1, // the CLI's extension browser exposes one debugging port at a time
   timeoutS: 150,
 });

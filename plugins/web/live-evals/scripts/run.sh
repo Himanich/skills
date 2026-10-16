@@ -6,7 +6,7 @@
 # when it meets the skill's floor. With a filter exactly the matching models run.
 set -euo pipefail
 skill=${1:?usage: run.sh <skill> [git-ref] [provider-filter]}
-ref=${2:-origin/main}
+ref=${2:-HEAD}
 filter=${3:-}
 cases=${4:-}
 cd "$(dirname "$0")/.."

@@ -49,7 +49,7 @@ export function buildConfig({ skill, suiteDir, prompt, tests, assert = [], sibli
         workspace_root: skillsOff ? join(NOSKILL_ROOT, 'live-out', skill) : join(root, 'live-out', skill),
         skills: skillPaths,
         timeout_ms: timeoutS * 1000,
-        shell_env: { PLAYWRIGHT_CLI_SESSION: 'run-{run_id}', ...(skillsOff ? { HOME: join(NOSKILL_ROOT, 'home') } : {}), ...shellEnv },
+        shell_env: { PLAYWRIGHT_CLI_SESSION: 'run-{run_id}', ...(skillsOff ? {} : { PATH: `${join(workspace, '.web-cli/bin')}:${process.env.PATH}` }), ...(skillsOff ? { HOME: join(NOSKILL_ROOT, 'home') } : {}), ...shellEnv },
         shell_prelude: HEADLESS_PRELUDE,
       },
     })),

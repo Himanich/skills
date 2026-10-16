@@ -33,7 +33,7 @@ export function headlessOnly(_output, { providerResponse }) {
 }
 
 const AUTOMATION_FLAGS = /--remote-debugging-(port|pipe)|--enable-automation|--user-data-dir=(\/tmp|\/var\/folders|\/private)/;
-const BROWSER = /^\/Applications\/(Google Chrome( Canary| for Testing)?|Chromium)\.app\/Contents\/MacOS\//;
+const BROWSER = /^(\/Applications\/(Google Chrome( Canary| for Testing)?|Chromium)\.app\/Contents\/MacOS\/|.*\/ms-playwright\/.*(Chromium|chrome-headless-shell|Google Chrome for Testing))/;
 
 /** Kills automation browsers running without --headless (main processes only). Returns how many. */
 export function killHeadedBrowsers() {
