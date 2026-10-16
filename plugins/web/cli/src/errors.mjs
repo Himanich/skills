@@ -1,6 +1,12 @@
 export const EXIT = { OK: 0, FAILURE: 1, USAGE: 2, BLOCKED: 3 };
 
-const USAGE_CODES = new Set(['NO_SESSION', 'SESSION_EXISTS', 'USAGE', 'PLAYWRIGHT_CLI', 'UNSUPPORTED']);
+const USAGE_CODES = new Set([
+  'NO_SESSION',
+  'SESSION_EXISTS',
+  'USAGE',
+  'PLAYWRIGHT_CLI',
+  'UNSUPPORTED',
+]);
 
 export class CliError extends Error {
   /**
