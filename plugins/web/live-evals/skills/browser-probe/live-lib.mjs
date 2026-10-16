@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { readJson } from '../../lib/outputs.mjs';
+import { findJson } from '../../lib/outputs.mjs';
 
 // The grader's own copy of the skill's page-health rules. Keeping it here means no copy of the skill has to
 // sit anywhere an agent could find it, which matters for the no-skill arm.
@@ -48,18 +48,19 @@ const pw = (session, ...args) =>
 
 /** Reads the agent's files from the `out` dir of the run that produced `providerResponse`. */
 export const readOutputs = (providerResponse) => ({
-  report: readJson(providerResponse, 'probe-report.json'),
-  recipe: readJson(providerResponse, 'browser-recipe.json'),
+  report: findJson(providerResponse, 'probe-report.json'),
+  recipe: findJson(providerResponse, 'browser-recipe.json'),
 });
 
 /** Expected recipe shape for each probe step, from the SKILL.md mapping table. */
 export function recipeProblems(recipe, firstSuccess) {
   const opts = recipe.cliConfig?.browser?.launchOptions ?? {};
+  const scripts = recipe.cliConfig?.browser?.initScript ?? [];
   const wantStealth = firstSuccess !== 'default';
   const wantUa = ['stealth-ua', 'chrome', 'persistent'].includes(firstSuccess);
   const wantChrome = ['chrome', 'persistent'].includes(firstSuccess);
   const checks = {
-    'stealth script': Boolean(recipe.stealthInitScript) === wantStealth,
+    'stealth script': (scripts.length > 0 && scripts.every((p) => existsSync(p))) === wantStealth,
     'user-agent arg': (opts.args ?? []).some((a) => a.startsWith('--user-agent=')) === wantUa,
     'chrome channel': (opts.channel === 'chrome') === wantChrome,
     'persistent flag': Boolean(recipe.persistent) === (firstSuccess === 'persistent'),
@@ -74,11 +75,6 @@ export function loadWithRecipe(recipe, url) {
   const dir = join(tmpdir(), `bp-${session}`);
   mkdirSync(dir, { recursive: true });
   const config = structuredClone(recipe.cliConfig);
-  if (recipe.stealthInitScript) {
-    const script = join(dir, 'stealth.js');
-    writeFileSync(script, recipe.stealthInitScript);
-    config.browser.initScript = [script];
-  }
   const configPath = join(dir, 'config.json');
   writeFileSync(configPath, JSON.stringify(config));
   const args = ['open', url, `--config=${configPath}`];

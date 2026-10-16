@@ -14,7 +14,7 @@ Find out whether bot protection is getting in the way and, if so, set up
 what our playwright-cli tooling needs to load the page (it reads a
 \`browser-recipe.json\`). Put every output file in ./out/ (relative to your
 working directory). Then summarize in a few sentences.`,
-  contract: `Output format: write ./out/browser-recipe.json as {"url": "<the url>", "cliConfig": {"browser": {"browserName": "chromium", "launchOptions": {"channel": "chrome" only if the system Chrome is needed, "args": [...] only if needed}}}, "stealthInitScript": "<JavaScript source to inject before page scripts>" or null, "persistent": true only if a persistent profile is needed}. cliConfig must be a valid playwright-cli --config file without browser.initScript: the script is passed separately. Write the recipe even when the plain headless browser already works.`,
+  contract: `Output format: write ./out/browser-recipe.json as {"url": "<the url>", "cliConfig": {"browser": {"browserName": "chromium", "launchOptions": {"channel": "chrome" only if the system Chrome is needed, "args": [...] only if needed}, "initScript": ["<absolute path of a JavaScript file to inject before page scripts>"] only if needed}}, "persistent": true only if a persistent profile is needed}. cliConfig must be a valid playwright-cli --config file; write any injected script to a file in ./out/ and list its absolute path in initScript. Write the recipe even when the plain headless browser already works.`,
   tests: parse(readFileSync(join(suiteDir, 'sites.yaml'), 'utf-8')),
   assert: [
     { file: 'assert-live.mjs', fn: 'reportAndRecipeConsistent' },
