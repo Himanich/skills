@@ -3411,6 +3411,14 @@ function fail(err, { stdout = process.stdout, stderr = process.stderr } = {}) {
   return exitCodeFor(e.code);
 }
 
+// src/args.mjs
+function parseIntArg(value) {
+  if (!/^\d+$/.test(value)) {
+    throw new InvalidArgumentError(`expected an integer, got "${value}"`);
+  }
+  return Number(value);
+}
+
 // src/commands/browser.mjs
 import { existsSync } from "node:fs";
 
@@ -3679,11 +3687,24 @@ async function withSession(driver, { session, url, headed, recipePath }, fn) {
   });
   const cleanup = () => handlers.forEach(([s, h]) => process.removeListener(s, h));
   handlers.forEach(([s, h]) => process.once(s, h));
+  let failed = false;
   try {
     return await fn(name);
+  } catch (err) {
+    failed = true;
+    throw err;
   } finally {
     cleanup();
+    closeQuietlyIf(driver, name, failed);
+  }
+}
+function closeQuietlyIf(driver, name, failed) {
+  try {
     driver.close(name);
+  } catch (err) {
+    if (!failed) throw err;
+    process.stderr.write(`warning: failed to close session ${name}: ${err.message}
+`);
   }
 }
 function artifactPath(outputDir, session, command, name) {
@@ -3801,7 +3822,7 @@ function registerBrowser(program2, deps) {
     return ctx.opts.session;
   };
   action(
-    browser.command("open [url]").description("open a browser session").addHelpText("after", HELP.OPEN).option("--cdp-port <n>", "remote debugging port", Number).option("--persistent", "use a persistent profile"),
+    browser.command("open [url]").description("open a browser session").addHelpText("after", HELP.OPEN).option("--cdp-port <n>", "remote debugging port", parseIntArg).option("--persistent", "use a persistent profile"),
     ({ opts, driver, print }, url) => {
       const session = opts.session ?? generateSessionName();
       const recipe = opts.recipe ? loadRecipe(opts.recipe) : {};
@@ -4775,7 +4796,7 @@ function registerExt(program2, deps) {
     await fn(ctx, ...args.slice(0, -2));
   });
   action(
-    ext.command("launch <dist-dir>").description("launch a headed browser with the extension loaded").addHelpText("after", HELP3.LAUNCH).option("--cdp-port <n>", "remote debugging port", Number),
+    ext.command("launch <dist-dir>").description("launch a headed browser with the extension loaded").addHelpText("after", HELP3.LAUNCH).option("--cdp-port <n>", "remote debugging port", parseIntArg),
     launch,
     { needs: false }
   );
@@ -5023,7 +5044,7 @@ function captureTree(driver, session, { minWidth = 900, settleMs } = {}) {
   };
 }
 function registerTree(group, deps) {
-  group.command("tree [url]").description("capture the visual tree of a page").addHelpText("after", HELP4).option("--min-width <n>", "minimum element width in px", Number, 900).option("--settle-ms <n>", "wait after scrolling for lazy content", Number, 2e3).action((url, _opts, command) => runPageCommand(command, deps, {
+  group.command("tree [url]").description("capture the visual tree of a page").addHelpText("after", HELP4).option("--min-width <n>", "minimum element width in px", parseIntArg, 900).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).action((url, _opts, command) => runPageCommand(command, deps, {
     url,
     fn: (driver, session, opts) => captureTree(driver, session, opts)
   }));
@@ -5062,7 +5083,7 @@ function reducePage(driver, session, { retries = 2, settleMs } = {}) {
   return phase1;
 }
 function registerReduce(group, deps) {
-  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP5).option("--settle-ms <n>", "wait after scrolling for lazy content", Number, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", Number, 2).action((url, _opts, command) => runPageCommand(command, deps, {
+  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP5).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", parseIntArg, 2).action((url, _opts, command) => runPageCommand(command, deps, {
     url,
     fn: (driver, session, opts) => reducePage(driver, session, {
       retries: opts.retries,
@@ -5746,7 +5767,8 @@ var USAGE_ERRORS = /* @__PURE__ */ new Set([
   "commander.unknownOption",
   "commander.missingArgument",
   "commander.excessArguments",
-  "commander.unknownCommand"
+  "commander.unknownCommand",
+  "commander.invalidArgument"
 ]);
 var ROOT_HELP = `
 Output contract:
@@ -5777,7 +5799,9 @@ Typical flows:
 `;
 function createProgram(deps = {}) {
   const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
-  const program2 = new Command("web").description("Drive a browser and analyze pages").option("--session <name>", "browser session name", env.WEB_SESSION).option("--format <format>", "output format: json or text", "json").option("--output <dir>", "directory for artifacts", "./.web").option("--headed", "show the browser window").option("--recipe <file>", "browser recipe produced by `web probe`").configureOutput({
+  const program2 = new Command("web").description("Drive a browser and analyze pages").option("--session <name>", "browser session name", env.WEB_SESSION).addOption(
+    new Option("--format <format>", "output format: json or text").choices(["json", "text"]).default("json")
+  ).option("--output <dir>", "directory for artifacts", "./.web").option("--headed", "show the browser window").option("--recipe <file>", "browser recipe produced by `web probe`").configureOutput({
     writeOut: (s) => stdout.write(s),
     writeErr: (s) => stderr.write(s)
   }).addHelpText("after", ROOT_HELP).showHelpAfterError().showSuggestionAfterError().exitOverride();
@@ -5798,7 +5822,11 @@ async function runCli(argv, deps = {}) {
     if (err instanceof CommanderError) {
       const help = err.code === "commander.helpDisplayed" || err.code === "commander.help";
       if (help || err.code === "commander.version") return EXIT.OK;
-      if (USAGE_ERRORS.has(err.code)) return EXIT.USAGE;
+      if (USAGE_ERRORS.has(err.code)) {
+        const message = err.message.replace(/^error: /, "").trimEnd();
+        const usage = new CliError("USAGE", message, { hint: "run: web <command> --help" });
+        return fail(usage, { stdout, stderr });
+      }
       return err.exitCode || EXIT.USAGE;
     }
     const wrapped = err instanceof Error ? err : new CliError("INTERNAL", String(err));

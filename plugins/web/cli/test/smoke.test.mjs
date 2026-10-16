@@ -7,8 +7,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startFixture } from './fixture-server.mjs';
 
-const binPath = fileURLToPath(new URL('../bin/web.mjs', import.meta.url));
-const HTML = '<html><head><title>Smoke</title></head><body><h1>hi</h1></body></html>';
+const binPath = fileURLToPath(new URL('../dist/web.mjs', import.meta.url));
+const FILLER = 'Smoke test page body text long enough to look like real content. '.repeat(3);
+const HTML = `<html><head><title>Smoke</title></head><body><main><h1>hi</h1><p>${FILLER}</p></main></body></html>`;
 const probe = spawnSync('playwright-cli', ['--version']);
 const available = !probe.error && probe.status === 0;
 const sessionName = `smoke-${process.pid}`;
@@ -69,7 +70,25 @@ test('open → eval → list → close leaves no session', async (t) => {
   assert.doesNotMatch(JSON.stringify((await web('browser', 'list')).doc), new RegExp(sessionName));
 });
 
-test('ephemeral page command cleans up after failure', async (t) => {
+test('ephemeral page tree --format text renders the page and leaves no session', async (t) => {
+  if (!available) return t.skip('playwright-cli not installed');
+  const res = await web('page', 'tree', fixture.url, '--format', 'text');
+  assert.equal(res.status, 0, res.stderr || res.stdout);
+  assert.match(res.stdout, /hi/);
+  const listed = await web('browser', 'list');
+  assert.doesNotMatch(JSON.stringify(listed.doc), /web-/);
+});
+
+test('page tree JSON carries text, tree, nodeMap, session and durationMs', async (t) => {
+  if (!available) return t.skip('playwright-cli not installed');
+  const res = await web('page', 'tree', fixture.url);
+  assert.equal(res.status, 0, res.stderr || res.stdout);
+  for (const key of ['text', 'tree', 'nodeMap', 'session', 'durationMs']) {
+    assert.ok(key in (res.doc ?? {}), `missing ${key}: ${res.stdout}`);
+  }
+});
+
+test('browser eval on an unknown session fails with NO_SESSION', async (t) => {
   if (!available) return t.skip('playwright-cli not installed');
   const res = await web('browser', 'eval', '--session', 'does-not-exist', '1');
   assert.equal(res.status, 2, res.stderr || res.stdout);
