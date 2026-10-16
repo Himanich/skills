@@ -85,3 +85,18 @@ test('--help works for root, groups and every leaf, with Example and Output', as
     assert.match(text, /Output:/, path.join(' '));
   }
 });
+
+for (const [label, argv] of [
+  ['unknown option', ['browser', 'list', '--headless']],
+  ['missing argument', ['browser', 'eval']],
+  ['unknown command', ['nope']],
+]) {
+  test(`${label} prints a USAGE error document on stdout`, async () => {
+    const stdout = sink();
+    const code = await runCli(['node', 'web', ...argv], { stdout, stderr: sink(), env: {} });
+    assert.equal(code, 2);
+    const { error } = JSON.parse(stdout.buf);
+    assert.equal(error.code, 'USAGE');
+    assert.ok(error.message);
+  });
+}

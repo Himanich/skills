@@ -1,12 +1,11 @@
 import { Command, CommanderError } from 'commander';
-import { CliError, EXIT } from './errors.mjs';
-import { fail } from './output.mjs';
+import { CliError, EXIT } from '#src/errors.mjs';
+import { fail } from '#src/output.mjs';
 import { registerBrowser } from '#src/commands/browser.mjs';
 import { registerProbe } from '#src/commands/probe.mjs';
 import { registerExt } from '#src/commands/ext.mjs';
 import { registerMask } from '#src/commands/mask.mjs';
 import { registerPage } from '#src/commands/page.mjs';
-
 
 const USAGE_ERRORS = new Set([
   'commander.unknownOption',
@@ -89,7 +88,11 @@ export async function runCli(argv, deps = {}) {
     if (err instanceof CommanderError) {
       const help = err.code === 'commander.helpDisplayed' || err.code === 'commander.help';
       if (help || err.code === 'commander.version') return EXIT.OK;
-      if (USAGE_ERRORS.has(err.code)) return EXIT.USAGE;
+      if (USAGE_ERRORS.has(err.code)) {
+        const message = err.message.replace(/^error: /, '').trimEnd();
+        const usage = new CliError('USAGE', message, { hint: 'run: web <command> --help' });
+        return fail(usage, { stdout, stderr });
+      }
       return err.exitCode || EXIT.USAGE;
     }
     const wrapped = err instanceof Error ? err : new CliError('INTERNAL', String(err));
