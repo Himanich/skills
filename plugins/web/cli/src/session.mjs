@@ -68,11 +68,24 @@ export async function withSession(driver, { session, url, headed, recipePath }, 
   });
   const cleanup = () => handlers.forEach(([s, h]) => process.removeListener(s, h));
   handlers.forEach(([s, h]) => process.once(s, h));
+  let failed = false;
   try {
     return await fn(name);
+  } catch (err) {
+    failed = true;
+    throw err;
   } finally {
     cleanup();
+    closeQuietlyIf(driver, name, failed);
+  }
+}
+
+function closeQuietlyIf(driver, name, failed) {
+  try {
     driver.close(name);
+  } catch (err) {
+    if (!failed) throw err;
+    process.stderr.write(`warning: failed to close session ${name}: ${err.message}\n`);
   }
 }
 

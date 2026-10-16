@@ -113,3 +113,18 @@ test('signal path with throwing driver.close still re-kills and removes listener
   assert.deepEqual(kills, [[process.pid, 'SIGINT']]);
   assert.deepEqual(after, before);
 });
+
+const closeFails = () => ({ open() {}, goto() {}, list: () => [], close() { throw new Error('close boom'); } });
+
+test('withSession keeps the original error when close also fails', async (t) => {
+  const write = t.mock.method(process.stderr, 'write', () => true);
+  await assert.rejects(
+    withSession(closeFails(), {}, () => { throw new Error('real'); }),
+    /real/,
+  );
+  assert.match(write.mock.calls[0].arguments[0], /warning: failed to close session web-.*close boom/);
+});
+
+test('withSession throws the close error when fn succeeded', async () => {
+  await assert.rejects(withSession(closeFails(), {}, () => 1), /close boom/);
+});
