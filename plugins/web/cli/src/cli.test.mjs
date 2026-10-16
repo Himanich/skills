@@ -119,6 +119,9 @@ for (const [label, argv] of [
   ['unknown option', ['browser', 'list', '--headless']],
   ['missing argument', ['browser', 'eval']],
   ['unknown command', ['nope']],
+  ['global option missing value', ['browser', 'list', '--output']],
+  ['session option missing value', ['browser', 'list', '--session']],
+  ['leaf option missing value', ['page', 'tree', '--min-width']],
 ]) {
   test(`${label} prints a USAGE error document on stdout`, async () => {
     const stdout = sink();

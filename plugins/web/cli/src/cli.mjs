@@ -7,14 +7,6 @@ import { registerExt } from '#src/commands/ext.mjs';
 import { registerMask } from '#src/commands/mask.mjs';
 import { registerPage } from '#src/commands/page.mjs';
 
-const USAGE_ERRORS = new Set([
-  'commander.unknownOption',
-  'commander.missingArgument',
-  'commander.excessArguments',
-  'commander.unknownCommand',
-  'commander.invalidArgument',
-]);
-
 const ROOT_HELP = `
 Output contract:
   stdout is one JSON document (or one text block with --format text); stderr carries
@@ -95,12 +87,9 @@ export async function runCli(argv, deps = {}) {
     if (err instanceof CommanderError) {
       const help = err.code === 'commander.helpDisplayed' || err.code === 'commander.help';
       if (help || err.code === 'commander.version') return EXIT.OK;
-      if (USAGE_ERRORS.has(err.code)) {
-        const message = err.message.replace(/^error: /, '').trimEnd();
-        const usage = new CliError('USAGE', message, { hint: 'run: web <command> --help' });
-        return fail(usage, { stdout, stderr });
-      }
-      return err.exitCode || EXIT.USAGE;
+      const message = err.message.replace(/^error: /, '').trimEnd();
+      const usage = new CliError('USAGE', message, { hint: 'run: web <command> --help' });
+      return fail(usage, { stdout, stderr });
     }
     const wrapped = err instanceof Error ? err : new CliError('INTERNAL', String(err));
     return fail(wrapped, { stdout, stderr });
