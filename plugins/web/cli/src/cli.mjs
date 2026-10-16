@@ -3,10 +3,10 @@ import { CliError, EXIT } from './errors.mjs';
 import { fail } from './output.mjs';
 import { registerBrowser } from '#src/commands/browser.mjs';
 import { registerProbe } from '#src/commands/probe.mjs';
+import { registerExt } from '#src/commands/ext.mjs';
 import { registerPage } from '#src/commands/page.mjs';
 
 const GROUPS = {
-  ext: 'pilot a Chrome extension: launch, open, status, close',
   mask: 'serve a target URL under a fake local HTTPS domain',
 };
 
@@ -41,6 +41,7 @@ export function createProgram(deps = {}) {
   registerBrowser(program, deps);
   registerProbe(program, deps);
   registerPage(program, deps);
+  registerExt(program, deps);
   for (const [name, description] of Object.entries(GROUPS)) {
     const group = program.command(name).description(description);
     if (name === 'mask') group.action(() => group.help());
