@@ -3691,6 +3691,87 @@ function artifactPath(outputDir, session, command, name) {
 }
 
 // src/commands/browser.mjs
+var HELP = {
+  OPEN: `
+Example:
+  web browser open https://example.com --session s1 --headed
+Output:
+  { session, url, headed, cdpPort? }
+Notes:
+  Without --session a name web-<4 hex> is generated and returned. An open name exits 2
+  (SESSION_EXISTS). --recipe applies a recipe from \`web probe\`. Leaves the browser open.
+`,
+  ATTACH: `
+Example:
+  web browser attach http://127.0.0.1:9222 --session mine
+Output:
+  { session, attached }
+Notes:
+  Joins a running Chrome started with --remote-debugging-port.
+`,
+  LIST: `
+Example:
+  web browser list
+Output:
+  { sessions: [{ name, status, headed, url }] }
+Notes:
+  url is null unless the session is open.
+`,
+  CLOSE: `
+Example:
+  web browser close --session s1
+Output:
+  { session, status }
+Exit codes:
+  2 NO_SESSION when the session is not open.
+`,
+  CLOSE_ALL: `
+Example:
+  web browser close-all
+Output:
+  { closed: [name] }
+`,
+  EVAL: `
+Example:
+  web browser eval "document.title" --session s1
+Output:
+  { result }
+Notes:
+  One JS expression, evaluated in the page: no \`;\`, no \`return\`. For statements use
+  \`browser run\`. result is the JSON-serializable value.
+`,
+  RUN: `
+Example:
+  web browser run "async page => page.title()" --session s1
+Output:
+  { result }
+Notes:
+  Argument is a file path (if the file exists) or inline code \`async page => {\u2026}\`.
+  Statements and \`return\` are allowed. The function receives the Playwright \`page\`.
+`,
+  CDP: `
+Example:
+  web browser cdp Page.getLayoutMetrics --session s1
+  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session s1
+Output:
+  { result }
+Notes:
+  params-json is an optional JSON object (default {}); invalid JSON exits 2 (USAGE).
+`,
+  SHOT: `
+Example:
+  web browser screenshot --full-page --session s1
+Output:
+  { path }
+Notes:
+  Writes <output>/<session>-screenshot-<timestamp>.png. --selector captures one element.
+`
+};
+var GROUP_HELP = `
+Use for session plumbing; analysis lives in \`web page\`. Commands other than open, attach
+and list act on the browser named by --session (or WEB_SESSION) and need it open.
+Sessions stay open until \`browser close\`; \`playwright-cli -s <session> \u2026\` drives the same one.
+`;
 var DESCRIPTION = "session plumbing: open, attach, list, close, eval, run, cdp, screenshot";
 function sessionUrl(driver, { name, status: status2 }) {
   if (status2 !== "open") return null;
@@ -3709,7 +3790,7 @@ function parseParams(json) {
   }
 }
 function registerBrowser(program2, deps) {
-  const browser = program2.command("browser").description(DESCRIPTION);
+  const browser = program2.command("browser").description(DESCRIPTION).addHelpText("after", GROUP_HELP);
   const action = (cmd, fn) => cmd.action(async (...args) => {
     const command = args.at(-1);
     const ctx = createContext(command, deps);
@@ -3720,7 +3801,7 @@ function registerBrowser(program2, deps) {
     return ctx.opts.session;
   };
   action(
-    browser.command("open [url]").description("open a browser session").option("--cdp-port <n>", "remote debugging port", Number).option("--persistent", "use a persistent profile"),
+    browser.command("open [url]").description("open a browser session").addHelpText("after", HELP.OPEN).option("--cdp-port <n>", "remote debugging port", Number).option("--persistent", "use a persistent profile"),
     ({ opts, driver, print }, url) => {
       const session = opts.session ?? generateSessionName();
       const recipe = opts.recipe ? loadRecipe(opts.recipe) : {};
@@ -3737,14 +3818,14 @@ function registerBrowser(program2, deps) {
     }
   );
   action(
-    browser.command("attach <cdp-url>").description("attach to a running Chrome"),
+    browser.command("attach <cdp-url>").description("attach to a running Chrome").addHelpText("after", HELP.ATTACH),
     ({ opts, driver, print }, cdpUrl) => {
       const session = opts.session ?? generateSessionName();
       driver.attach({ session, cdpUrl });
       print({ session, attached: true });
     }
   );
-  action(browser.command("list").description("list sessions"), ({ driver, print }) => {
+  action(browser.command("list").description("list sessions").addHelpText("after", HELP.LIST), ({ driver, print }) => {
     const sessions = driver.list().map((s) => ({
       name: s.name,
       status: s.status,
@@ -3753,38 +3834,38 @@ function registerBrowser(program2, deps) {
     }));
     print({ sessions });
   });
-  action(browser.command("close").description("close the session"), (ctx) => {
+  action(browser.command("close").description("close the session").addHelpText("after", HELP.CLOSE), (ctx) => {
     const session = openSession(ctx);
     ctx.driver.close(session);
     ctx.print({ session, status: "closed" });
   });
-  action(browser.command("close-all").description("close every session"), (ctx) => {
+  action(browser.command("close-all").description("close every session").addHelpText("after", HELP.CLOSE_ALL), (ctx) => {
     const closed = ctx.driver.list().map((s) => s.name);
     ctx.driver.closeAll();
     ctx.print({ closed });
   });
   action(
-    browser.command("eval <expr>").description("evaluate a JS expression"),
+    browser.command("eval <expr>").description("evaluate a JS expression").addHelpText("after", HELP.EVAL),
     (ctx, expr) => {
       ctx.print({ result: ctx.driver.evaluate(openSession(ctx), expr) });
     }
   );
   action(
-    browser.command("run <file-or-code>").description("run a Playwright script or code"),
+    browser.command("run <file-or-code>").description("run a Playwright script or code").addHelpText("after", HELP.RUN),
     (ctx, arg) => {
       const target = existsSync(arg) ? { file: arg } : { code: arg };
       ctx.print({ result: ctx.driver.run(openSession(ctx), target) });
     }
   );
   action(
-    browser.command("cdp <method> [params-json]").description("send a raw CDP command"),
+    browser.command("cdp <method> [params-json]").description("send a raw CDP command").addHelpText("after", HELP.CDP),
     (ctx, method, json) => {
       const params = parseParams(json);
       ctx.print({ result: ctx.driver.cdp(openSession(ctx), method, params) });
     }
   );
   action(
-    browser.command("screenshot").description("take a screenshot").option("--full-page", "capture the full page").option("--selector <css>", "capture one element"),
+    browser.command("screenshot").description("take a screenshot").addHelpText("after", HELP.SHOT).option("--full-page", "capture the full page").option("--selector <css>", "capture one element"),
     (ctx) => {
       const session = openSession(ctx);
       const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
@@ -4390,6 +4471,18 @@ function runStep(driver, { url, outputDir, stepDef, log }) {
     rmSync2(stealthPath, { force: true });
   }
 }
+var HELP2 = `
+Example:
+  web probe https://example.com
+Output:
+  { report: { url, timestamp, steps, firstSuccess, detectedSignals }, recipePath }
+Notes:
+  Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
+  <output>/probe-probe-report.json and probe-probe-recipe.json; pass the recipe to
+  other commands with --recipe. Progress goes to stderr.
+Exit codes:
+  3 BLOCKED when all steps are blocked (no recipe is written).
+`;
 function runProbe(driver, { url, outputDir, log = () => {
 } }) {
   const steps = [];
@@ -4434,7 +4527,7 @@ function runProbe(driver, { url, outputDir, log = () => {
   return { report, recipePath };
 }
 function registerProbe(program2, deps) {
-  program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").action((url, _opts, command) => {
+  program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action((url, _opts, command) => {
     const { opts, driver, print } = createContext(command, deps);
     const stderr = deps.stderr ?? process.stderr;
     const log = (msg) => stderr.write(`${msg}
@@ -4452,6 +4545,47 @@ function registerProbe(program2, deps) {
 // src/commands/ext.mjs
 import { existsSync as existsSync2, mkdirSync as mkdirSync3, readFileSync as readFileSync2, statSync, unlinkSync, writeFileSync as writeFileSync3 } from "node:fs";
 import { dirname, join as join3, resolve } from "node:path";
+var HELP3 = {
+  LAUNCH: `
+Example:
+  web ext launch ./dist --session ext1
+Output:
+  { session, extensionId, extensionPath, surfaces, cdpPort? }
+Notes:
+  Forces a headed, persistent Chrome with the unpacked extension loaded. surfaces lists
+  what the manifest declares (sidepanel, popup, options). Exits 1 if the extension
+  does not load.
+`,
+  OPEN: `
+Example:
+  web ext open sidepanel --session ext1
+Output:
+  { surface, url, targetId?, note? }
+Notes:
+  <surface> is sidepanel, popup or options. sidepanel needs a content script and a tab on a
+  real page; otherwise a tab opens the panel URL and note explains why.
+  A surface the manifest lacks exits 2 (USAGE).
+`,
+  STATUS: `
+Example:
+  web ext status --session ext1
+Output:
+  { session, open, extensionId, surfaces }
+Notes:
+  extensionId and surfaces are null when no launch record exists.
+`,
+  CLOSE: `
+Example:
+  web ext close --session ext1
+Output:
+  { session, status }
+`
+};
+var GROUP_HELP2 = `
+Use to test an unpacked Chrome extension in a real browser. Every command except launch needs
+--session <name> (or WEB_SESSION) naming the session created by \`ext launch\`; the launch
+record lives under --output, so keep --output the same across calls.
+`;
 var DESCRIPTION2 = "pilot a Chrome extension: launch, open, status, close";
 var FALLBACK_NOTES = {
   "no-content-script": 'no content-script context: chrome.sidePanel.open() needs a user gesture; add a content_scripts entry and handle {type:"open_side_panel"} in the service worker',
@@ -4634,20 +4768,20 @@ function needSession(ctx) {
   }
 }
 function registerExt(program2, deps) {
-  const ext = program2.command("ext").description(DESCRIPTION2);
+  const ext = program2.command("ext").description(DESCRIPTION2).addHelpText("after", GROUP_HELP2);
   const action = (cmd, fn, { needs = true } = {}) => cmd.action(async (...args) => {
     const ctx = createContext(args.at(-1), deps);
     if (needs) needSession(ctx);
     await fn(ctx, ...args.slice(0, -2));
   });
   action(
-    ext.command("launch <dist-dir>").description("launch a headed browser with the extension loaded").option("--cdp-port <n>", "remote debugging port", Number),
+    ext.command("launch <dist-dir>").description("launch a headed browser with the extension loaded").addHelpText("after", HELP3.LAUNCH).option("--cdp-port <n>", "remote debugging port", Number),
     launch,
     { needs: false }
   );
-  action(ext.command("open <surface>").description("open sidepanel, popup or options"), open);
-  action(ext.command("status").description("show extension session state"), status);
-  action(ext.command("close").description("close the extension session"), close);
+  action(ext.command("open <surface>").description("open sidepanel, popup or options").addHelpText("after", HELP3.OPEN), open);
+  action(ext.command("status").description("show extension session state").addHelpText("after", HELP3.STATUS), status);
+  action(ext.command("close").description("close the extension session").addHelpText("after", HELP3.CLOSE), close);
 }
 
 // src/commands/mask.mjs
@@ -4790,9 +4924,13 @@ function waitForSignal(stop) {
 function registerMask(program2, deps = {}) {
   const { stdout = process.stdout } = deps;
   program2.command("mask").description("serve a target URL under a fake local HTTPS domain").argument("<display-domain>", "domain to show, e.g. wknd.adventures").argument("<target-url>", "upstream URL to proxy, e.g. https://example.com").addHelpText("after", `
-Runs in the foreground until Ctrl-C, then restores /etc/hosts and removes certs.
-Needs sudo (hosts file, port 443) and mkcert. Run exactly:
-  ${SUDO_LINE}`).action(async (displayDomain, targetUrl, _opts, command) => {
+Example:
+  ${SUDO_LINE}
+Output:
+  { url, displayDomain, targetUrl }
+Notes:
+  Runs in the foreground until Ctrl-C, then restores /etc/hosts and removes certs.
+  Needs sudo (hosts file, port 443) and mkcert. Without root it exits 2 (USAGE).`).action(async (displayDomain, targetUrl, _opts, command) => {
     if (!validateDisplayDomain(displayDomain)) {
       throw new CliError("USAGE", "invalid domain name", {
         hint: "use letters, digits, dots and hyphens, e.g. wknd.adventures"
@@ -4858,6 +4996,17 @@ async function runPageCommand(command, deps, { url, fn }) {
 }
 
 // src/commands/page/tree.mjs
+var HELP4 = `
+Example:
+  web page tree https://example.com --min-width 600
+Output:
+  { text, tree, nodeMap, rootBackground, url, session, durationMs }
+Notes:
+  text is the indented spatial tree; --format text prints only that. nodeMap maps node ids
+  to elements. Scrolls for lazy content and unpins fixed/sticky elements first.
+Exit codes:
+  3 when the page is blocked by bot protection.
+`;
 function captureTree(driver, session, { minWidth = 900, settleMs } = {}) {
   preparePage(driver, session, { settleMs });
   driver.inject(session, loadBundle("page-tree.js"));
@@ -4874,7 +5023,7 @@ function captureTree(driver, session, { minWidth = 900, settleMs } = {}) {
   };
 }
 function registerTree(group, deps) {
-  group.command("tree [url]").description("capture the visual tree of a page").option("--min-width <n>", "minimum element width in px", Number, 900).option("--settle-ms <n>", "wait after scrolling for lazy content", Number, 2e3).action((url, _opts, command) => runPageCommand(command, deps, {
+  group.command("tree [url]").description("capture the visual tree of a page").addHelpText("after", HELP4).option("--min-width <n>", "minimum element width in px", Number, 900).option("--settle-ms <n>", "wait after scrolling for lazy content", Number, 2e3).action((url, _opts, command) => runPageCommand(command, deps, {
     url,
     fn: (driver, session, opts) => captureTree(driver, session, opts)
   }));
@@ -4886,6 +5035,17 @@ function detect(driver, session) {
   const raw = driver.evaluate(session, DETECT);
   return typeof raw === "string" ? JSON.parse(raw) : raw;
 }
+var HELP5 = `
+Example:
+  web page reduce https://example.com --retries 3
+Output:
+  { url, title, viewport, templateHash, sections: [...], session, durationMs }
+Notes:
+  Phase 1 only: section detection. Phase 2 (PHASE2-RULES) stays with the agent.
+  Rescrolls up to --retries times when no sections are found.
+Exit codes:
+  1 EMPTY_RESULT when no sections are detected; 3 when blocked.
+`;
 function reducePage(driver, session, { retries = 2, settleMs } = {}) {
   preparePage(driver, session, { unpin: true, settleMs });
   driver.inject(session, loadBundle("page-reduce.js"));
@@ -4902,7 +5062,7 @@ function reducePage(driver, session, { retries = 2, settleMs } = {}) {
   return phase1;
 }
 function registerReduce(group, deps) {
-  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").option("--settle-ms <n>", "wait after scrolling for lazy content", Number, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", Number, 2).action((url, _opts, command) => runPageCommand(command, deps, {
+  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP5).option("--settle-ms <n>", "wait after scrolling for lazy content", Number, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", Number, 2).action((url, _opts, command) => runPageCommand(command, deps, {
     url,
     fn: (driver, session, opts) => reducePage(driver, session, {
       retries: opts.retries,
@@ -5086,6 +5246,17 @@ function takeScreenshot(driver, session, path3, stderr) {
     return void 0;
   }
 }
+var HELP6 = `
+Example:
+  web page collect metadata https://example.com
+Output:
+  one collector: { ...collectorFields, files, url, session, durationMs }
+  all:           { url, collectedAt, screenshot?, collectors: {...}, files, session, durationMs }
+Notes:
+  <what> is one of: all, icons, metadata, text, forms, videos, socials. Files go under
+  --output as <session>-collect-<name>; icons are written as a directory of .svg files plus
+  icons.json. Unknown <what> exits 2 (USAGE).
+`;
 function collectPage(driver, session, { what, outputDir, stderr = process.stderr }) {
   driver.inject(session, loadBundle("page-collect.js"));
   const data = extract(driver, session, what);
@@ -5115,7 +5286,7 @@ function collectPage(driver, session, { what, outputDir, stderr = process.stderr
   return { ...collection, files };
 }
 function registerCollect(group, deps) {
-  group.command("collect <what> [url]").description(`collect page resources: ${COLLECTORS.join(", ")}`).action((what, url, _opts, command) => {
+  group.command("collect <what> [url]").description(`collect page resources: ${COLLECTORS.join(", ")}`).addHelpText("after", HELP6).action((what, url, _opts, command) => {
     if (!COLLECTORS.includes(what)) {
       throw new CliError("USAGE", `unknown collector ${what}`, {
         hint: `one of: ${COLLECTORS.join(", ")}`
@@ -5235,8 +5406,16 @@ async function loadDetector(importer = (m) => import(m)) {
 }
 
 // src/commands/page/langs.mjs
+var HELP7 = `
+Example:
+  web page langs https://example.com
+Output:
+  { wordCount, detected, declared, reconciliation, url, session, durationMs }
+Notes:
+  Needs cld3-asm; if missing, exits 2 (UNSUPPORTED) with an install hint.
+`;
 function registerLangs(group, deps) {
-  group.command("langs [url]").description("detect page languages (CLD3) and compare with declared lang signals").action(async (url, _opts, command) => {
+  group.command("langs [url]").description("detect page languages (CLD3) and compare with declared lang signals").addHelpText("after", HELP7).action(async (url, _opts, command) => {
     const detector = await (deps.loadDetector ?? loadDetector)();
     return runPageCommand(command, deps, {
       url,
@@ -5505,8 +5684,19 @@ function residualBlockers(driver, session) {
   const code = `async page => page.evaluate(${JSON.stringify(RESIDUAL_EXPRESSION)})`;
   return parseMaybe(driver.run(session, { code }));
 }
+var HELP8 = `
+Example:
+  web page overlays --session s1 --dismiss --mode thorough
+Output:
+  { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
+  with --dismiss also: applied: [{ id, strategy: hide|dismiss, ok }], residual: [{ tag, id, ... }]
+Notes:
+  --dismiss quick hides every overlay with CSS. thorough clicks the CMP's dismiss steps and
+  hides overlays that have none; scroll lock is fixed in both. residual[] lists fixed
+  high-z-index elements still covering the viewport: check it is empty.
+`;
 function registerOverlays(group, deps) {
-  group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "quick").option("--refresh-db", "refresh the overlay pattern database first").action((url, opts, command) => {
+  group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").addHelpText("after", HELP8).option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "quick").option("--refresh-db", "refresh the overlay pattern database first").action((url, opts, command) => {
     if (!MODES.includes(opts.mode)) {
       throw new CliError("USAGE", `unknown mode ${opts.mode}`, {
         hint: `one of: ${MODES.join(", ")}`
@@ -5537,8 +5727,13 @@ function registerOverlays(group, deps) {
 }
 
 // src/commands/page.mjs
+var GROUP_HELP3 = `
+Use to analyze a page. Pass a <url> for a one-shot run in an ephemeral browser that is closed
+afterwards, or --session <name> to reuse an open browser (left open). Each command prints one
+JSON document with url, session and durationMs added; --format text is supported on tree.
+`;
 function registerPage(program2, deps) {
-  const group = program2.command("page").description("analyze a page: tree, reduce, collect, langs, overlays");
+  const group = program2.command("page").description("analyze a page: tree, reduce, collect, langs, overlays").addHelpText("after", GROUP_HELP3);
   registerTree(group, deps);
   registerReduce(group, deps);
   registerCollect(group, deps);
@@ -5553,12 +5748,39 @@ var USAGE_ERRORS = /* @__PURE__ */ new Set([
   "commander.excessArguments",
   "commander.unknownCommand"
 ]);
+var ROOT_HELP = `
+Output contract:
+  stdout is one JSON document (or one text block with --format text); stderr carries
+  progress and logs. WEB_DEBUG=1 echoes every playwright-cli call to stderr.
+  Errors: { "error": { "code", "message", "hint" } }. Main codes: USAGE, NO_SESSION,
+  SESSION_EXISTS, PLAYWRIGHT_CLI, BLOCKED, TIMEOUT, UNSUPPORTED, EMPTY_RESULT.
+
+Exit codes:
+  0 ok \xB7 1 failure \xB7 2 usage or environment \xB7 3 blocked by bot protection
+
+Sessions:
+  With a <url> and no --session, a browser is opened and closed for that one command.
+  --session <name> reuses an open browser and leaves it open. WEB_SESSION is the default
+  for --session. Sessions are scoped to the working directory. The escape hatch
+  \`playwright-cli -s <session> \u2026\` drives the same browser.
+
+Artifacts:
+  Written under --output (default ./.web) as <session>-<command>-<name>.
+
+Requires playwright-cli >= 0.1.20 on PATH (npm install -g @playwright/cli@latest).
+
+Typical flows:
+  one-shot:  web page tree <url>
+  scripted:  web browser open <url> --session s; web page overlays --session s --dismiss;
+             web page tree --session s; web browser close --session s
+  blocked:   web probe <url>, then re-run with --recipe .web/probe-probe-recipe.json
+`;
 function createProgram(deps = {}) {
   const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
   const program2 = new Command("web").description("Drive a browser and analyze pages").option("--session <name>", "browser session name", env.WEB_SESSION).option("--format <format>", "output format: json or text", "json").option("--output <dir>", "directory for artifacts", "./.web").option("--headed", "show the browser window").option("--recipe <file>", "browser recipe produced by `web probe`").configureOutput({
     writeOut: (s) => stdout.write(s),
     writeErr: (s) => stderr.write(s)
-  }).showHelpAfterError().showSuggestionAfterError().exitOverride();
+  }).addHelpText("after", ROOT_HELP).showHelpAfterError().showSuggestionAfterError().exitOverride();
   registerBrowser(program2, deps);
   registerProbe(program2, deps);
   registerPage(program2, deps);

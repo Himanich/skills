@@ -59,3 +59,29 @@ test('a plain Error is wrapped as INTERNAL with exit 1', async () => {
   assert.equal(code, 1);
   assert.equal(JSON.parse(stdout.buf).error.code, 'INTERNAL');
 });
+
+const LEAVES = [
+  ['browser', 'open'], ['browser', 'attach'], ['browser', 'list'], ['browser', 'close'],
+  ['browser', 'close-all'], ['browser', 'eval'], ['browser', 'run'], ['browser', 'cdp'],
+  ['browser', 'screenshot'], ['probe'], ['page', 'tree'], ['page', 'reduce'],
+  ['page', 'collect'], ['page', 'langs'], ['page', 'overlays'], ['ext', 'launch'],
+  ['ext', 'open'], ['ext', 'status'], ['ext', 'close'], ['mask'],
+];
+
+test('--help works for root, groups and every leaf, with Example and Output', async () => {
+  const help = async (path) => {
+    const stdout = sink();
+    const code = await runCli(['node', 'web', ...path, '--help'], {
+      stdout, stderr: sink(), env: {},
+    });
+    assert.equal(code, 0, path.join(' '));
+    return stdout.buf;
+  };
+  assert.match(await help([]), /Exit codes/);
+  for (const group of ['browser', 'page', 'ext']) assert.match(await help([group]), /session/);
+  for (const path of LEAVES) {
+    const text = await help(path);
+    assert.match(text, /Example:/, path.join(' '));
+    assert.match(text, /Output:/, path.join(' '));
+  }
+});

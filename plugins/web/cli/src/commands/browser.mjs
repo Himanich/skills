@@ -8,6 +8,89 @@ import {
   requireOpenSession,
 } from '#src/session.mjs';
 
+const HELP = {
+  OPEN: `
+Example:
+  web browser open https://example.com --session s1 --headed
+Output:
+  { session, url, headed, cdpPort? }
+Notes:
+  Without --session a name web-<4 hex> is generated and returned. An open name exits 2
+  (SESSION_EXISTS). --recipe applies a recipe from \`web probe\`. Leaves the browser open.
+`,
+  ATTACH: `
+Example:
+  web browser attach http://127.0.0.1:9222 --session mine
+Output:
+  { session, attached }
+Notes:
+  Joins a running Chrome started with --remote-debugging-port.
+`,
+  LIST: `
+Example:
+  web browser list
+Output:
+  { sessions: [{ name, status, headed, url }] }
+Notes:
+  url is null unless the session is open.
+`,
+  CLOSE: `
+Example:
+  web browser close --session s1
+Output:
+  { session, status }
+Exit codes:
+  2 NO_SESSION when the session is not open.
+`,
+  CLOSE_ALL: `
+Example:
+  web browser close-all
+Output:
+  { closed: [name] }
+`,
+  EVAL: `
+Example:
+  web browser eval "document.title" --session s1
+Output:
+  { result }
+Notes:
+  One JS expression, evaluated in the page: no \`;\`, no \`return\`. For statements use
+  \`browser run\`. result is the JSON-serializable value.
+`,
+  RUN: `
+Example:
+  web browser run "async page => page.title()" --session s1
+Output:
+  { result }
+Notes:
+  Argument is a file path (if the file exists) or inline code \`async page => {…}\`.
+  Statements and \`return\` are allowed. The function receives the Playwright \`page\`.
+`,
+  CDP: `
+Example:
+  web browser cdp Page.getLayoutMetrics --session s1
+  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session s1
+Output:
+  { result }
+Notes:
+  params-json is an optional JSON object (default {}); invalid JSON exits 2 (USAGE).
+`,
+  SHOT: `
+Example:
+  web browser screenshot --full-page --session s1
+Output:
+  { path }
+Notes:
+  Writes <output>/<session>-screenshot-<timestamp>.png. --selector captures one element.
+`,
+};
+
+const GROUP_HELP = `
+Use for session plumbing; analysis lives in \`web page\`. Commands other than open, attach
+and list act on the browser named by --session (or WEB_SESSION) and need it open.
+Sessions stay open until \`browser close\`; \`playwright-cli -s <session> …\` drives the same one.
+`;
+
 const DESCRIPTION = 'session plumbing: open, attach, list, close, eval, run, cdp, screenshot';
 
 function sessionUrl(driver, { name, status }) {
@@ -34,7 +117,10 @@ function parseParams(json) {
  * @param {object} deps
  */
 export function registerBrowser(program, deps) {
-  const browser = program.command('browser').description(DESCRIPTION);
+  const browser = program
+    .command('browser')
+    .description(DESCRIPTION)
+    .addHelpText('after', GROUP_HELP);
   const action = (cmd, fn) =>
     cmd.action(async (...args) => {
       const command = args.at(-1);
@@ -49,7 +135,7 @@ export function registerBrowser(program, deps) {
   action(
     browser
       .command('open [url]')
-      .description('open a browser session')
+      .description('open a browser session').addHelpText('after', HELP.OPEN)
       .option('--cdp-port <n>', 'remote debugging port', Number)
       .option('--persistent', 'use a persistent profile'),
     ({ opts, driver, print }, url) => {
@@ -69,7 +155,7 @@ export function registerBrowser(program, deps) {
   );
 
   action(
-    browser.command('attach <cdp-url>').description('attach to a running Chrome'),
+    browser.command('attach <cdp-url>').description('attach to a running Chrome').addHelpText('after', HELP.ATTACH),
     ({ opts, driver, print }, cdpUrl) => {
       const session = opts.session ?? generateSessionName();
       driver.attach({ session, cdpUrl });
@@ -77,7 +163,7 @@ export function registerBrowser(program, deps) {
     },
   );
 
-  action(browser.command('list').description('list sessions'), ({ driver, print }) => {
+  action(browser.command('list').description('list sessions').addHelpText('after', HELP.LIST), ({ driver, print }) => {
     const sessions = driver.list().map((s) => ({
       name: s.name,
       status: s.status,
@@ -87,27 +173,27 @@ export function registerBrowser(program, deps) {
     print({ sessions });
   });
 
-  action(browser.command('close').description('close the session'), (ctx) => {
+  action(browser.command('close').description('close the session').addHelpText('after', HELP.CLOSE), (ctx) => {
     const session = openSession(ctx);
     ctx.driver.close(session);
     ctx.print({ session, status: 'closed' });
   });
 
-  action(browser.command('close-all').description('close every session'), (ctx) => {
+  action(browser.command('close-all').description('close every session').addHelpText('after', HELP.CLOSE_ALL), (ctx) => {
     const closed = ctx.driver.list().map((s) => s.name);
     ctx.driver.closeAll();
     ctx.print({ closed });
   });
 
   action(
-    browser.command('eval <expr>').description('evaluate a JS expression'),
+    browser.command('eval <expr>').description('evaluate a JS expression').addHelpText('after', HELP.EVAL),
     (ctx, expr) => {
       ctx.print({ result: ctx.driver.evaluate(openSession(ctx), expr) });
     },
   );
 
   action(
-    browser.command('run <file-or-code>').description('run a Playwright script or code'),
+    browser.command('run <file-or-code>').description('run a Playwright script or code').addHelpText('after', HELP.RUN),
     (ctx, arg) => {
       const target = existsSync(arg) ? { file: arg } : { code: arg };
       ctx.print({ result: ctx.driver.run(openSession(ctx), target) });
@@ -115,7 +201,7 @@ export function registerBrowser(program, deps) {
   );
 
   action(
-    browser.command('cdp <method> [params-json]').description('send a raw CDP command'),
+    browser.command('cdp <method> [params-json]').description('send a raw CDP command').addHelpText('after', HELP.CDP),
     (ctx, method, json) => {
       const params = parseParams(json);
       ctx.print({ result: ctx.driver.cdp(openSession(ctx), method, params) });
@@ -125,7 +211,7 @@ export function registerBrowser(program, deps) {
   action(
     browser
       .command('screenshot')
-      .description('take a screenshot')
+      .description('take a screenshot').addHelpText('after', HELP.SHOT)
       .option('--full-page', 'capture the full page')
       .option('--selector <css>', 'capture one element'),
     (ctx) => {

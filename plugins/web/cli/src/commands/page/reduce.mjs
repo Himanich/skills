@@ -12,6 +12,18 @@ function detect(driver, session) {
   return typeof raw === 'string' ? JSON.parse(raw) : raw;
 }
 
+const HELP = `
+Example:
+  web page reduce https://example.com --retries 3
+Output:
+  { url, title, viewport, templateHash, sections: [...], session, durationMs }
+Notes:
+  Phase 1 only: section detection. Phase 2 (PHASE2-RULES) stays with the agent.
+  Rescrolls up to --retries times when no sections are found.
+Exit codes:
+  1 EMPTY_RESULT when no sections are detected; 3 when blocked.
+`;
+
 /**
  * Phase 1 of page reduce: detect sections, retrying after scrolling when none are found.
  * @returns {{ url: string, title: string, viewport: object, templateHash: string,
@@ -43,6 +55,7 @@ export function registerReduce(group, deps) {
   group
     .command('reduce [url]')
     .description('detect page sections (phase 1 of page reduction)')
+    .addHelpText('after', HELP)
     .option('--settle-ms <n>', 'wait after scrolling for lazy content', Number, 2000)
     .option('--retries <n>', 'rescroll attempts when no sections are found', Number, 2)
     .action((url, _opts, command) => runPageCommand(command, deps, {

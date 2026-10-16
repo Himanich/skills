@@ -151,9 +151,13 @@ export function registerMask(program, deps = {}) {
     .argument('<display-domain>', 'domain to show, e.g. wknd.adventures')
     .argument('<target-url>', 'upstream URL to proxy, e.g. https://example.com')
     .addHelpText('after', `
-Runs in the foreground until Ctrl-C, then restores /etc/hosts and removes certs.
-Needs sudo (hosts file, port 443) and mkcert. Run exactly:
-  ${SUDO_LINE}`)
+Example:
+  ${SUDO_LINE}
+Output:
+  { url, displayDomain, targetUrl }
+Notes:
+  Runs in the foreground until Ctrl-C, then restores /etc/hosts and removes certs.
+  Needs sudo (hosts file, port 443) and mkcert. Without root it exits 2 (USAGE).`)
     .action(async (displayDomain, targetUrl, _opts, command) => {
       if (!validateDisplayDomain(displayDomain)) {
         throw new CliError('USAGE', 'invalid domain name', {

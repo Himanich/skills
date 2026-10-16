@@ -30,6 +30,18 @@ function takeScreenshot(driver, session, path, stderr) {
   }
 }
 
+const HELP = `
+Example:
+  web page collect metadata https://example.com
+Output:
+  one collector: { ...collectorFields, files, url, session, durationMs }
+  all:           { url, collectedAt, screenshot?, collectors: {...}, files, session, durationMs }
+Notes:
+  <what> is one of: all, icons, metadata, text, forms, videos, socials. Files go under
+  --output as <session>-collect-<name>; icons are written as a directory of .svg files plus
+  icons.json. Unknown <what> exits 2 (USAGE).
+`;
+
 /**
  * Run collectors on the current page and write their output under `outputDir`.
  * @param {object} driver
@@ -72,6 +84,7 @@ export function registerCollect(group, deps) {
   group
     .command('collect <what> [url]')
     .description(`collect page resources: ${COLLECTORS.join(', ')}`)
+    .addHelpText('after', HELP)
     .action((what, url, _opts, command) => {
       if (!COLLECTORS.includes(what)) {
         throw new CliError('USAGE', `unknown collector ${what}`, {

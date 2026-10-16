@@ -4,6 +4,49 @@ import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
 import { artifactPath, generateSessionName, requireOpenSession } from '#src/session.mjs';
 
+const HELP = {
+  LAUNCH: `
+Example:
+  web ext launch ./dist --session ext1
+Output:
+  { session, extensionId, extensionPath, surfaces, cdpPort? }
+Notes:
+  Forces a headed, persistent Chrome with the unpacked extension loaded. surfaces lists
+  what the manifest declares (sidepanel, popup, options). Exits 1 if the extension
+  does not load.
+`,
+  OPEN: `
+Example:
+  web ext open sidepanel --session ext1
+Output:
+  { surface, url, targetId?, note? }
+Notes:
+  <surface> is sidepanel, popup or options. sidepanel needs a content script and a tab on a
+  real page; otherwise a tab opens the panel URL and note explains why.
+  A surface the manifest lacks exits 2 (USAGE).
+`,
+  STATUS: `
+Example:
+  web ext status --session ext1
+Output:
+  { session, open, extensionId, surfaces }
+Notes:
+  extensionId and surfaces are null when no launch record exists.
+`,
+  CLOSE: `
+Example:
+  web ext close --session ext1
+Output:
+  { session, status }
+`,
+};
+
+const GROUP_HELP = `
+Use to test an unpacked Chrome extension in a real browser. Every command except launch needs
+--session <name> (or WEB_SESSION) naming the session created by \`ext launch\`; the launch
+record lives under --output, so keep --output the same across calls.
+`;
+
 const DESCRIPTION = 'pilot a Chrome extension: launch, open, status, close';
 const FALLBACK_NOTES = {
   'no-content-script':
@@ -211,7 +254,10 @@ function needSession(ctx) {
  * @param {object} deps
  */
 export function registerExt(program, deps) {
-  const ext = program.command('ext').description(DESCRIPTION);
+  const ext = program
+    .command('ext')
+    .description(DESCRIPTION)
+    .addHelpText('after', GROUP_HELP);
   const action = (cmd, fn, { needs = true } = {}) =>
     cmd.action(async (...args) => {
       const ctx = createContext(args.at(-1), deps);
@@ -222,11 +268,21 @@ export function registerExt(program, deps) {
     ext
       .command('launch <dist-dir>')
       .description('launch a headed browser with the extension loaded')
+      .addHelpText('after', HELP.LAUNCH)
       .option('--cdp-port <n>', 'remote debugging port', Number),
     launch,
     { needs: false },
   );
-  action(ext.command('open <surface>').description('open sidepanel, popup or options'), open);
-  action(ext.command('status').description('show extension session state'), status);
-  action(ext.command('close').description('close the extension session'), close);
+  action(ext
+      .command('open <surface>')
+      .description('open sidepanel, popup or options')
+      .addHelpText('after', HELP.OPEN), open);
+  action(ext
+      .command('status')
+      .description('show extension session state')
+      .addHelpText('after', HELP.STATUS), status);
+  action(ext
+      .command('close')
+      .description('close the extension session')
+      .addHelpText('after', HELP.CLOSE), close);
 }

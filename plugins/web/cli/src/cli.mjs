@@ -15,6 +15,34 @@ const USAGE_ERRORS = new Set([
   'commander.unknownCommand',
 ]);
 
+const ROOT_HELP = `
+Output contract:
+  stdout is one JSON document (or one text block with --format text); stderr carries
+  progress and logs. WEB_DEBUG=1 echoes every playwright-cli call to stderr.
+  Errors: { "error": { "code", "message", "hint" } }. Main codes: USAGE, NO_SESSION,
+  SESSION_EXISTS, PLAYWRIGHT_CLI, BLOCKED, TIMEOUT, UNSUPPORTED, EMPTY_RESULT.
+
+Exit codes:
+  0 ok · 1 failure · 2 usage or environment · 3 blocked by bot protection
+
+Sessions:
+  With a <url> and no --session, a browser is opened and closed for that one command.
+  --session <name> reuses an open browser and leaves it open. WEB_SESSION is the default
+  for --session. Sessions are scoped to the working directory. The escape hatch
+  \`playwright-cli -s <session> …\` drives the same browser.
+
+Artifacts:
+  Written under --output (default ./.web) as <session>-<command>-<name>.
+
+Requires playwright-cli >= 0.1.20 on PATH (npm install -g @playwright/cli@latest).
+
+Typical flows:
+  one-shot:  web page tree <url>
+  scripted:  web browser open <url> --session s; web page overlays --session s --dismiss;
+             web page tree --session s; web browser close --session s
+  blocked:   web probe <url>, then re-run with --recipe .web/probe-probe-recipe.json
+`;
+
 /**
  * Build the root program with all command groups.
  * @param {{ driverFactory?: Function, env?: NodeJS.ProcessEnv, stdout?: object,
@@ -33,6 +61,7 @@ export function createProgram(deps = {}) {
       writeOut: (s) => stdout.write(s),
       writeErr: (s) => stderr.write(s),
     })
+    .addHelpText('after', ROOT_HELP)
     .showHelpAfterError()
     .showSuggestionAfterError()
     .exitOverride();

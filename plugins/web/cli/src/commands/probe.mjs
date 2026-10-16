@@ -104,6 +104,19 @@ function runStep(driver, { url, outputDir, stepDef, log }) {
   }
 }
 
+const HELP = `
+Example:
+  web probe https://example.com
+Output:
+  { report: { url, timestamp, steps, firstSuccess, detectedSignals }, recipePath }
+Notes:
+  Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
+  <output>/probe-probe-report.json and probe-probe-recipe.json; pass the recipe to
+  other commands with --recipe. Progress goes to stderr.
+Exit codes:
+  3 BLOCKED when all steps are blocked (no recipe is written).
+`;
+
 /**
  * Try each probe step until a page loads unblocked.
  * @returns {{ report: object, recipePath: string|null }}
@@ -159,6 +172,7 @@ export function registerProbe(program, deps) {
   program
     .command('probe <url>')
     .description('detect bot/CDN protection and produce a browser recipe')
+    .addHelpText('after', HELP)
     .action((url, _opts, command) => {
       const { opts, driver, print } = createContext(command, deps);
       const stderr = deps.stderr ?? process.stderr;

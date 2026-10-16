@@ -75,6 +75,18 @@ function residualBlockers(driver, session) {
   return parseMaybe(driver.run(session, { code }));
 }
 
+const HELP = `
+Example:
+  web page overlays --session s1 --dismiss --mode thorough
+Output:
+  { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
+  with --dismiss also: applied: [{ id, strategy: hide|dismiss, ok }], residual: [{ tag, id, ... }]
+Notes:
+  --dismiss quick hides every overlay with CSS. thorough clicks the CMP's dismiss steps and
+  hides overlays that have none; scroll lock is fixed in both. residual[] lists fixed
+  high-z-index elements still covering the viewport: check it is empty.
+`;
+
 /**
  * Register `page overlays [url]`.
  * @param {import('commander').Command} group
@@ -84,6 +96,7 @@ export function registerOverlays(group, deps) {
   group
     .command('overlays [url]')
     .description('detect cookie banners and modals; optionally dismiss them')
+    .addHelpText('after', HELP)
     .option('--dismiss', 'dismiss or hide the detected overlays')
     .option('--mode <mode>', `dismissal mode: ${MODES.join(', ')}`, 'quick')
     .option('--refresh-db', 'refresh the overlay pattern database first')

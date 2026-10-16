@@ -2,6 +2,18 @@ import { loadBundle } from '#src/bundles/index.mjs';
 import { preparePage } from '#src/page/prepare.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
 
+const HELP = `
+Example:
+  web page tree https://example.com --min-width 600
+Output:
+  { text, tree, nodeMap, rootBackground, url, session, durationMs }
+Notes:
+  text is the indented spatial tree; --format text prints only that. nodeMap maps node ids
+  to elements. Scrolls for lazy content and unpins fixed/sticky elements first.
+Exit codes:
+  3 when the page is blocked by bot protection.
+`;
+
 /**
  * Capture the visual tree of the current page.
  * @returns {{ text: string, tree: object, nodeMap: object, rootBackground: string }}
@@ -28,6 +40,7 @@ export function registerTree(group, deps) {
   group
     .command('tree [url]')
     .description('capture the visual tree of a page')
+    .addHelpText('after', HELP)
     .option('--min-width <n>', 'minimum element width in px', Number, 900)
     .option('--settle-ms <n>', 'wait after scrolling for lazy content', Number, 2000)
     .action((url, _opts, command) => runPageCommand(command, deps, {

@@ -2,6 +2,15 @@ import { loadBundle } from '#src/bundles/index.mjs';
 import { detectLanguages, loadDetector } from '#src/page/langs-detect.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
 
+const HELP = `
+Example:
+  web page langs https://example.com
+Output:
+  { wordCount, detected, declared, reconciliation, url, session, durationMs }
+Notes:
+  Needs cld3-asm; if missing, exits 2 (UNSUPPORTED) with an install hint.
+`;
+
 /**
  * Register `page langs [url]`. The detector loads before the browser opens,
  * so a missing cld3-asm fails fast.
@@ -12,6 +21,7 @@ export function registerLangs(group, deps) {
   group
     .command('langs [url]')
     .description('detect page languages (CLD3) and compare with declared lang signals')
+    .addHelpText('after', HELP)
     .action(async (url, _opts, command) => {
       const detector = await (deps.loadDetector ?? loadDetector)();
       return runPageCommand(command, deps, {
