@@ -5,6 +5,7 @@ import {
   checkHealth,
   classifyPage,
   detectSignals,
+  isHardBlocked,
   findDocumentChain,
 } from './blocked.mjs';
 
@@ -43,8 +44,8 @@ test('classifyPage flags a challenge title with its signal', () => {
   assert.deepEqual(res.signals, ['cloudflare-challenge']);
 });
 
-test('classifyPage flags a near-empty body', () => {
-  assert.equal(classifyPage({ title: 'Home', bodyLength: 20 }).blocked, true);
+test('classifyPage does not flag a near-empty body', () => {
+  assert.equal(classifyPage({ title: 'Home', bodyLength: 20 }).blocked, false);
 });
 
 test('classifyPage passes a healthy page and reads network signals', () => {
@@ -66,4 +67,22 @@ test('checkHealth blocks status 0, status >= 400 and chrome-error URLs', () => {
   assert.equal(checkHealth({ ...ok, status: 403 }), 'blocked');
   assert.equal(checkHealth({ ...ok, url: 'chrome-error://chromewebdata/' }), 'blocked');
   assert.equal(checkHealth({ ...ok, status: 200 }), 'success');
+});
+
+test('isHardBlocked ignores soft signals', () => {
+  assert.equal(
+    isHardBlocked({ title: 'Error handling in JS', status: 200, bodyLength: 5000 }),
+    false,
+  );
+  assert.equal(
+    isHardBlocked({ title: 'Hi', status: 200, bodyLength: 20, hasMainContent: false }),
+    false,
+  );
+});
+
+test('isHardBlocked flags hard signals', () => {
+  assert.equal(isHardBlocked({ title: 'x', status: 403, bodyLength: 5000 }), true);
+  assert.equal(isHardBlocked({ title: 'x', status: 0, bodyLength: 5000 }), true);
+  assert.equal(isHardBlocked({ title: 'Just a moment...', status: 200 }), true);
+  assert.equal(isHardBlocked({ url: 'chrome-error://chromewebdata/', status: 200 }), true);
 });

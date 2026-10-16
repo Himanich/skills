@@ -4324,6 +4324,12 @@ function checkHealth(health) {
   }
   return "success";
 }
+var CHALLENGE_TITLE_PATTERN = /just a moment|attention required|access denied|captcha|challenge|request could not be satisfied|403 forbidden|blocked/i;
+function isHardBlocked(health) {
+  return Boolean(
+    health.url && health.url.startsWith("chrome-error://") || health.status === 0 || health.status >= 400 || CHALLENGE_TITLE_PATTERN.test(health.title ?? "")
+  );
+}
 function detectSignals(networkLines, healths) {
   const signals = [];
   const joined = networkLines.join("\n").toLowerCase();
@@ -4373,7 +4379,7 @@ function findDocumentChain(requestsOutput, finalUrl) {
 }
 function classifyPage({ networkLines = [], ...health }) {
   return {
-    blocked: checkHealth(health) === "blocked",
+    blocked: isHardBlocked(health),
     signals: detectSignals(networkLines, health)
   };
 }

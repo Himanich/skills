@@ -16,6 +16,18 @@ export function checkHealth(health) {
   return 'success';
 }
 
+export const CHALLENGE_TITLE_PATTERN =
+  /just a moment|attention required|access denied|captcha|challenge|request could not be satisfied|403 forbidden|blocked/i;
+
+export function isHardBlocked(health) {
+  return Boolean(
+    (health.url && health.url.startsWith('chrome-error://')) ||
+    health.status === 0 ||
+    health.status >= 400 ||
+    CHALLENGE_TITLE_PATTERN.test(health.title ?? ''),
+  );
+}
+
 export function detectSignals(networkLines, healths) {
   const signals = [];
   const joined = networkLines.join('\n').toLowerCase();
@@ -81,12 +93,17 @@ export function findDocumentChain(requestsOutput, finalUrl) {
  */
 export function classifyPage({ networkLines = [], ...health }) {
   return {
-    blocked: checkHealth(health) === 'blocked',
+    blocked: isHardBlocked(health),
     signals: detectSignals(networkLines, health),
   };
 }
 
-/** @param {Parameters<typeof classifyPage>[0]} health */
+/**
+ * Gate for `page *` commands: throws BLOCKED only on hard signals (chrome-error URL,
+ * status 0 or >= 400, challenge-like title). The softer checkHealth heuristics
+ * (any "error" title, thin body) are reserved for `probe` config comparison.
+ * @param {Parameters<typeof classifyPage>[0]} health
+ */
 export function assertNotBlocked(health) {
   const { blocked, signals } = classifyPage(health);
   if (!blocked) return;
