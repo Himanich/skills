@@ -33,7 +33,7 @@ function run(args, results) {
 }
 
 const detects = (calls) => calls.filter((c) => c[0] === 'evaluate' && /detectSections/.test(c[2]));
-const scrolls = (calls) => calls.filter((c) => c[0] === 'run' && /scrollTo/.test(c[1].code ?? c[2]));
+const scrolls = (calls) => calls.filter((c) => c[0] === 'run' && /scrollTo/.test(c[2].code));
 
 test('retries scroll when sections empty', async () => {
   const { code, calls, stdout } = await run(['page', 'reduce', 'http://x'],
