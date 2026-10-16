@@ -206,7 +206,9 @@ export function buildHideExpression(report, ids) {
   const selected = ids.includes('all')
     ? report.overlays
     : report.overlays.filter((o) => ids.includes(o.id));
-  const rules = selected.flatMap((o) => o.hide ?? []);
+  const rules = selected.flatMap((o) =>
+    o.hide?.length ? o.hide : [`${o.selector} { display:none!important }`],
+  );
   if (report.scroll_locked && report.scroll_fix) rules.push(report.scroll_fix);
   const css = JSON.stringify(rules.join('\n'));
   const style = `Object.assign(document.createElement('style'), { textContent: ${css} })`;

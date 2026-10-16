@@ -44,7 +44,10 @@ const REPORT = {
   scroll_fix: 'html { overflow:auto!important }',
 };
 
-async function run(extra, { runFails = false, dismissResult = { clicked: 1, skipped: 0 } } = {}) {
+async function run(
+  extra,
+  { runFails = false, dismissResult = { clicked: 1, skipped: 0 }, visible = false, report } = {},
+) {
   const calls = [];
   const fetchUrls = [];
   const driver = {
@@ -60,9 +63,13 @@ async function run(extra, { runFails = false, dismissResult = { clicked: 1, skip
       if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0'))
         throw new Error('boom');
       if (o.code.includes('r.right > 0')) return '[]';
-      return o.code.includes('page.evaluate(') ? JSON.stringify(REPORT) : dismissResult;
+      return o.code.includes('page.evaluate(') ? JSON.stringify(report ?? REPORT) : dismissResult;
     },
-    evaluate: (s, expr) => (calls.push(['evaluate', expr]), 'ok'),
+    evaluate: (s, expr) => {
+      calls.push(['evaluate', expr]);
+      if (expr.includes('appendChild')) return 'ok';
+      return expr.includes('overflow') ? true : !visible;
+    },
   };
   const fetch = async (url) => {
     fetchUrls.push(url);
@@ -79,7 +86,7 @@ async function run(extra, { runFails = false, dismissResult = { clicked: 1, skip
   return { code, calls, fetchUrls, doc: stdout.buf ? JSON.parse(stdout.buf) : null };
 }
 
-const hides = (calls) => calls.filter((c) => c[0] === 'evaluate');
+const hides = (calls) => calls.filter((c) => c[0] === 'evaluate' && c[1].includes('appendChild'));
 
 test('report shape has overlays[] and scrollLocked', async () => {
   const { code, doc, calls } = await run(['http://x']);
@@ -178,4 +185,25 @@ test('a throwing dismiss run reports ok:false with the error and hides the overl
 test('one click → dismiss ok:true', async () => {
   const { doc } = await run(['http://x', '--dismiss']);
   assert.deepEqual(doc.applied[0], { id: 'overlay-0', strategy: 'dismiss', ok: true });
+});
+
+test('overlay with empty hide gets a synthesized selector rule', async () => {
+  const report = {
+    ...REPORT,
+    overlays: [{ id: 'o', type: 'cmp-match', selector: '#empty', hide: [], dismiss: null }],
+  };
+  const { doc, calls } = await run(['http://x', '--dismiss'], { report });
+  assert.match(hides(calls)[0][1], /#empty \{ display:none!important \}/);
+  assert.equal(doc.applied[0].ok, true);
+});
+
+test('hide that leaves the element visible reports ok:false', async () => {
+  const { doc } = await run(['http://x', '--dismiss', '--mode', 'quick'], { visible: true });
+  assert.equal(doc.applied[0].ok, false);
+  assert.equal(doc.applied[0].error, 'still visible after hide');
+});
+
+test('scroll lock re-check is reported as scrollUnlocked', async () => {
+  const { doc } = await run(['http://x', '--dismiss']);
+  assert.equal(doc.scrollUnlocked, true);
 });

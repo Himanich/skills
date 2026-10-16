@@ -5694,7 +5694,9 @@ async function fetchEasyList(fetch = globalThis.fetch) {
 }
 function buildHideExpression(report, ids) {
   const selected = ids.includes("all") ? report.overlays : report.overlays.filter((o) => ids.includes(o.id));
-  const rules = selected.flatMap((o) => o.hide ?? []);
+  const rules = selected.flatMap(
+    (o) => o.hide?.length ? o.hide : [`${o.selector} { display:none!important }`]
+  );
   if (report.scroll_locked && report.scroll_fix) rules.push(report.scroll_fix);
   const css = JSON.stringify(rules.join("\n"));
   const style = `Object.assign(document.createElement('style'), { textContent: ${css} })`;
@@ -5791,10 +5793,23 @@ function runDismissSteps(driver, session, overlay) {
     return { ...base, ok: false, error: err.message };
   }
 }
+var isTrue = (value) => value === true || value === "true";
+function isHidden(driver, session, selector) {
+  const sel = JSON.stringify(selector);
+  const expr = `(() => { const el = document.querySelector(${sel}); if (!el) return true; return getComputedStyle(el).display === 'none' || el.getBoundingClientRect().height === 0; })()`;
+  return isTrue(driver.evaluate(session, expr));
+}
 function hideOverlays(driver, session, report, overlays) {
   const ids = overlays.map((o) => o.id);
   driver.evaluate(session, buildHideExpression(report, ids));
-  return overlays.map((o) => ({ id: o.id, strategy: "hide", ok: true }));
+  return overlays.map((o) => {
+    const base = { id: o.id, strategy: "hide" };
+    if (isHidden(driver, session, o.selector)) return { ...base, ok: true };
+    return { ...base, ok: false, error: "still visible after hide" };
+  });
+}
+function scrollUnlocked(driver, session) {
+  return isTrue(driver.evaluate(session, `getComputedStyle(document.body).overflow !== 'hidden'`));
 }
 function dismissThorough(driver, session, report) {
   const hasSteps = (o) => o.dismiss?.length > 0;
@@ -5805,8 +5820,7 @@ function dismissThorough(driver, session, report) {
 }
 function dismissOverlays(driver, session, report, { mode }) {
   if (mode === "quick") {
-    driver.evaluate(session, buildHideExpression(report, ["all"]));
-    return report.overlays.map((o) => ({ id: o.id, strategy: "hide", ok: true }));
+    return hideOverlays(driver, session, report, report.overlays);
   }
   return dismissThorough(driver, session, report);
 }
@@ -5819,7 +5833,7 @@ Example:
   web page overlays --session s1 --dismiss --mode thorough
 Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
-  with --dismiss also: applied: [{ id, strategy, ok, error? }], residual: [{ tag, id, ... }]
+  with --dismiss also: applied: [{ id, strategy, ok, error? }], scrollUnlocked, residual: [{ tag, id, ... }]
 Notes:
   --dismiss quick hides every overlay with CSS. thorough (default) clicks the CMP's dismiss steps
   and hides overlays that have none or whose dismiss failed; scroll lock is fixed in both.
@@ -5849,6 +5863,7 @@ function registerOverlays(group, deps) {
         };
         if (!opts.dismiss) return result;
         result.applied = dismissOverlays(driver, session, report, { mode: opts.mode });
+        if (report.scroll_locked) result.scrollUnlocked = scrollUnlocked(driver, session);
         result.residual = residualBlockers(driver, session);
         return result;
       }
