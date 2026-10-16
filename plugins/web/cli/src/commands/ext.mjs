@@ -5,8 +5,12 @@ import { createContext } from '#src/context.mjs';
 import { artifactPath, generateSessionName, requireOpenSession } from '#src/session.mjs';
 
 const DESCRIPTION = 'pilot a Chrome extension: launch, open, status, close';
-const SIDEPANEL_NOTE =
-  'chrome.sidePanel.open() needs a user gesture; opened the panel page as a tab instead';
+const FALLBACK_NOTES = {
+  'no-content-script':
+    'no content-script context: chrome.sidePanel.open() needs a user gesture; add a '
+    + 'content_scripts entry and handle {type:"open_side_panel"} in the service worker',
+  'panel-not-found': 'side panel target did not appear within 5s',
+};
 const LOAD_FAILED_HINT = 'check manifest.json and the extension build; see chrome://extensions';
 
 /** @param {string} dir absolute extension directory */
@@ -48,7 +52,45 @@ const FIND_ID_CODE = `async page => {
 }`;
 
 function extensionIdFrom(url) {
-  return typeof url === 'string' ? (url.match(/^chrome-extension:\/\/([^/]+)\//)?.[1] ?? null) : null;
+  if (typeof url !== 'string') return null;
+  return url.match(/^chrome-extension:\/\/([^/]+)\//)?.[1] ?? null;
+}
+
+function sidepanelCode(extensionId, panelPath) {
+  return `async page => {
+    const id = ${JSON.stringify(extensionId)};
+    const panelPath = ${JSON.stringify(panelPath)};
+    const ctx = page.context();
+    const isPage = (u) => !u.startsWith('chrome-extension://') && !u.startsWith('chrome://');
+    let p = ctx.pages().find((q) => isPage(q.url()));
+    if (!p) { p = await ctx.newPage(); await p.goto('about:blank'); }
+    const s = await ctx.newCDPSession(p);
+    const contexts = [];
+    s.on('Runtime.executionContextCreated', (e) => contexts.push(e.context));
+    await s.send('Runtime.enable');
+    const wait = (ms) => page.waitForTimeout(ms);
+    const t0 = Date.now();
+    let ext;
+    while (Date.now() - t0 < 5000 && !(ext = contexts.find((c) => c.origin.includes(id)))) {
+      await wait(100);
+    }
+    if (!ext) return { fallback: 'no-content-script' };
+    await s.send('Runtime.evaluate', {
+      contextId: ext.id,
+      expression: 'chrome.runtime.sendMessage({type: "open_side_panel"})',
+      awaitPromise: true,
+      returnByValue: true,
+      userGesture: true,
+    });
+    const t1 = Date.now();
+    while (Date.now() - t1 < 5000) {
+      const { targetInfos } = await s.send('Target.getTargets');
+      const hit = targetInfos.find((t) => t.url.includes(id) && t.url.includes(panelPath));
+      if (hit) return { url: hit.url, targetId: hit.targetId };
+      await wait(500);
+    }
+    return { fallback: 'panel-not-found' };
+  }`;
 }
 
 function openTabCode(path, extensionId) {
@@ -72,7 +114,17 @@ function loadSessionFile(ctx) {
       hint: `run: web ext launch <dist-dir> --session ${name}`,
     });
   }
-  return JSON.parse(readFileSync(file, 'utf8'));
+  return parseSessionFile(file);
+}
+
+function parseSessionFile(file) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch {
+    throw new CliError('FAILURE', `corrupt ext session file ${file}`, {
+      hint: 'run: web ext close --session <name> then launch again',
+    });
+  }
 }
 
 function launch(ctx, distDir) {
@@ -117,13 +169,17 @@ function open(ctx, surface) {
     });
   }
   const path = surfacePath(readManifest(info.extensionPath), surface);
-  const url = driver.run(opts.session, { code: openTabCode(path, info.extensionId) });
-  print({ surface, url, ...(surface === 'sidepanel' && { note: SIDEPANEL_NOTE }) });
+  const openTab = () => driver.run(opts.session, { code: openTabCode(path, info.extensionId) });
+  if (surface !== 'sidepanel') return print({ surface, url: openTab() });
+  const code = sidepanelCode(info.extensionId, path);
+  const res = driver.run(opts.session, { code });
+  if (res?.url) return print({ surface, url: res.url, targetId: res.targetId });
+  print({ surface, url: openTab(), note: FALLBACK_NOTES[res?.fallback] });
 }
 
 function status({ driver, opts, print }) {
   const file = artifactPath(opts.output, opts.session, 'ext', 'session.json');
-  const info = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+  const info = existsSync(file) ? parseSessionFile(file) : null;
   const isOpen = driver.list().some((s) => s.name === opts.session && s.status === 'open');
   print({
     session: opts.session,
