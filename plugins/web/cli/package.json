@@ -1,0 +1,1 @@
+{ "name": "@adobe/web-cli", "version": "0.0.0-semantically-released", "type": "module", "bin": { "web": "./bin/web.mjs" }, "files": ["bin", "dist"], "engines": { "node": ">=22.12" }, "scripts": { "test": "node --test", "build": "node build.mjs", "check:dist": "node build.mjs --check" }, "dependencies": { "commander": "15.0.0" }, "devDependencies": { "esbuild": "0.28.2" } }
