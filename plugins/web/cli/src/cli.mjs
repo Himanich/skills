@@ -20,10 +20,12 @@ Output contract:
   stdout is one JSON document (or one text block with --format text); stderr carries
   progress and logs. WEB_DEBUG=1 echoes every playwright-cli call to stderr.
   Errors: { "error": { "code", "message", "hint" } }. Main codes: USAGE, NO_SESSION,
-  SESSION_EXISTS, PLAYWRIGHT_CLI, BLOCKED, TIMEOUT, UNSUPPORTED, EMPTY_RESULT.
+  SESSION_EXISTS, PLAYWRIGHT_CLI, BLOCKED, TIMEOUT, UNSUPPORTED, EMPTY_RESULT, INTERNAL.
 
 Exit codes:
   0 ok · 1 failure · 2 usage or environment · 3 blocked by bot protection
+  By code: 2: USAGE NO_SESSION SESSION_EXISTS PLAYWRIGHT_CLI UNSUPPORTED · 3: BLOCKED ·
+  1: everything else
 
 Sessions:
   With a <url> and no --session, a browser is opened and closed for that one command.

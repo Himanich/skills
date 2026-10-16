@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CliError } from '#src/errors.mjs';
 
@@ -117,6 +119,13 @@ export function detectLanguages(signals, detector) {
   };
 }
 
+/** @param {string} start directory to begin the upward search */
+function findPackageDir(start) {
+  let dir = start;
+  while (!existsSync(join(dir, 'package.json')) && dirname(dir) !== dir) dir = dirname(dir);
+  return dir;
+}
+
 /**
  * Load the CLD3 WASM module.
  * @param {(module: string) => Promise<any>} [importer] module loader (injectable for tests)
@@ -127,7 +136,7 @@ export async function loadDetector(importer = (m) => import(m)) {
   try {
     ({ loadModule } = await importer('cld3-asm'));
   } catch {
-    const cliDir = fileURLToPath(new URL('../../', import.meta.url)).replace(/\/$/, '');
+    const cliDir = findPackageDir(dirname(fileURLToPath(import.meta.url)));
     throw new CliError('UNSUPPORTED', 'cld3-asm is not installed', {
       hint: `cd ${cliDir} && npm install`,
     });

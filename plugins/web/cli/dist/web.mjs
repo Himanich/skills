@@ -5356,6 +5356,8 @@ function registerCollect(group, deps) {
 }
 
 // src/page/langs-detect.mjs
+import { existsSync as existsSync3 } from "node:fs";
+import { dirname as dirname2, join as join6 } from "node:path";
 import { fileURLToPath } from "node:url";
 var MIN_BLOCK_BYTES = 50;
 var MAX_CLD3_BYTES = 1e3;
@@ -5444,12 +5446,17 @@ function detectLanguages(signals, detector) {
     reconciliation: reconcile(declared, detected)
   };
 }
+function findPackageDir(start) {
+  let dir = start;
+  while (!existsSync3(join6(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
+  return dir;
+}
 async function loadDetector(importer = (m) => import(m)) {
   let loadModule;
   try {
     ({ loadModule } = await importer("cld3-asm"));
   } catch {
-    const cliDir = fileURLToPath(new URL("../../", import.meta.url)).replace(/\/$/, "");
+    const cliDir = findPackageDir(dirname2(fileURLToPath(import.meta.url)));
     throw new CliError("UNSUPPORTED", "cld3-asm is not installed", {
       hint: `cd ${cliDir} && npm install`
     });
@@ -5805,10 +5812,12 @@ Output contract:
   stdout is one JSON document (or one text block with --format text); stderr carries
   progress and logs. WEB_DEBUG=1 echoes every playwright-cli call to stderr.
   Errors: { "error": { "code", "message", "hint" } }. Main codes: USAGE, NO_SESSION,
-  SESSION_EXISTS, PLAYWRIGHT_CLI, BLOCKED, TIMEOUT, UNSUPPORTED, EMPTY_RESULT.
+  SESSION_EXISTS, PLAYWRIGHT_CLI, BLOCKED, TIMEOUT, UNSUPPORTED, EMPTY_RESULT, INTERNAL.
 
 Exit codes:
   0 ok \xB7 1 failure \xB7 2 usage or environment \xB7 3 blocked by bot protection
+  By code: 2: USAGE NO_SESSION SESSION_EXISTS PLAYWRIGHT_CLI UNSUPPORTED \xB7 3: BLOCKED \xB7
+  1: everything else
 
 Sessions:
   With a <url> and no --session, a browser is opened and closed for that one command.
