@@ -42,8 +42,12 @@ language a page is in.
 
 ```bash
 $WEB page langs "$URL"
-$WEB page langs --session s1     # after `page overlays --dismiss` on the same browser
+$WEB page langs "$URL"
+$WEB page langs --session "$S"   # after `page overlays --dismiss` on the same browser
 ```
+
+To keep the result, redirect stdout to `langs.json` (`$WEB page langs "$URL" > out/langs.json`);
+the document matches [references/output-schema.md](references/output-schema.md).
 
 ## Reading the JSON
 

@@ -9,6 +9,8 @@ Output:
   { wordCount, detected, declared, reconciliation, url, session, durationMs }
 Notes:
   Needs cld3-asm; if missing, exits 2 (UNSUPPORTED) with an install hint.
+  To keep the result, redirect stdout to langs.json (web page langs "$URL" > out/langs.json);
+  the document matches references/output-schema.md.
 `;
 
 /**

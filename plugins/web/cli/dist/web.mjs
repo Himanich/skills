@@ -5540,6 +5540,8 @@ Output:
   { wordCount, detected, declared, reconciliation, url, session, durationMs }
 Notes:
   Needs cld3-asm; if missing, exits 2 (UNSUPPORTED) with an install hint.
+  To keep the result, redirect stdout to langs.json (web page langs "$URL" > out/langs.json);
+  the document matches references/output-schema.md.
 `;
 function registerLangs(group, deps) {
   group.command("langs [url]").description("detect page languages (CLD3) and compare with declared lang signals").addHelpText("after", HELP7).action(async (url, _opts, command) => {
