@@ -115,6 +115,17 @@ export function optimizeSvg(svgString, classification) {
   return svg;
 }
 
+function dropSpriteDuplicates(svgs) {
+  const resolved = svgs.filter((e) => e.source === 'svg-sprite' && e.symbolSvg);
+  const resolvedFallbacks = new Set(resolved.map((e) => e.fallbackSvg));
+  const inlineSvgs = new Set(svgs.filter((e) => e.source === 'inline-svg').map((e) => e.svg));
+  return svgs.filter((e) => {
+    if (e.source === 'inline-svg') return !resolvedFallbacks.has(e.svg);
+    if (e.source === 'svg-sprite' && !e.symbolSvg) return !inlineSvgs.has(e.fallbackSvg);
+    return true;
+  });
+}
+
 /**
  * Write classified, optimized SVGs and an icons.json manifest into `iconsDir`.
  * @returns {{ url: string, icons: object[] }} the manifest written
@@ -127,7 +138,7 @@ export function writeIcons(svgs, url, iconsDir) {
   const usedNames = new Set();
   const nameCollisionCounts = new Map();
 
-  for (const entry of svgs) {
+  for (const entry of dropSpriteDuplicates(svgs)) {
     const classification = classify(entry);
     if (classification === 'image') continue;
 

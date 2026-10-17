@@ -60,3 +60,35 @@ test('writeIcons writes svgs and manifest, skipping images and empty entries', (
   assert.ok(existsSync(join(dir, 'search.svg')));
   assert.deepEqual(JSON.parse(readFileSync(join(dir, 'icons.json'), 'utf8')), manifest);
 });
+
+const USE = '<svg width="16" height="16" viewBox="0 0 16 16"><use href="#icon-heart"></use></svg>';
+const HEART = { width: 16, height: 16, parentAriaLabel: 'Favorites', parentTag: 'BUTTON' };
+const inlineUse = { ...HEART, source: 'inline-svg', svg: USE };
+const spriteOf = (symbolSvg) => ({
+  ...HEART,
+  source: 'svg-sprite',
+  symbolSvg,
+  fallbackSvg: USE,
+});
+
+test('writeIcons writes a resolved sprite once, under its element name', () => {
+  const dir = join(mkdtempSync(join(tmpdir(), 'icons-')), 'out');
+  const symbol = '<symbol viewBox="0 0 16 16"><path fill="#f00" d="M0 0h1v1z"/></symbol>';
+  const { icons } = writeIcons([inlineUse, spriteOf(symbol)], 'http://x', dir);
+  assert.deepEqual(
+    icons.map((i) => i.name),
+    ['favorites'],
+  );
+  const content = readFileSync(join(dir, 'favorites.svg'), 'utf8');
+  assert.match(content, /currentColor/);
+  assert.doesNotMatch(content, /<use/);
+});
+
+test('writeIcons keeps the inline icon when the sprite is unresolved', () => {
+  const dir = join(mkdtempSync(join(tmpdir(), 'icons-')), 'out');
+  const { icons } = writeIcons([inlineUse, spriteOf(null)], 'http://x', dir);
+  assert.deepEqual(
+    icons.map((i) => [i.name, i.source]),
+    [['favorites', 'inline-svg']],
+  );
+});
