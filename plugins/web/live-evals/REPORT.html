@@ -37,90 +37,54 @@
 <p>The same cases in three arms: the skill with its CLI, the CLI alone (no skill on disk, the prompt only says <code>web --help</code> documents it), and neither. Each cell covers the same cases. A comparison on a few models, not a benchmark.</p>
 <table class="cmp"><thead><tr><th>Skill and model</th><th>skill + CLI</th><th>CLI only</th><th>neither</th><th>Time</th><th>Cost</th><th>CLI used</th></tr></thead>
 <tbody>
-<tr><th>browser-probe<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="bad"><b>58%</b><small>7/12</small></td>
-<td><b>· / · / 63</b><small>seconds</small></td>
-<td><b>· / · / $0.0032</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
 <tr><th>browser-probe<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>12/12</small></td><td class="none">·</td><td class="ok"><b>100%</b><small>12/12</small></td>
-<td><b>30 / · / 24</b><small>seconds</small></td>
-<td><b>$0.021 / · / $0.025</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
-<tr><th>cdp-connect<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="near"><b>89%</b><small>16/18</small></td>
-<td><b>· / · / 12</b><small>seconds</small></td>
-<td><b>· / · / $0.0013</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>15/15</small></td><td class="ok"><b>100%</b><small>15/15</small></td><td class="ok"><b>93%</b><small>14/15</small></td>
+<td><b>29 / 31 / 39</b><small>seconds</small></td>
+<td><b>$0.020 / $0.020 / $0.027</b><small>per run</small></td>
+<td><b>47%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 0 points over CLI only; the CLI adds 7 points over neither; CLI only reaches the floor (90%).</small></td></tr>
 <tr><th>cdp-connect<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>18/18</small></td><td class="none">·</td><td class="ok"><b>94%</b><small>17/18</small></td>
-<td><b>15 / · / 10</b><small>seconds</small></td>
-<td><b>$0.017 / · / $0.014</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
-<tr><th>page-collect<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="ok"><b>100%</b><small>18/18</small></td>
-<td><b>· / · / 29</b><small>seconds</small></td>
-<td><b>· / · / $0.0047</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>21/21</small></td><td class="ok"><b>100%</b><small>21/21</small></td><td class="near"><b>86%</b><small>18/21</small></td>
+<td><b>14 / 15 / 8</b><small>seconds</small></td>
+<td><b>$0.016 / $0.016 / $0.013</b><small>per run</small></td>
+<td><b>100%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 0 points over CLI only; the CLI adds 14 points over neither; CLI only reaches the floor (90%).</small></td></tr>
+<tr><th>cdp-ext-pilot<small>sonnet-5.5-low</small></th>
+<td class="ok"><b>100%</b><small>9/9</small></td><td class="ok"><b>100%</b><small>9/9</small></td><td class="bad"><b>56%</b><small>5/9</small></td>
+<td><b>23 / 19 / 47</b><small>seconds</small></td>
+<td><b>$0.029 / $0.022 / $0.028</b><small>per run</small></td>
+<td><b>100%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 0 points over CLI only; the CLI adds 44 points over neither; CLI only reaches the floor (90%).</small></td></tr>
 <tr><th>page-collect<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>18/18</small></td><td class="none">·</td><td class="ok"><b>100%</b><small>18/18</small></td>
-<td><b>17 / · / 18</b><small>seconds</small></td>
-<td><b>$0.022 / · / $0.039</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
-<tr><th>page-langs<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="ok"><b>100%</b><small>18/18</small></td>
-<td><b>· / · / 13</b><small>seconds</small></td>
-<td><b>· / · / $0.0017</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>27/27</small></td><td class="ok"><b>100%</b><small>27/27</small></td><td class="near"><b>81%</b><small>22/27</small></td>
+<td><b>17 / 18 / 23</b><small>seconds</small></td>
+<td><b>$0.022 / $0.031 / $0.036</b><small>per run</small></td>
+<td><b>44%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 0 points over CLI only; the CLI adds 19 points over neither; CLI only reaches the floor (90%).</small></td></tr>
 <tr><th>page-langs<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>18/18</small></td><td class="none">·</td><td class="near"><b>83%</b><small>15/18</small></td>
-<td><b>11 / · / 10</b><small>seconds</small></td>
-<td><b>$0.018 / · / $0.016</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
-<tr><th>page-prep<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="ok"><b>100%</b><small>9/9</small></td>
-<td><b>· / · / 25</b><small>seconds</small></td>
-<td><b>· / · / $0.0017</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>27/27</small></td><td class="ok"><b>100%</b><small>27/27</small></td><td class="near"><b>89%</b><small>24/27</small></td>
+<td><b>13 / 15 / 11</b><small>seconds</small></td>
+<td><b>$0.019 / $0.017 / $0.019</b><small>per run</small></td>
+<td><b>78%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 0 points over CLI only; the CLI adds 11 points over neither; CLI only reaches the floor (90%).</small></td></tr>
 <tr><th>page-prep<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>9/9</small></td><td class="none">·</td><td class="ok"><b>100%</b><small>9/9</small></td>
-<td><b>24 / · / 12</b><small>seconds</small></td>
-<td><b>$0.027 / · / $0.013</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
-<tr><th>page-reduce<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="near"><b>83%</b><small>5/6</small></td>
-<td><b>· / · / 29</b><small>seconds</small></td>
-<td><b>· / · / $0.0044</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>15/15</small></td><td class="ok"><b>100%</b><small>15/15</small></td><td class="ok"><b>100%</b><small>15/15</small></td>
+<td><b>29 / 25 / 21</b><small>seconds</small></td>
+<td><b>$0.029 / $0.018 / $0.018</b><small>per run</small></td>
+<td><b>100%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 0 points over CLI only; the CLI adds 0 points over neither; CLI only reaches the floor (90%).</small></td></tr>
 <tr><th>page-reduce<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>6/6</small></td><td class="none">·</td><td class="bad"><b>50%</b><small>3/6</small></td>
-<td><b>31 / · / 19</b><small>seconds</small></td>
-<td><b>$0.076 / · / $0.045</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
-<tr><th>page-tree<small>haiku-5.5-low</small></th>
-<td class="none">·</td><td class="none">·</td><td class="bad"><b>44%</b><small>4/9</small></td>
-<td><b>· / · / 38</b><small>seconds</small></td>
-<td><b>· / · / $0.0035</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>6/6</small></td><td class="bad"><b>50%</b><small>3/6</small></td><td class="bad"><b>50%</b><small>3/6</small></td>
+<td><b>31 / 31 / 16</b><small>seconds</small></td>
+<td><b>$0.076 / $0.051 / $0.042</b><small>per run</small></td>
+<td><b>67%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 50 points over CLI only; the CLI adds 0 points over neither; CLI only does not reach the floor (90%).</small></td></tr>
 <tr><th>page-tree<small>sonnet-5.5-low</small></th>
-<td class="ok"><b>100%</b><small>9/9</small></td><td class="none">·</td><td class="near"><b>78%</b><small>7/9</small></td>
-<td><b>16 / · / 21</b><small>seconds</small></td>
-<td><b>$0.018 / · / $0.037</b><small>per run</small></td>
-<td><b>·</b><small>CLI-only runs</small></td></tr>
-<tr><td colspan="7" style="text-align:left;background:none"><small>.</small></td></tr>
+<td class="ok"><b>100%</b><small>15/15</small></td><td class="ok"><b>93%</b><small>14/15</small></td><td class="bad"><b>67%</b><small>10/15</small></td>
+<td><b>18 / 26 / 29</b><small>seconds</small></td>
+<td><b>$0.018 / $0.024 / $0.044</b><small>per run</small></td>
+<td><b>100%</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>the skill adds 7 points over CLI only; the CLI adds 27 points over neither; CLI only reaches the floor (90%).</small></td></tr>
 </tbody></table>
 <p class="legend" style="margin-top:10px"><span class="ok">meets the floor</span><span class="near">within 20 points</span><span class="bad">well below</span></p>
 <footer>8 skills, 6 models, 147 runs, generated 2026-10-17. Floor: pass rate and time budget per skill (skills/&lt;skill&gt;/skill.yaml), usually 90% within 120 s.
