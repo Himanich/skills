@@ -298,3 +298,15 @@ test('open writes absolute initScript paths even when given relative ones', () =
   });
   assert.deepEqual(body.browser.initScript, [resolve('.web/own.js'), resolve('.web/init.js')]);
 });
+
+test('exec receives the driver-level timeoutMs on every call', () => {
+  const seen = [];
+  const exec = (args, opts) => {
+    seen.push(opts.timeoutMs);
+    return { stdout: '{}', stderr: '', status: 0 };
+  };
+  const outputDir = mkdtempSync(join(tmpdir(), 'web-driver-test-'));
+  const driver = createDriver({ exec, outputDir, debug: false, timeoutMs: 30_000 });
+  driver.evaluate('s', 'x');
+  assert.deepEqual(seen, [30000]);
+});

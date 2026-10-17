@@ -143,6 +143,7 @@ Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
   <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
   them); pass recipePath to other commands with --recipe. Progress goes to stderr.
+  Each playwright-cli call is capped at 30 s per step.
   Always opens its own browsers (it compares configurations): an explicit --session or
   --recipe is rejected, an exported WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored;
   --headed is honoured.
@@ -212,7 +213,7 @@ export function registerProbe(program, deps) {
     .description('detect bot/CDN protection and produce a browser recipe')
     .addHelpText('after', HELP)
     .action(async (url, _opts, command) => {
-      const { opts, driver, print } = createContext(command, deps);
+      const { opts, driver, print } = createContext(command, deps, { timeoutMs: 30_000 });
       const explicit = (name) => command.getOptionValueSourceWithGlobals(name) === 'cli';
       if (explicit('session') || explicit('recipe')) {
         throw new CliError(

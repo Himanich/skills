@@ -59,18 +59,19 @@ function spawnError(error, args) {
 }
 
 /**
- * @param {{ exec?: typeof execPlaywrightCli, outputDir: string, debug?: boolean }} opts
+ * @param {{ exec?: typeof execPlaywrightCli, outputDir: string, debug?: boolean, timeoutMs?: number }} opts
  */
 export function createDriver({
   exec = execPlaywrightCli,
   outputDir,
   debug = Boolean(process.env.WEB_DEBUG),
+  timeoutMs = 60_000,
 }) {
   let runCounter = 0;
 
   function call(args, opts) {
     if (debug) process.stderr.write(`playwright-cli ${args.join(' ')}\n`);
-    const res = exec(args, opts);
+    const res = exec(args, { timeoutMs, ...opts });
     if (res.error) throw spawnError(res.error, args);
     if (res.status === null) {
       throw new CliError('PLAYWRIGHT_CLI', 'playwright-cli terminated by signal');

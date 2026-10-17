@@ -163,3 +163,24 @@ test('--headed reaches every driver.open', async () => {
   assert.equal(opened.length, 5);
   assert.ok(opened.every((o) => o.headed === true));
 });
+
+test('probe creates its driver with a 30 s per-call timeout', async () => {
+  const out = mkdtempSync(join(tmpdir(), 'probe-timeout-'));
+  let factoryArg;
+  const driver = {
+    ensureAvailable() {},
+    open() {},
+    evaluate: () => 'complete',
+    pageHealth: () => ({ url: 'http://x/', title: 't', status: 200, bodyText: 'ok '.repeat(200) }),
+    requests: () => '',
+    responseHeaders: () => '',
+    close() {},
+  };
+  const driverFactory = (arg) => {
+    factoryArg = arg;
+    return driver;
+  };
+  const deps = { stdout: sink(), stderr: sink(), env: {}, driverFactory };
+  await runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps);
+  assert.equal(factoryArg.timeoutMs, 30000);
+});
