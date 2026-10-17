@@ -3492,13 +3492,14 @@ function spawnError(error, args) {
 function createDriver({
   exec = execPlaywrightCli,
   outputDir,
-  debug = Boolean(process.env.WEB_DEBUG)
+  debug = Boolean(process.env.WEB_DEBUG),
+  timeoutMs = 6e4
 }) {
   let runCounter = 0;
   function call(args, opts) {
     if (debug) process.stderr.write(`playwright-cli ${args.join(" ")}
 `);
-    const res = exec(args, opts);
+    const res = exec(args, { timeoutMs, ...opts });
     if (res.error) throw spawnError(res.error, args);
     if (res.status === null) {
       throw new CliError("PLAYWRIGHT_CLI", "playwright-cli terminated by signal");
@@ -3630,9 +3631,12 @@ function createDriver({
 }
 
 // src/context.mjs
-function createContext(command, deps) {
+function createContext(command, deps, { timeoutMs } = {}) {
   const opts = command.optsWithGlobals();
-  const driver = (deps.driverFactory ?? createDriver)({ outputDir: opts.output });
+  const driver = (deps.driverFactory ?? createDriver)({
+    outputDir: opts.output,
+    ...timeoutMs === void 0 ? {} : { timeoutMs }
+  });
   driver.ensureAvailable();
   const print = (result, text) => emit(result, { format: opts.format, text, stdout: deps.stdout ?? process.stdout });
   return { opts, driver, print };
@@ -4543,6 +4547,7 @@ Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
   <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
   them); pass recipePath to other commands with --recipe. Progress goes to stderr.
+  Each playwright-cli call is capped at 30 s per step.
   Always opens its own browsers (it compares configurations): an explicit --session or
   --recipe is rejected, an exported WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored;
   --headed is honoured.
@@ -4597,7 +4602,7 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
 }
 function registerProbe(program2, deps) {
   program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action(async (url, _opts, command) => {
-    const { opts, driver, print } = createContext(command, deps);
+    const { opts, driver, print } = createContext(command, deps, { timeoutMs: 3e4 });
     const explicit = (name) => command.getOptionValueSourceWithGlobals(name) === "cli";
     if (explicit("session") || explicit("recipe")) {
       throw new CliError(
@@ -5292,13 +5297,23 @@ function optimizeSvg(svgString, classification) {
   svg = svg.replace(/\s{2,}/g, " ").replace(/>\s+</g, "><").trim();
   return svg;
 }
+function dropSpriteDuplicates(svgs) {
+  const resolved = svgs.filter((e) => e.source === "svg-sprite" && e.symbolSvg);
+  const resolvedFallbacks = new Set(resolved.map((e) => e.fallbackSvg));
+  const inlineSvgs = new Set(svgs.filter((e) => e.source === "inline-svg").map((e) => e.svg));
+  return svgs.filter((e) => {
+    if (e.source === "inline-svg") return !resolvedFallbacks.has(e.svg);
+    if (e.source === "svg-sprite" && !e.symbolSvg) return !inlineSvgs.has(e.fallbackSvg);
+    return true;
+  });
+}
 function writeIcons(svgs, url, iconsDir) {
   mkdirSync4(iconsDir, { recursive: true });
   const icons = [];
   let unnamedIndex = 1;
   const usedNames = /* @__PURE__ */ new Set();
   const nameCollisionCounts = /* @__PURE__ */ new Map();
-  for (const entry of svgs) {
+  for (const entry of dropSpriteDuplicates(svgs)) {
     const classification = classify(entry);
     if (classification === "image") continue;
     let svgContent = null;
