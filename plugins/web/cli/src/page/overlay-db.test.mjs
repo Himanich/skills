@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { normalizeCmpRules, buildHideExpression, loadPatterns } from '#src/page/overlay-db.mjs';
+import {
+  normalizeCmpRules,
+  buildHideExpression,
+  loadPatterns,
+  BUILTIN_SELECTORS,
+} from '#src/page/overlay-db.mjs';
 
 // Shapes taken from Consent-O-Matic Rules.json (methods: [{ name, action }]).
 const rules = {
@@ -173,7 +178,7 @@ test('loadPatterns refetches a stale cache and rewrites it', async () => {
   const p = await loadPatterns({ fetch, cacheDir: dir });
   assert.equal(urls.length, 2);
   assert.deepEqual(Object.keys(p.cmps), ['x']);
-  assert.deepEqual(p.generic_selectors, ['.cookie-bar']);
+  assert.deepEqual(p.generic_selectors, ['.cookie-bar', ...BUILTIN_SELECTORS]);
   assert.deepEqual(JSON.parse(readFileSync(join(dir, 'patterns.json'), 'utf8')).cmps, p.cmps);
 });
 
@@ -183,6 +188,21 @@ test('loadPatterns uses a fresh cache without fetching', async () => {
   const p = await loadPatterns({ fetch, cacheDir: dir });
   assert.equal(urls.length, 0);
   assert.deepEqual(Object.keys(p.cmps), ['old']);
+});
+
+test('loadPatterns merges built-in selectors into a fresh cache that lacks them', async () => {
+  const dir = cacheWith(new Date().toISOString());
+  const p = await loadPatterns({ fetch: fakeFetch().fetch, cacheDir: dir });
+  for (const sel of BUILTIN_SELECTORS) assert.ok(p.generic_selectors.includes(sel), sel);
+  assert.equal(new Set(p.generic_selectors).size, p.generic_selectors.length);
+});
+
+test('loadPatterns refresh includes built-in selectors once', async () => {
+  const dir = cacheWith(new Date().toISOString());
+  const p = await loadPatterns({ fetch: fakeFetch().fetch, cacheDir: dir, refresh: true });
+  for (const sel of BUILTIN_SELECTORS) {
+    assert.equal(p.generic_selectors.filter((s) => s === sel).length, 1);
+  }
 });
 
 test('loadPatterns refresh forces a fetch on a fresh cache', async () => {

@@ -5756,7 +5756,19 @@ async function fetchPatterns(fetch, cached, stderr) {
   const selectors = rawText === void 0 ? cached?.generic_selectors ?? [] : parseAbpHideRules(rawText).slice(0, 1e3);
   return buildPatternsJson(cmpResult, selectors);
 }
-async function loadPatterns({
+var BUILTIN_SELECTORS = [
+  "#shopify-pc__banner",
+  ".shopify-pc__banner__dialog",
+  "#shopify-pc__prefs"
+];
+function withBuiltins(patterns) {
+  const generic = [.../* @__PURE__ */ new Set([...patterns.generic_selectors ?? [], ...BUILTIN_SELECTORS])];
+  return { ...patterns, generic_selectors: generic };
+}
+async function loadPatterns(options) {
+  return withBuiltins(await loadRawPatterns(options));
+}
+async function loadRawPatterns({
   refresh = false,
   fetch = globalThis.fetch,
   cacheDir = CACHE_DIR,

@@ -253,13 +253,29 @@ async function fetchPatterns(fetch, cached, stderr) {
   return buildPatternsJson(cmpResult, selectors);
 }
 
+// Seen on live Shopify stores, absent from EasyList.
+export const BUILTIN_SELECTORS = [
+  '#shopify-pc__banner',
+  '.shopify-pc__banner__dialog',
+  '#shopify-pc__prefs',
+];
+
+function withBuiltins(patterns) {
+  const generic = [...new Set([...(patterns.generic_selectors ?? []), ...BUILTIN_SELECTORS])];
+  return { ...patterns, generic_selectors: generic };
+}
+
 /**
  * Load the overlay pattern database, refreshing the cache when missing, stale or forced.
  * @param {{ refresh?: boolean, fetch?: Function, cacheDir?: string,
  *   stderr?: { write: Function } }} [options]
  * @returns {Promise<object>} patterns
  */
-export async function loadPatterns({
+export async function loadPatterns(options) {
+  return withBuiltins(await loadRawPatterns(options));
+}
+
+async function loadRawPatterns({
   refresh = false,
   fetch = globalThis.fetch,
   cacheDir = CACHE_DIR,
