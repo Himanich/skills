@@ -9,7 +9,9 @@ export function noSkillAvailable(_output, { providerResponse }) {
   if ((m.loadedSkills ?? []).length > 0) return { pass: false, score: 0, reason: `skills were loaded: ${m.loadedSkills.map((s) => s.name).join(', ')}` };
   const touched = (m.toolCalls ?? [])
     .map((c) => String(c.input?.command ?? c.input?.path ?? ''))
-    .filter((text) => /SKILL\.md|skills\/[\w.-]+|plugins\/web\/skills/.test(text));
+    // Skill directories only: this repo is itself named `skills`, so a bare `skills/` match
+    // would flag every path inside the checkout (fixtures, node_modules).
+    .filter((text) => /SKILL\.md|(\.claude|\.agents|\.pi\/agent)\/skills\/[\w.-]+|plugins\/web\/skills\/[\w.-]+/.test(text));
   return touched.length
     ? { pass: false, score: 0, reason: `agent read a skill from disk: ${touched[0].slice(0, 120)}` }
     : { pass: true, score: 1, reason: 'no skills loaded or read' };
