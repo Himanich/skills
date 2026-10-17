@@ -1,16 +1,16 @@
 {
   "skill": "page-collect",
   "ref": "feat-web-cli",
-  "commit": "8610fca1",
+  "commit": "1b65386f",
   "arm": "skill",
-  "date": "2026-10-16",
+  "date": "2026-10-17",
   "runs": [
     {
       "model": "sonnet-5.5-low",
       "case": "fixture, full inventory",
       "pass": true,
-      "latency_s": 17.1,
-      "cost_usd": 0.0259,
+      "latency_s": 15.5,
+      "cost_usd": 0.0238,
       "timed_out": false,
       "why": []
     },
@@ -18,8 +18,8 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, full inventory",
       "pass": true,
-      "latency_s": 14.9,
-      "cost_usd": 0.0236,
+      "latency_s": 16.6,
+      "cost_usd": 0.0264,
       "timed_out": false,
       "why": []
     },
@@ -27,8 +27,8 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, full inventory",
       "pass": true,
-      "latency_s": 13.8,
-      "cost_usd": 0.0232,
+      "latency_s": 14.4,
+      "cost_usd": 0.024,
       "timed_out": false,
       "why": []
     },
@@ -36,8 +36,8 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, icons for Edge Delivery Services",
       "pass": true,
-      "latency_s": 16,
-      "cost_usd": 0.0216,
+      "latency_s": 13.3,
+      "cost_usd": 0.0209,
       "timed_out": false,
       "why": []
     },
@@ -46,7 +46,7 @@
       "case": "fixture, icons for Edge Delivery Services",
       "pass": true,
       "latency_s": 16.8,
-      "cost_usd": 0.0188,
+      "cost_usd": 0.0205,
       "timed_out": false,
       "why": []
     },
@@ -55,7 +55,7 @@
       "case": "fixture, icons for Edge Delivery Services",
       "pass": true,
       "latency_s": 16.8,
-      "cost_usd": 0.0183,
+      "cost_usd": 0.0201,
       "timed_out": false,
       "why": []
     },
@@ -63,8 +63,8 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, forms only",
       "pass": true,
-      "latency_s": 12.4,
-      "cost_usd": 0.0198,
+      "latency_s": 13.5,
+      "cost_usd": 0.0182,
       "timed_out": false,
       "why": []
     },
@@ -72,7 +72,7 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, forms only",
       "pass": true,
-      "latency_s": 12.4,
+      "latency_s": 11.3,
       "cost_usd": 0.019,
       "timed_out": false,
       "why": []
@@ -81,89 +81,170 @@
       "model": "sonnet-5.5-low",
       "case": "fixture, forms only",
       "pass": true,
-      "latency_s": 14.6,
+      "latency_s": 46.6,
+      "cost_usd": 0.0202,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 19.3,
+      "cost_usd": 0.0279,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 16.2,
+      "cost_usd": 0.0252,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 16.1,
+      "cost_usd": 0.026,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 15.1,
+      "cost_usd": 0.0234,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 13,
+      "cost_usd": 0.0223,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 14,
+      "cost_usd": 0.0264,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 16,
+      "cost_usd": 0.0202,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 10.2,
+      "cost_usd": 0.0178,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 12.8,
+      "cost_usd": 0.0215,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 16.1,
+      "cost_usd": 0.0255,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 16,
+      "cost_usd": 0.0232,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 19,
+      "cost_usd": 0.028,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 13.7,
       "cost_usd": 0.0199,
       "timed_out": false,
       "why": []
     },
     {
       "model": "sonnet-5.5-low",
-      "case": "aem.live, full inventory",
+      "case": "live, wpbeginner.com social links",
       "pass": true,
-      "latency_s": 20.3,
-      "cost_usd": 0.0266,
+      "latency_s": 15.4,
+      "cost_usd": 0.0215,
       "timed_out": false,
       "why": []
     },
     {
       "model": "sonnet-5.5-low",
-      "case": "aem.live, full inventory",
+      "case": "live, wpbeginner.com social links",
       "pass": true,
-      "latency_s": 18.1,
-      "cost_usd": 0.0272,
+      "latency_s": 16.4,
+      "cost_usd": 0.0189,
       "timed_out": false,
       "why": []
     },
     {
       "model": "sonnet-5.5-low",
-      "case": "aem.live, full inventory",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 40.9,
+      "cost_usd": 0.0176,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "sonnet-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
       "pass": true,
       "latency_s": 16,
-      "cost_usd": 0.0243,
+      "cost_usd": 0.0176,
       "timed_out": false,
       "why": []
     },
     {
       "model": "sonnet-5.5-low",
-      "case": "fixture, icons from sprites, data URIs and inline SVG",
-      "pass": false,
-      "latency_s": 16.8,
-      "cost_usd": 0.029,
-      "timed_out": false,
-      "why": "failed checks: icons recolored to currentColor"
-    },
-    {
-      "model": "sonnet-5.5-low",
-      "case": "fixture, icons from sprites, data URIs and inline SVG",
-      "pass": false,
-      "latency_s": 14.8,
-      "cost_usd": 0.0241,
-      "timed_out": false,
-      "why": "failed checks: icons recolored to currentColor"
-    },
-    {
-      "model": "sonnet-5.5-low",
-      "case": "fixture, icons from sprites, data URIs and inline SVG",
-      "pass": false,
-      "latency_s": 14.9,
-      "cost_usd": 0.0235,
-      "timed_out": false,
-      "why": "failed checks: icons recolored to currentColor"
-    },
-    {
-      "model": "sonnet-5.5-low",
-      "case": "fixture, JSON-LD structured data",
+      "case": "live, stripe.com/fr-ch social links",
       "pass": true,
-      "latency_s": 11.1,
-      "cost_usd": 0.0183,
-      "timed_out": false,
-      "why": []
-    },
-    {
-      "model": "sonnet-5.5-low",
-      "case": "fixture, JSON-LD structured data",
-      "pass": true,
-      "latency_s": 12.3,
-      "cost_usd": 0.017,
-      "timed_out": false,
-      "why": []
-    },
-    {
-      "model": "sonnet-5.5-low",
-      "case": "fixture, JSON-LD structured data",
-      "pass": true,
-      "latency_s": 12.2,
-      "cost_usd": 0.0177,
+      "latency_s": 16.7,
+      "cost_usd": 0.0173,
       "timed_out": false,
       "why": []
     }

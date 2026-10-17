@@ -30,10 +30,10 @@
 
 <div class="stats">
   <div class="stat"><b>8</b><span>skills</span></div>
-  <div class="stat"><b>35</b><span>cases (fixture pages and real sites)</span></div>
+  <div class="stat"><b>49</b><span>cases (fixture pages and real sites)</span></div>
   <div class="stat"><b>6</b><span>models, low to high tier</span></div>
   <div class="stat"><b>3×</b><span>repeats per case, for stability</span></div>
-  <div class="stat"><b>105</b><span>graded agent runs</span></div>
+  <div class="stat"><b>147</b><span>graded agent runs</span></div>
 </div>
 
 <h2>A run, end to end</h2>
@@ -119,7 +119,7 @@
   </ul></div>
   <div class="card"><h3>What we added</h3><ul>
     <li>A promptfoo provider for Pi: isolated skills, per-run workspace and browser session, timeouts counted as failures, tool trace</li>
-    <li>35 cases with code graders and ground truth, plus a fixture server and a headless shim for the extension skill</li>
+    <li>49 cases with code graders and ground truth, plus a fixture server and a headless shim for the extension skill</li>
     <li>A baseline gate, per-skill floors, the report generators and a replay provider that renders results through promptfoo</li>
     <li>A fix in browser-probe so parallel runs no longer share browser sessions (PR #407)</li>
   </ul></div>
@@ -162,32 +162,38 @@
 </ul>
 
 <h2>The cost of the model choice</h2>
-<svg viewBox="0 0 980 304" role="img" aria-label="Cost per run">
-<text x="150" y="14" class="t2">average cost per run: lowest sufficient model (green) vs the highest-tier model run (orange)</text><text x="0" y="45" class="t3">cdp-connect</text>
-<rect x="150" y="28" width="150" height="16" rx="3" fill="#147d42"/><text x="306" y="41" class="t2">$0.016 sonnet-5.5-low</text>
-<rect x="150" y="47" width="150" height="16" rx="3" fill="#b4561d"/><text x="306" y="60" class="t2">$0.016 sonnet-5.5-low</text>
-<text x="0" y="89" class="t3">cdp-ext-pilot</text>
-<rect x="150" y="72" width="262" height="16" rx="3" fill="#147d42"/><text x="418" y="85" class="t2">$0.028 sonnet-5.5-low</text>
-<rect x="150" y="91" width="262" height="16" rx="3" fill="#b4561d"/><text x="418" y="104" class="t2">$0.028 sonnet-5.5-low</text>
-<text x="0" y="133" class="t3">page-langs</text>
-<rect x="150" y="116" width="164" height="16" rx="3" fill="#147d42"/><text x="320" y="129" class="t2">$0.018 sonnet-5.5-low</text>
-<rect x="150" y="135" width="164" height="16" rx="3" fill="#b4561d"/><text x="320" y="148" class="t2">$0.018 sonnet-5.5-low</text>
-<text x="0" y="177" class="t3">page-prep</text>
-<rect x="150" y="160" width="250" height="16" rx="3" fill="#147d42"/><text x="406" y="173" class="t2">$0.027 sonnet-5.5-low</text>
-<rect x="150" y="179" width="250" height="16" rx="3" fill="#b4561d"/><text x="406" y="192" class="t2">$0.027 sonnet-5.5-low</text>
-<text x="0" y="221" class="t3">page-reduce</text>
-<rect x="150" y="204" width="520" height="16" rx="3" fill="#147d42"/><text x="676" y="217" class="t2">$0.056 sonnet-5.5-low</text>
-<rect x="150" y="223" width="520" height="16" rx="3" fill="#b4561d"/><text x="676" y="236" class="t2">$0.056 sonnet-5.5-low</text>
-<text x="0" y="265" class="t3">page-tree</text>
-<rect x="150" y="248" width="175" height="16" rx="3" fill="#147d42"/><text x="331" y="261" class="t2">$0.019 sonnet-5.5-low</text>
-<rect x="150" y="267" width="175" height="16" rx="3" fill="#b4561d"/><text x="331" y="280" class="t2">$0.019 sonnet-5.5-low</text></svg>
+<svg viewBox="0 0 980 392" role="img" aria-label="Cost per run">
+<text x="150" y="14" class="t2">average cost per run: lowest sufficient model (green) vs the highest-tier model run (orange)</text><text x="0" y="45" class="t3">browser-probe</text>
+<rect x="150" y="28" width="258" height="16" rx="3" fill="#147d42"/><text x="414" y="41" class="t2">$0.020 sonnet-5.5-low</text>
+<rect x="150" y="47" width="258" height="16" rx="3" fill="#b4561d"/><text x="414" y="60" class="t2">$0.020 sonnet-5.5-low</text>
+<text x="0" y="89" class="t3">cdp-connect</text>
+<rect x="150" y="72" width="207" height="16" rx="3" fill="#147d42"/><text x="363" y="85" class="t2">$0.016 sonnet-5.5-low</text>
+<rect x="150" y="91" width="207" height="16" rx="3" fill="#b4561d"/><text x="363" y="104" class="t2">$0.016 sonnet-5.5-low</text>
+<text x="0" y="133" class="t3">cdp-ext-pilot</text>
+<rect x="150" y="116" width="366" height="16" rx="3" fill="#147d42"/><text x="522" y="129" class="t2">$0.029 sonnet-5.5-low</text>
+<rect x="150" y="135" width="366" height="16" rx="3" fill="#b4561d"/><text x="522" y="148" class="t2">$0.029 sonnet-5.5-low</text>
+<text x="0" y="177" class="t3">page-collect</text>
+<rect x="150" y="160" width="277" height="16" rx="3" fill="#147d42"/><text x="433" y="173" class="t2">$0.022 sonnet-5.5-low</text>
+<rect x="150" y="179" width="277" height="16" rx="3" fill="#b4561d"/><text x="433" y="192" class="t2">$0.022 sonnet-5.5-low</text>
+<text x="0" y="221" class="t3">page-langs</text>
+<rect x="150" y="204" width="233" height="16" rx="3" fill="#147d42"/><text x="389" y="217" class="t2">$0.019 sonnet-5.5-low</text>
+<rect x="150" y="223" width="233" height="16" rx="3" fill="#b4561d"/><text x="389" y="236" class="t2">$0.019 sonnet-5.5-low</text>
+<text x="0" y="265" class="t3">page-prep</text>
+<rect x="150" y="248" width="365" height="16" rx="3" fill="#147d42"/><text x="521" y="261" class="t2">$0.029 sonnet-5.5-low</text>
+<rect x="150" y="267" width="365" height="16" rx="3" fill="#b4561d"/><text x="521" y="280" class="t2">$0.029 sonnet-5.5-low</text>
+<text x="0" y="309" class="t3">page-reduce</text>
+<rect x="150" y="292" width="520" height="16" rx="3" fill="#147d42"/><text x="676" y="305" class="t2">$0.041 sonnet-5.5-low</text>
+<rect x="150" y="311" width="520" height="16" rx="3" fill="#b4561d"/><text x="676" y="324" class="t2">$0.041 sonnet-5.5-low</text>
+<text x="0" y="353" class="t3">page-tree</text>
+<rect x="150" y="336" width="228" height="16" rx="3" fill="#147d42"/><text x="384" y="349" class="t2">$0.018 sonnet-5.5-low</text>
+<rect x="150" y="355" width="228" height="16" rx="3" fill="#b4561d"/><text x="384" y="368" class="t2">$0.018 sonnet-5.5-low</text></svg>
 
 <h2>Is the skill needed at all?</h2>
 <p>The same cases also run with the skill withheld. Pi loads no skill and the workspace holds none, and a grader fails any run that opens a skill file from disk (the skills are installed on this machine, so this is checked, not assumed). The graders read the skills' own output formats, so this arm's prompt adds the output format, meaning file names and fields, never how to produce them. Cases that hinge on a skill's own method are left out, and browser-probe is judged only on whether the recipe loads the page. To limit cost it runs on two models only.</p>
 <svg viewBox="0 0 980 516" role="img" aria-label="With and without the skill">
 <text x="230" y="14" class="t2">share of runs within the floor: with the skill (green) and without it (orange)</text>
 <text x="0" y="44" class="t3">browser-probe · sonnet</text>
-<rect x="230" y="26" width="450" height="12" rx="3" fill="#147d42"/><text x="686" y="36" class="t2">75%</text>
+<rect x="230" y="26" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="36" class="t2">100%</text>
 <rect x="230" y="40" width="600" height="12" rx="3" fill="#b4561d"/><text x="836" y="50" class="t2">100%</text>
 <text x="0" y="78" class="t3">browser-probe · haiku</text>
 <rect x="230" y="60" width="NaN" height="12" rx="3" fill="#147d42"/><text x="NaN" y="70" class="t2">NaN%</text>
@@ -199,7 +205,7 @@
 <rect x="230" y="128" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="138" class="t2">100%</text>
 <rect x="230" y="142" width="567" height="12" rx="3" fill="#b4561d"/><text x="803" y="152" class="t2">94%</text>
 <text x="0" y="180" class="t3">page-collect · sonnet</text>
-<rect x="230" y="162" width="500" height="12" rx="3" fill="#147d42"/><text x="736" y="172" class="t2">83%</text>
+<rect x="230" y="162" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="172" class="t2">100%</text>
 <rect x="230" y="176" width="600" height="12" rx="3" fill="#b4561d"/><text x="836" y="186" class="t2">100%</text>
 <text x="0" y="214" class="t3">page-collect · haiku</text>
 <rect x="230" y="196" width="NaN" height="12" rx="3" fill="#147d42"/><text x="NaN" y="206" class="t2">NaN%</text>
@@ -235,14 +241,14 @@
 
 <h2>Coverage</h2>
 <table><thead><tr><th>Skill</th><th>Fixture cases</th><th>Real-site cases</th><th>Time budget</th></tr></thead><tbody>
-<tr><td>browser-probe</td><td>0</td><td>4</td><td>120 s</td></tr>
-<tr><td>cdp-connect</td><td>6</td><td>0</td><td>120 s</td></tr>
+<tr><td>browser-probe</td><td>0</td><td>5</td><td>120 s</td></tr>
+<tr><td>cdp-connect</td><td>7</td><td>0</td><td>120 s</td></tr>
 <tr><td>cdp-ext-pilot</td><td>3</td><td>0</td><td>150 s</td></tr>
-<tr><td>page-collect</td><td>5</td><td>1</td><td>120 s</td></tr>
-<tr><td>page-langs</td><td>5</td><td>2</td><td>120 s</td></tr>
-<tr><td>page-prep</td><td>2</td><td>1</td><td>120 s</td></tr>
-<tr><td>page-reduce</td><td>2</td><td>1</td><td>120 s</td></tr>
-<tr><td>page-tree</td><td>2</td><td>1</td><td>120 s</td></tr>
+<tr><td>page-collect</td><td>5</td><td>4</td><td>120 s</td></tr>
+<tr><td>page-langs</td><td>5</td><td>5</td><td>120 s</td></tr>
+<tr><td>page-prep</td><td>2</td><td>3</td><td>120 s</td></tr>
+<tr><td>page-reduce</td><td>2</td><td>3</td><td>120 s</td></tr>
+<tr><td>page-tree</td><td>2</td><td>3</td><td>120 s</td></tr>
 </tbody></table>
 <p style="color:var(--muted);font-size:14px">domain-mask is not covered: it needs sudo, edits <code>/etc/hosts</code> and binds port 443, so it cannot run unattended.</p>
 
@@ -269,5 +275,5 @@ scripts/run.sh page-tree my-branch 'haiku'   # only matching models
 npm run report                            # results → REPORT.html, REPORT.md, METHODOLOGY.html</pre>
 <p>Adding a model is one entry in <code>models.yaml</code>. Adding a skill is a folder under <code>skills/</code> with a config, cases, graders and a floor.</p>
 
-<footer>Generated 2026-10-17 from the stored results of 105 runs. Tools: promptfoo, Pi coding agent, playwright-cli, Chrome DevTools Protocol, GitHub Pages.</footer>
+<footer>Generated 2026-10-17 from the stored results of 147 runs. Tools: promptfoo, Pi coding agent, playwright-cli, Chrome DevTools Protocol, GitHub Pages.</footer>
 </main></body></html>
