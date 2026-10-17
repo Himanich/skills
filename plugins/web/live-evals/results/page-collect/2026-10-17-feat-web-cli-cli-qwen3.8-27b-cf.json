@@ -1,0 +1,279 @@
+{
+  "skill": "page-collect",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full inventory",
+      "pass": false,
+      "latency_s": 120.4,
+      "cost_usd": 0.009,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: title, og:title, two forms, two videos, four social platforms, logo and two icons"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full inventory",
+      "pass": false,
+      "latency_s": 121.4,
+      "cost_usd": 0.0152,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: title, og:title, two forms, two videos, four social platforms, logo and two icons"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full inventory",
+      "pass": false,
+      "latency_s": 122.4,
+      "cost_usd": 0.0033,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: title, og:title, two forms, two videos, four social platforms, logo and two icons"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": false,
+      "latency_s": 123.3,
+      "cost_usd": 0.0016,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: search and menu icons listed, logo listed, svg files written, icon recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 122.9,
+      "cost_usd": 0.0135,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": false,
+      "latency_s": 123,
+      "cost_usd": 0.0067,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: search and menu icons listed, logo listed, svg files written, icon recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, forms only",
+      "pass": false,
+      "latency_s": 123.1,
+      "cost_usd": 0.0038,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: two forms, booking form, newsletter form"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, forms only",
+      "pass": false,
+      "latency_s": 123.3,
+      "cost_usd": 0.0016,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: two forms, booking form, newsletter form"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, forms only",
+      "pass": false,
+      "latency_s": 123.2,
+      "cost_usd": 0.0014,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: two forms, booking form, newsletter form"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full inventory",
+      "pass": false,
+      "latency_s": 123,
+      "cost_usd": 0.0058,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: all six collectors present, page title captured"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full inventory",
+      "pass": false,
+      "latency_s": 123,
+      "cost_usd": 0.006,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: all six collectors present, page title captured"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full inventory",
+      "pass": false,
+      "latency_s": 123.1,
+      "cost_usd": 0.003,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: all six collectors present, page title captured"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 123.2,
+      "cost_usd": 0.0016,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: favorites, rate and download listed, svg files written, icons recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 123.2,
+      "cost_usd": 0.0016,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: favorites, rate and download listed, svg files written, icons recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 123,
+      "cost_usd": 0.0085,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: favorites, rate and download listed, svg files written, icons recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, JSON-LD structured data",
+      "pass": false,
+      "latency_s": 122.9,
+      "cost_usd": 0.0017,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: organization found"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, JSON-LD structured data",
+      "pass": false,
+      "latency_s": 122.8,
+      "cost_usd": 0.0014,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: organization found"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, JSON-LD structured data",
+      "pass": false,
+      "latency_s": 124.9,
+      "cost_usd": 0.0084,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: organization found"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 122,
+      "cost_usd": 0.0051,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com metadata",
+      "pass": false,
+      "latency_s": 122.1,
+      "cost_usd": 0.0067,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: title names the brand, og:site_name, canonical"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 123.2,
+      "cost_usd": 0.0062,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com social links",
+      "pass": false,
+      "latency_s": 123.2,
+      "cost_usd": 0.0055,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: facebook, youtube, twitter, at least five platforms"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com social links",
+      "pass": false,
+      "latency_s": 123.3,
+      "cost_usd": 0.0065,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: facebook, youtube, twitter, at least five platforms"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 123.3,
+      "cost_usd": 0.0058,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 123.2,
+      "cost_usd": 0.0059,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": false,
+      "latency_s": 123.1,
+      "cost_usd": 0.0018,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: github and youtube"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": false,
+      "latency_s": 122.9,
+      "cost_usd": 0.0066,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: github and youtube"
+    }
+  ]
+}

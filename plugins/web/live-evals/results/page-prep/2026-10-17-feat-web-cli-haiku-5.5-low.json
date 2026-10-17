@@ -1,0 +1,159 @@
+{
+  "skill": "page-prep",
+  "ref": "feat-web-cli",
+  "commit": "05662638",
+  "arm": "skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": true,
+      "latency_s": 14.3,
+      "cost_usd": 0.0017,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": true,
+      "latency_s": 28.7,
+      "cost_usd": 0.0022,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": true,
+      "latency_s": 17.4,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 20.6,
+      "cost_usd": 0.0017,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 25.6,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 18.5,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 25,
+      "cost_usd": 0.0017,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 28.9,
+      "cost_usd": 0.002,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 29.8,
+      "cost_usd": 0.002,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 30.7,
+      "cost_usd": 0.002,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 17.6,
+      "cost_usd": 0.0017,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 33.3,
+      "cost_usd": 0.0026,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": true,
+      "latency_s": 83.9,
+      "cost_usd": 0.0035,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": true,
+      "latency_s": 38.4,
+      "cost_usd": 0.0022,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": true,
+      "latency_s": 53.9,
+      "cost_usd": 0.0035,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

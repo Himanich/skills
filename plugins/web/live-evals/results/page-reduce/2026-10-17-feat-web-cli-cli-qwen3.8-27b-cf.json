@@ -1,0 +1,69 @@
+{
+  "skill": "page-reduce",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full reduction",
+      "pass": false,
+      "latency_s": 120.4,
+      "cost_usd": 0.0258,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: five section markers, manifest lists five sections, cards collapsed to two examples plus REPEAT:2, heading and CTA tokens kept"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full reduction",
+      "pass": false,
+      "latency_s": 121.5,
+      "cost_usd": 0.0121,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: five section markers, manifest lists five sections, cards collapsed to two examples plus REPEAT:2, heading and CTA tokens kept"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full reduction",
+      "pass": false,
+      "latency_s": 122.6,
+      "cost_usd": 0.0105,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: five section markers, manifest lists five sections, cards collapsed to two examples plus REPEAT:2, heading and CTA tokens kept"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full reduction",
+      "pass": false,
+      "latency_s": 123.5,
+      "cost_usd": 0.0196,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: several sections, manifest matches markers"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full reduction",
+      "pass": false,
+      "latency_s": 123,
+      "cost_usd": 0.0098,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: several sections, manifest matches markers"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full reduction",
+      "pass": false,
+      "latency_s": 122.9,
+      "cost_usd": 0.005,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: several sections, manifest matches markers"
+    }
+  ]
+}

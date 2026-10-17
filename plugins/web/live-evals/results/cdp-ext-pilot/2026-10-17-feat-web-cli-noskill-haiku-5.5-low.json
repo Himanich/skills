@@ -1,0 +1,99 @@
+{
+  "skill": "cdp-ext-pilot",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "no-skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 18.8,
+      "cost_usd": 0.0018,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 20.3,
+      "cost_usd": 0.0018,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 12,
+      "cost_usd": 0.0017,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 15,
+      "cost_usd": 0.0015,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 13.5,
+      "cost_usd": 0.0019,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 12.6,
+      "cost_usd": 0.0019,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "extension id",
+      "pass": false,
+      "latency_s": 17.9,
+      "cost_usd": 0.0015,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: extension id reported"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "extension id",
+      "pass": false,
+      "latency_s": 17.2,
+      "cost_usd": 0.0013,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: extension id reported"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "extension id",
+      "pass": false,
+      "latency_s": 25.6,
+      "cost_usd": 0.0017,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: extension id reported"
+    }
+  ]
+}

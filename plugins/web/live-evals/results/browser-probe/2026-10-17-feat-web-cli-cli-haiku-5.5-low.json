@@ -1,0 +1,159 @@
+{
+  "skill": "browser-probe",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 11.9,
+      "cost_usd": 0.001,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 25.6,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "wknd",
+      "pass": false,
+      "latency_s": 37,
+      "cost_usd": 0.0024,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-0540b3cc open https://wknd.site/ --config=/var/folders/bh/sz302hnd6k96vjpn27_ppngc0000gq/T/bp-verify-0540b3cc/config.json"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 120.6,
+      "cost_usd": 0.0031,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 32.4,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "astrazeneca",
+      "pass": false,
+      "latency_s": 30.3,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-54919035 eval JSON.stringify({"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "adobe",
+      "pass": false,
+      "latency_s": 47.5,
+      "cost_usd": 0.0027,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "still blocked: \"Access Denied\" status=403"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "adobe",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0049,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "adobe",
+      "pass": true,
+      "latency_s": 120.2,
+      "cost_usd": 0.0041,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "bd",
+      "pass": false,
+      "latency_s": 122.8,
+      "cost_usd": 0.004,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-89b6af9d eval JSON.stringify({"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 83.8,
+      "cost_usd": 0.0019,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 66.7,
+      "cost_usd": 0.0018,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "stripe",
+      "pass": true,
+      "latency_s": 11.3,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "stripe",
+      "pass": true,
+      "latency_s": 24.3,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "stripe",
+      "pass": true,
+      "latency_s": 22.6,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "skill": "page-tree",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, default capture",
+      "pass": true,
+      "latency_s": 120.5,
+      "cost_usd": 0.0082,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, default capture",
+      "pass": true,
+      "latency_s": 109.7,
+      "cost_usd": 0.0109,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, default capture",
+      "pass": false,
+      "latency_s": 122.7,
+      "cost_usd": 0.0038,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, narrow elements included",
+      "pass": false,
+      "latency_s": 121.6,
+      "cost_usd": 0.0014,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0078,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 122.2,
+      "cost_usd": 0.0093,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, default capture",
+      "pass": false,
+      "latency_s": 123.8,
+      "cost_usd": 0.0034,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, default capture",
+      "pass": false,
+      "latency_s": 121.3,
+      "cost_usd": 0.006,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, default capture",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0062,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch, long page with grids",
+      "pass": false,
+      "latency_s": 122.6,
+      "cost_usd": 0.0034,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch, long page with grids",
+      "pass": false,
+      "latency_s": 122.6,
+      "cost_usd": 0.0064,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch, long page with grids",
+      "pass": true,
+      "latency_s": 122.2,
+      "cost_usd": 0.0085,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wknd-adventures.com, image-background hero",
+      "pass": false,
+      "latency_s": 120.2,
+      "cost_usd": 0.0071,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wknd-adventures.com, image-background hero",
+      "pass": true,
+      "latency_s": 122.1,
+      "cost_usd": 0.0145,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wknd-adventures.com, image-background hero",
+      "pass": false,
+      "latency_s": 122,
+      "cost_usd": 0.0034,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "tree.txt missing"
+    }
+  ]
+}

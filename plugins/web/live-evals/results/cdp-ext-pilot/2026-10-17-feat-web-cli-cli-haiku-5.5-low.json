@@ -1,0 +1,99 @@
+{
+  "skill": "cdp-ext-pilot",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 22.8,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 21.2,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 20.7,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 12.7,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 13,
+      "cost_usd": 0.0014,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 44.4,
+      "cost_usd": 0.0034,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 9.6,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 12.2,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

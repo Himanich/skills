@@ -1,0 +1,279 @@
+{
+  "skill": "page-collect",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full inventory",
+      "pass": false,
+      "latency_s": 120.4,
+      "cost_usd": 0.0068,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: title, og:title, two forms, two videos, four social platforms, logo and two icons"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 121.5,
+      "cost_usd": 0.0135,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 69.1,
+      "cost_usd": 0.0239,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 122.6,
+      "cost_usd": 0.0079,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0164,
+      "used_cli": false,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": false,
+      "latency_s": 122.3,
+      "cost_usd": 0.0033,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: search and menu icons listed, logo listed, svg files written, icon recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, forms only",
+      "pass": false,
+      "latency_s": 122.2,
+      "cost_usd": 0.0013,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: two forms, booking form, newsletter form"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, forms only",
+      "pass": false,
+      "latency_s": 122,
+      "cost_usd": 0.0013,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: two forms, booking form, newsletter form"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 75.8,
+      "cost_usd": 0.0109,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 122,
+      "cost_usd": 0.0107,
+      "used_cli": false,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 122.2,
+      "cost_usd": 0.0154,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 110.2,
+      "cost_usd": 0.0299,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0062,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: favorites, rate and download listed, svg files written, icons recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 120.2,
+      "cost_usd": 0.0162,
+      "used_cli": false,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": false,
+      "latency_s": 121.2,
+      "cost_usd": 0,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: favorites, rate and download listed, svg files written, icons recolored to currentColor"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 112.7,
+      "cost_usd": 0.0131,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 41.8,
+      "cost_usd": 0.0191,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 120.2,
+      "cost_usd": 0.007,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com metadata",
+      "pass": false,
+      "latency_s": 120.2,
+      "cost_usd": 0.0013,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: title names the brand, og:site_name, canonical"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0074,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.007,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com social links",
+      "pass": false,
+      "latency_s": 120.2,
+      "cost_usd": 0.008,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: facebook, youtube, twitter, at least five platforms"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 102.5,
+      "cost_usd": 0.0132,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 119.1,
+      "cost_usd": 0.0168,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0178,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0069,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: github and youtube"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0036,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "failed checks: github and youtube"
+    }
+  ]
+}

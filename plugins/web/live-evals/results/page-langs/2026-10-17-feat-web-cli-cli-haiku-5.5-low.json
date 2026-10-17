@@ -1,0 +1,279 @@
+{
+  "skill": "page-langs",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 11.6,
+      "cost_usd": 0.0009,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 10.5,
+      "cost_usd": 0.0009,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 9.4,
+      "cost_usd": 0.0009,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 14.3,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 22.7,
+      "cost_usd": 0.0029,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 18.9,
+      "cost_usd": 0.0025,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 19.3,
+      "cost_usd": 0.003,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live (English)",
+      "pass": true,
+      "latency_s": 13.2,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live (English)",
+      "pass": true,
+      "latency_s": 15.8,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live (English)",
+      "pass": true,
+      "latency_s": 22.6,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 8.8,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 9.5,
+      "cost_usd": 0.001,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 11.2,
+      "cost_usd": 0.001,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 6,
+      "cost_usd": 0.0009,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 11.7,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 11.4,
+      "cost_usd": 0.0009,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 21.1,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 23,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 25.2,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 16.6,
+      "cost_usd": 0.002,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": false,
+      "latency_s": 19,
+      "cost_usd": 0.0021,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "html_lang: expected \"fr-CH\", got \"fr\""
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 18,
+      "cost_usd": 0.0023,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": false,
+      "latency_s": 16.9,
+      "cost_usd": 0.0017,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "html_lang: expected \"en-US\", got \"en\""
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": false,
+      "latency_s": 26.8,
+      "cost_usd": 0.0018,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "html_lang: expected \"en-US\", got \"en\""
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": true,
+      "latency_s": 23.3,
+      "cost_usd": 0.0021,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

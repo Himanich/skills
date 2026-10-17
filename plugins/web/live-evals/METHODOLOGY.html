@@ -31,9 +31,9 @@
 <div class="stats">
   <div class="stat"><b>8</b><span>skills</span></div>
   <div class="stat"><b>49</b><span>cases (fixture pages and real sites)</span></div>
-  <div class="stat"><b>6</b><span>models, low to high tier</span></div>
+  <div class="stat"><b>7</b><span>models, low to high tier</span></div>
   <div class="stat"><b>3×</b><span>repeats per case, for stability</span></div>
-  <div class="stat"><b>147</b><span>graded agent runs</span></div>
+  <div class="stat"><b>588</b><span>graded agent runs</span></div>
 </div>
 
 <h2>A run, end to end</h2>
@@ -164,50 +164,98 @@
 <h2>The cost of the model choice</h2>
 <svg viewBox="0 0 980 392" role="img" aria-label="Cost per run">
 <text x="150" y="14" class="t2">average cost per run: lowest sufficient model (green) vs the highest-tier model run (orange)</text><text x="0" y="45" class="t3">browser-probe</text>
-<rect x="150" y="28" width="258" height="16" rx="3" fill="#147d42"/><text x="414" y="41" class="t2">$0.020 sonnet-5.5-low</text>
-<rect x="150" y="47" width="258" height="16" rx="3" fill="#b4561d"/><text x="414" y="60" class="t2">$0.020 sonnet-5.5-low</text>
+<rect x="150" y="28" width="125" height="16" rx="3" fill="#147d42"/><text x="281" y="41" class="t2">$0.020 sonnet-5.5-low</text>
+<rect x="150" y="47" width="243" height="16" rx="3" fill="#b4561d"/><text x="399" y="60" class="t2">$0.040 opus-5.5-low</text>
 <text x="0" y="89" class="t3">cdp-connect</text>
-<rect x="150" y="72" width="207" height="16" rx="3" fill="#147d42"/><text x="363" y="85" class="t2">$0.016 sonnet-5.5-low</text>
-<rect x="150" y="91" width="207" height="16" rx="3" fill="#b4561d"/><text x="363" y="104" class="t2">$0.016 sonnet-5.5-low</text>
+<rect x="150" y="72" width="8" height="16" rx="3" fill="#147d42"/><text x="164" y="85" class="t2">$0.0013 haiku-5.5-low</text>
+<rect x="150" y="91" width="174" height="16" rx="3" fill="#b4561d"/><text x="330" y="104" class="t2">$0.028 opus-5.5-low</text>
 <text x="0" y="133" class="t3">cdp-ext-pilot</text>
-<rect x="150" y="116" width="366" height="16" rx="3" fill="#147d42"/><text x="522" y="129" class="t2">$0.029 sonnet-5.5-low</text>
-<rect x="150" y="135" width="366" height="16" rx="3" fill="#b4561d"/><text x="522" y="148" class="t2">$0.029 sonnet-5.5-low</text>
+<rect x="150" y="116" width="12" height="16" rx="3" fill="#147d42"/><text x="168" y="129" class="t2">$0.0020 haiku-5.5-low</text>
+<rect x="150" y="135" width="359" height="16" rx="3" fill="#b4561d"/><text x="515" y="148" class="t2">$0.059 opus-5.5-low</text>
 <text x="0" y="177" class="t3">page-collect</text>
-<rect x="150" y="160" width="277" height="16" rx="3" fill="#147d42"/><text x="433" y="173" class="t2">$0.022 sonnet-5.5-low</text>
-<rect x="150" y="179" width="277" height="16" rx="3" fill="#b4561d"/><text x="433" y="192" class="t2">$0.022 sonnet-5.5-low</text>
+<rect x="150" y="160" width="9" height="16" rx="3" fill="#147d42"/><text x="165" y="173" class="t2">$0.0014 haiku-5.5-low</text>
+<rect x="150" y="179" width="279" height="16" rx="3" fill="#b4561d"/><text x="435" y="192" class="t2">$0.046 opus-5.5-low</text>
 <text x="0" y="221" class="t3">page-langs</text>
-<rect x="150" y="204" width="233" height="16" rx="3" fill="#147d42"/><text x="389" y="217" class="t2">$0.019 sonnet-5.5-low</text>
-<rect x="150" y="223" width="233" height="16" rx="3" fill="#b4561d"/><text x="389" y="236" class="t2">$0.019 sonnet-5.5-low</text>
+<rect x="150" y="204" width="8" height="16" rx="3" fill="#147d42"/><text x="164" y="217" class="t2">$0.0012 haiku-5.5-low</text>
+<rect x="150" y="223" width="236" height="16" rx="3" fill="#b4561d"/><text x="392" y="236" class="t2">$0.039 opus-5.5-low</text>
 <text x="0" y="265" class="t3">page-prep</text>
-<rect x="150" y="248" width="365" height="16" rx="3" fill="#147d42"/><text x="521" y="261" class="t2">$0.029 sonnet-5.5-low</text>
-<rect x="150" y="267" width="365" height="16" rx="3" fill="#b4561d"/><text x="521" y="280" class="t2">$0.029 sonnet-5.5-low</text>
+<rect x="150" y="248" width="13" height="16" rx="3" fill="#147d42"/><text x="169" y="261" class="t2">$0.0021 haiku-5.5-low</text>
+<rect x="150" y="267" width="415" height="16" rx="3" fill="#b4561d"/><text x="571" y="280" class="t2">$0.068 opus-5.5-low</text>
 <text x="0" y="309" class="t3">page-reduce</text>
-<rect x="150" y="292" width="520" height="16" rx="3" fill="#147d42"/><text x="676" y="305" class="t2">$0.041 sonnet-5.5-low</text>
-<rect x="150" y="311" width="520" height="16" rx="3" fill="#b4561d"/><text x="676" y="324" class="t2">$0.041 sonnet-5.5-low</text>
+<rect x="150" y="292" width="19" height="16" rx="3" fill="#147d42"/><text x="175" y="305" class="t2">$0.0030 haiku-5.5-low</text>
+<rect x="150" y="311" width="520" height="16" rx="3" fill="#b4561d"/><text x="676" y="324" class="t2">$0.085 opus-5.5-low</text>
 <text x="0" y="353" class="t3">page-tree</text>
-<rect x="150" y="336" width="228" height="16" rx="3" fill="#147d42"/><text x="384" y="349" class="t2">$0.018 sonnet-5.5-low</text>
-<rect x="150" y="355" width="228" height="16" rx="3" fill="#b4561d"/><text x="384" y="368" class="t2">$0.018 sonnet-5.5-low</text></svg>
+<rect x="150" y="336" width="8" height="16" rx="3" fill="#147d42"/><text x="164" y="349" class="t2">$0.0014 haiku-5.5-low</text>
+<rect x="150" y="355" width="271" height="16" rx="3" fill="#b4561d"/><text x="427" y="368" class="t2">$0.044 opus-5.5-low</text></svg>
 
 <h2>Skill, CLI, or neither?</h2>
 <p>The same cases run in three arms. <b>skill + CLI</b>: the skill is loaded and the <code>web</code> CLI is on PATH. <b>CLI only</b>: no skill is loaded or on disk, the CLI is on PATH, and the prompt adds one line: <code>A `web` CLI is installed; `web --help` documents it.</code> <b>Neither</b>: no skill and no CLI. Both comparison arms run in an empty workspace under a private home, and a grader fails any run that opens a skill file from disk (the skills are installed on this machine, so this is checked, not assumed). Their prompts also add the output format, meaning file names and fields, never how to produce them. Cases that hinge on a skill's own method are left out, every bar covers the same cases, and browser-probe is judged only on whether the recipe loads the page. To limit cost they run on a few models only. The report also records whether each CLI-only run actually called <code>web</code>.</p>
-<svg viewBox="0 0 980 424" role="img" aria-label="Skill, CLI, or neither">
+<svg viewBox="0 0 980 1576" role="img" aria-label="Skill, CLI, or neither">
 <text x="230" y="14" class="t2">share of runs within the floor: skill + CLI (green), CLI only (blue), neither (orange)</text>
-<text x="0" y="50" class="t3">browser-probe · sonnet</text>
-<rect x="230" y="26" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="36" class="t2">100%</text><rect x="230" y="40" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="50" class="t2">100%</text><rect x="230" y="54" width="560" height="12" rx="3" fill="#b4561d"/><text x="796" y="64" class="t2">93%</text>
-<text x="0" y="98" class="t3">cdp-connect · sonnet</text>
-<rect x="230" y="74" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="84" class="t2">100%</text><rect x="230" y="88" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="98" class="t2">100%</text><rect x="230" y="102" width="514" height="12" rx="3" fill="#b4561d"/><text x="750" y="112" class="t2">86%</text>
-<text x="0" y="146" class="t3">cdp-ext-pilot · sonnet</text>
-<rect x="230" y="122" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="132" class="t2">100%</text><rect x="230" y="136" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="146" class="t2">100%</text><rect x="230" y="150" width="333" height="12" rx="3" fill="#b4561d"/><text x="569" y="160" class="t2">56%</text>
-<text x="0" y="194" class="t3">page-collect · sonnet</text>
-<rect x="230" y="170" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="180" class="t2">100%</text><rect x="230" y="184" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="194" class="t2">100%</text><rect x="230" y="198" width="489" height="12" rx="3" fill="#b4561d"/><text x="725" y="208" class="t2">81%</text>
-<text x="0" y="242" class="t3">page-langs · sonnet</text>
-<rect x="230" y="218" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="228" class="t2">100%</text><rect x="230" y="232" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="242" class="t2">100%</text><rect x="230" y="246" width="533" height="12" rx="3" fill="#b4561d"/><text x="769" y="256" class="t2">89%</text>
-<text x="0" y="290" class="t3">page-prep · sonnet</text>
-<rect x="230" y="266" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="276" class="t2">100%</text><rect x="230" y="280" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="290" class="t2">100%</text><rect x="230" y="294" width="600" height="12" rx="3" fill="#b4561d"/><text x="836" y="304" class="t2">100%</text>
-<text x="0" y="338" class="t3">page-reduce · sonnet</text>
-<rect x="230" y="314" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="324" class="t2">100%</text><rect x="230" y="328" width="300" height="12" rx="3" fill="#2157d6"/><text x="536" y="338" class="t2">50%</text><rect x="230" y="342" width="300" height="12" rx="3" fill="#b4561d"/><text x="536" y="352" class="t2">50%</text>
-<text x="0" y="386" class="t3">page-tree · sonnet</text>
-<rect x="230" y="362" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="372" class="t2">100%</text><rect x="230" y="376" width="560" height="12" rx="3" fill="#2157d6"/><text x="796" y="386" class="t2">93%</text><rect x="230" y="390" width="400" height="12" rx="3" fill="#b4561d"/><text x="636" y="400" class="t2">67%</text></svg>
+<text x="0" y="50" class="t3">browser-probe · qwen3.8</text>
+<rect x="230" y="26" width="2" height="12" rx="3" fill="#147d42"/><text x="236" y="36" class="t2">0%</text><rect x="230" y="40" width="2" height="12" rx="3" fill="#2157d6"/><text x="236" y="50" class="t2">0%</text><rect x="230" y="54" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="64" class="t2">0%</text>
+<text x="0" y="98" class="t3">browser-probe · haiku</text>
+<rect x="230" y="74" width="520" height="12" rx="3" fill="#147d42"/><text x="756" y="84" class="t2">87%</text><rect x="230" y="88" width="320" height="12" rx="3" fill="#2157d6"/><text x="556" y="98" class="t2">53%</text><rect x="230" y="102" width="440" height="12" rx="3" fill="#b4561d"/><text x="676" y="112" class="t2">73%</text>
+<text x="0" y="146" class="t3">browser-probe · sonnet</text>
+<rect x="230" y="122" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="132" class="t2">100%</text><rect x="230" y="136" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="146" class="t2">100%</text><rect x="230" y="150" width="560" height="12" rx="3" fill="#b4561d"/><text x="796" y="160" class="t2">93%</text>
+<text x="0" y="194" class="t3">browser-probe · opus</text>
+<rect x="230" y="170" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="180" class="t2">100%</text><rect x="230" y="184" width="520" height="12" rx="3" fill="#2157d6"/><text x="756" y="194" class="t2">87%</text><rect x="230" y="198" width="560" height="12" rx="3" fill="#b4561d"/><text x="796" y="208" class="t2">93%</text>
+<text x="0" y="242" class="t3">cdp-connect · qwen3.8</text>
+<rect x="230" y="218" width="29" height="12" rx="3" fill="#147d42"/><text x="265" y="228" class="t2">5%</text><rect x="230" y="232" width="29" height="12" rx="3" fill="#2157d6"/><text x="265" y="242" class="t2">5%</text><rect x="230" y="246" width="114" height="12" rx="3" fill="#b4561d"/><text x="350" y="256" class="t2">19%</text>
+<text x="0" y="290" class="t3">cdp-connect · haiku</text>
+<rect x="230" y="266" width="571" height="12" rx="3" fill="#147d42"/><text x="807" y="276" class="t2">95%</text><rect x="230" y="280" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="290" class="t2">100%</text><rect x="230" y="294" width="543" height="12" rx="3" fill="#b4561d"/><text x="779" y="304" class="t2">90%</text>
+<text x="0" y="338" class="t3">cdp-connect · sonnet</text>
+<rect x="230" y="314" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="324" class="t2">100%</text><rect x="230" y="328" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="338" class="t2">100%</text><rect x="230" y="342" width="514" height="12" rx="3" fill="#b4561d"/><text x="750" y="352" class="t2">86%</text>
+<text x="0" y="386" class="t3">cdp-connect · opus</text>
+<rect x="230" y="362" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="372" class="t2">100%</text><rect x="230" y="376" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="386" class="t2">100%</text><rect x="230" y="390" width="543" height="12" rx="3" fill="#b4561d"/><text x="779" y="400" class="t2">90%</text>
+<text x="0" y="434" class="t3">cdp-ext-pilot · qwen3.8</text>
+<rect x="230" y="410" width="2" height="12" rx="3" fill="#147d42"/><text x="236" y="420" class="t2">0%</text><rect x="230" y="424" width="200" height="12" rx="3" fill="#2157d6"/><text x="436" y="434" class="t2">33%</text><rect x="230" y="438" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="448" class="t2">0%</text>
+<text x="0" y="482" class="t3">cdp-ext-pilot · haiku</text>
+<rect x="230" y="458" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="468" class="t2">100%</text><rect x="230" y="472" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="482" class="t2">100%</text><rect x="230" y="486" width="400" height="12" rx="3" fill="#b4561d"/><text x="636" y="496" class="t2">67%</text>
+<text x="0" y="530" class="t3">cdp-ext-pilot · sonnet</text>
+<rect x="230" y="506" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="516" class="t2">100%</text><rect x="230" y="520" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="530" class="t2">100%</text><rect x="230" y="534" width="333" height="12" rx="3" fill="#b4561d"/><text x="569" y="544" class="t2">56%</text>
+<text x="0" y="578" class="t3">cdp-ext-pilot · opus</text>
+<rect x="230" y="554" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="564" class="t2">100%</text><rect x="230" y="568" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="578" class="t2">100%</text><rect x="230" y="582" width="400" height="12" rx="3" fill="#b4561d"/><text x="636" y="592" class="t2">67%</text>
+<text x="0" y="626" class="t3">page-collect · qwen3.8</text>
+<rect x="230" y="602" width="156" height="12" rx="3" fill="#147d42"/><text x="392" y="612" class="t2">26%</text><rect x="230" y="616" width="2" height="12" rx="3" fill="#2157d6"/><text x="236" y="626" class="t2">0%</text><rect x="230" y="630" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="640" class="t2">0%</text>
+<text x="0" y="674" class="t3">page-collect · haiku</text>
+<rect x="230" y="650" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="660" class="t2">100%</text><rect x="230" y="664" width="556" height="12" rx="3" fill="#2157d6"/><text x="792" y="674" class="t2">93%</text><rect x="230" y="678" width="489" height="12" rx="3" fill="#b4561d"/><text x="725" y="688" class="t2">81%</text>
+<text x="0" y="722" class="t3">page-collect · sonnet</text>
+<rect x="230" y="698" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="708" class="t2">100%</text><rect x="230" y="712" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="722" class="t2">100%</text><rect x="230" y="726" width="489" height="12" rx="3" fill="#b4561d"/><text x="725" y="736" class="t2">81%</text>
+<text x="0" y="770" class="t3">page-collect · opus</text>
+<rect x="230" y="746" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="756" class="t2">100%</text><rect x="230" y="760" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="770" class="t2">100%</text><rect x="230" y="774" width="511" height="12" rx="3" fill="#b4561d"/><text x="747" y="784" class="t2">85%</text>
+<text x="0" y="818" class="t3">page-langs · qwen3.8</text>
+<rect x="230" y="794" width="400" height="12" rx="3" fill="#147d42"/><text x="636" y="804" class="t2">67%</text><rect x="230" y="808" width="44" height="12" rx="3" fill="#2157d6"/><text x="280" y="818" class="t2">7%</text><rect x="230" y="822" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="832" class="t2">0%</text>
+<text x="0" y="866" class="t3">page-langs · haiku</text>
+<rect x="230" y="842" width="578" height="12" rx="3" fill="#147d42"/><text x="814" y="852" class="t2">96%</text><rect x="230" y="856" width="533" height="12" rx="3" fill="#2157d6"/><text x="769" y="866" class="t2">89%</text><rect x="230" y="870" width="422" height="12" rx="3" fill="#b4561d"/><text x="658" y="880" class="t2">70%</text>
+<text x="0" y="914" class="t3">page-langs · sonnet</text>
+<rect x="230" y="890" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="900" class="t2">100%</text><rect x="230" y="904" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="914" class="t2">100%</text><rect x="230" y="918" width="533" height="12" rx="3" fill="#b4561d"/><text x="769" y="928" class="t2">89%</text>
+<text x="0" y="962" class="t3">page-langs · opus</text>
+<rect x="230" y="938" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="948" class="t2">100%</text><rect x="230" y="952" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="962" class="t2">100%</text><rect x="230" y="966" width="556" height="12" rx="3" fill="#b4561d"/><text x="792" y="976" class="t2">93%</text>
+<text x="0" y="1010" class="t3">page-prep · qwen3.8</text>
+<rect x="230" y="986" width="2" height="12" rx="3" fill="#147d42"/><text x="236" y="996" class="t2">0%</text><rect x="230" y="1000" width="2" height="12" rx="3" fill="#2157d6"/><text x="236" y="1010" class="t2">0%</text><rect x="230" y="1014" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="1024" class="t2">0%</text>
+<text x="0" y="1058" class="t3">page-prep · haiku</text>
+<rect x="230" y="1034" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1044" class="t2">100%</text><rect x="230" y="1048" width="560" height="12" rx="3" fill="#2157d6"/><text x="796" y="1058" class="t2">93%</text><rect x="230" y="1062" width="560" height="12" rx="3" fill="#b4561d"/><text x="796" y="1072" class="t2">93%</text>
+<text x="0" y="1106" class="t3">page-prep · sonnet</text>
+<rect x="230" y="1082" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1092" class="t2">100%</text><rect x="230" y="1096" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="1106" class="t2">100%</text><rect x="230" y="1110" width="600" height="12" rx="3" fill="#b4561d"/><text x="836" y="1120" class="t2">100%</text>
+<text x="0" y="1154" class="t3">page-prep · opus</text>
+<rect x="230" y="1130" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1140" class="t2">100%</text><rect x="230" y="1144" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="1154" class="t2">100%</text><rect x="230" y="1158" width="600" height="12" rx="3" fill="#b4561d"/><text x="836" y="1168" class="t2">100%</text>
+<text x="0" y="1202" class="t3">page-reduce · qwen3.8</text>
+<rect x="230" y="1178" width="2" height="12" rx="3" fill="#147d42"/><text x="236" y="1188" class="t2">0%</text><rect x="230" y="1192" width="2" height="12" rx="3" fill="#2157d6"/><text x="236" y="1202" class="t2">0%</text><rect x="230" y="1206" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="1216" class="t2">0%</text>
+<text x="0" y="1250" class="t3">page-reduce · haiku</text>
+<rect x="230" y="1226" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1236" class="t2">100%</text><rect x="230" y="1240" width="300" height="12" rx="3" fill="#2157d6"/><text x="536" y="1250" class="t2">50%</text><rect x="230" y="1254" width="300" height="12" rx="3" fill="#b4561d"/><text x="536" y="1264" class="t2">50%</text>
+<text x="0" y="1298" class="t3">page-reduce · sonnet</text>
+<rect x="230" y="1274" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1284" class="t2">100%</text><rect x="230" y="1288" width="300" height="12" rx="3" fill="#2157d6"/><text x="536" y="1298" class="t2">50%</text><rect x="230" y="1302" width="300" height="12" rx="3" fill="#b4561d"/><text x="536" y="1312" class="t2">50%</text>
+<text x="0" y="1346" class="t3">page-reduce · opus</text>
+<rect x="230" y="1322" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1332" class="t2">100%</text><rect x="230" y="1336" width="400" height="12" rx="3" fill="#2157d6"/><text x="636" y="1346" class="t2">67%</text><rect x="230" y="1350" width="300" height="12" rx="3" fill="#b4561d"/><text x="536" y="1360" class="t2">50%</text>
+<text x="0" y="1394" class="t3">page-tree · qwen3.8</text>
+<rect x="230" y="1370" width="40" height="12" rx="3" fill="#147d42"/><text x="276" y="1380" class="t2">7%</text><rect x="230" y="1384" width="40" height="12" rx="3" fill="#2157d6"/><text x="276" y="1394" class="t2">7%</text><rect x="230" y="1398" width="2" height="12" rx="3" fill="#b4561d"/><text x="236" y="1408" class="t2">0%</text>
+<text x="0" y="1442" class="t3">page-tree · haiku</text>
+<rect x="230" y="1418" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1428" class="t2">100%</text><rect x="230" y="1432" width="600" height="12" rx="3" fill="#2157d6"/><text x="836" y="1442" class="t2">100%</text><rect x="230" y="1446" width="240" height="12" rx="3" fill="#b4561d"/><text x="476" y="1456" class="t2">40%</text>
+<text x="0" y="1490" class="t3">page-tree · sonnet</text>
+<rect x="230" y="1466" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1476" class="t2">100%</text><rect x="230" y="1480" width="560" height="12" rx="3" fill="#2157d6"/><text x="796" y="1490" class="t2">93%</text><rect x="230" y="1494" width="400" height="12" rx="3" fill="#b4561d"/><text x="636" y="1504" class="t2">67%</text>
+<text x="0" y="1538" class="t3">page-tree · opus</text>
+<rect x="230" y="1514" width="600" height="12" rx="3" fill="#147d42"/><text x="836" y="1524" class="t2">100%</text><rect x="230" y="1528" width="560" height="12" rx="3" fill="#2157d6"/><text x="796" y="1538" class="t2">93%</text><rect x="230" y="1542" width="280" height="12" rx="3" fill="#b4561d"/><text x="516" y="1552" class="t2">47%</text></svg>
 <p style="color:var(--muted);font-size:14px">Read it as: what the CLI adds over a clear output format, and what the skill adds over the CLI. These are comparisons on small samples, not benchmarks.</p>
 
 <h2>Browsers stay invisible</h2>
@@ -249,5 +297,5 @@ scripts/run.sh page-tree my-branch 'haiku'   # only matching models
 npm run report                            # results → REPORT.html, REPORT.md, METHODOLOGY.html</pre>
 <p>Adding a model is one entry in <code>models.yaml</code>. Adding a skill is a folder under <code>skills/</code> with a config, cases, graders and a floor.</p>
 
-<footer>Generated 2026-10-17 from the stored results of 147 runs. Tools: promptfoo, Pi coding agent, playwright-cli, Chrome DevTools Protocol, GitHub Pages.</footer>
+<footer>Generated 2026-10-17 from the stored results of 588 runs. Tools: promptfoo, Pi coding agent, playwright-cli, Chrome DevTools Protocol, GitHub Pages.</footer>
 </main></body></html>

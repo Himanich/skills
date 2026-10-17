@@ -1,0 +1,159 @@
+{
+  "skill": "browser-probe",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 120.5,
+      "cost_usd": 0.0267,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "wknd",
+      "pass": true,
+      "latency_s": 126.2,
+      "cost_usd": 0.0236,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "wknd",
+      "pass": false,
+      "latency_s": 132.3,
+      "cost_usd": 0.0032,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "no recipe to load with"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 133.2,
+      "cost_usd": 0.0191,
+      "used_cli": false,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "astrazeneca",
+      "pass": false,
+      "latency_s": 127.8,
+      "cost_usd": 0.0161,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-99e73b32 open https://www.astrazeneca.com/ --config=/var/folders/bh/sz302hnd6k96vjpn27_ppngc0000gq/T/bp-verify-99e73b32/config.json"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "astrazeneca",
+      "pass": true,
+      "latency_s": 126.5,
+      "cost_usd": 0.0103,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "adobe",
+      "pass": false,
+      "latency_s": 124.6,
+      "cost_usd": 0.0064,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "no recipe to load with"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "adobe",
+      "pass": false,
+      "latency_s": 103.4,
+      "cost_usd": 0.0407,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-20a07777 eval document.readyState"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "adobe",
+      "pass": true,
+      "latency_s": 120.2,
+      "cost_usd": 0.0066,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0099,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "bd",
+      "pass": true,
+      "latency_s": 125.6,
+      "cost_usd": 0.0193,
+      "used_cli": false,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "bd",
+      "pass": false,
+      "latency_s": 129.5,
+      "cost_usd": 0.0049,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "no recipe to load with"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "stripe",
+      "pass": false,
+      "latency_s": 85.6,
+      "cost_usd": 0.0167,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=verify-c6af3c8c eval JSON.stringify({"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "stripe",
+      "pass": true,
+      "latency_s": 129.4,
+      "cost_usd": 0.0132,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "stripe",
+      "pass": true,
+      "latency_s": 126.8,
+      "cost_usd": 0.0077,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "skill": "page-prep",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": false,
+      "latency_s": 120.4,
+      "cost_usd": 0.0088,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: banner gone"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": false,
+      "latency_s": 130.8,
+      "cost_usd": 0.0068,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: banner gone"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": false,
+      "latency_s": 127.6,
+      "cost_usd": 0.0046,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: banner gone"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": false,
+      "latency_s": 123.6,
+      "cost_usd": 0.0105,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: modal gone, scroll unlocked"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": false,
+      "latency_s": 130.5,
+      "cost_usd": 0.0034,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "check crashed on the agent's output: Command failed: playwright-cli -s=run-38fa0edf eval JSON.stringify((() => { const el = document.querySelector(\"#backdrop\"); return !el || getComputedStyle(el).display === 'none' || el.getBoundingClientRect().height === 0; })())"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 127.8,
+      "cost_usd": 0.0084,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 128.6,
+      "cost_usd": 0.006,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 128.1,
+      "cost_usd": 0.01,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 132.7,
+      "cost_usd": 0.0065,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 125.2,
+      "cost_usd": 0.0219,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 131.7,
+      "cost_usd": 0.0137,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 126,
+      "cost_usd": 0.0114,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": false,
+      "latency_s": 129.1,
+      "cost_usd": 0.0069,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: overlay not visible, no blocking fixed overlay left"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": false,
+      "latency_s": 129.6,
+      "cost_usd": 0.0122,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: overlay not visible, no blocking fixed overlay left"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": false,
+      "latency_s": 129.4,
+      "cost_usd": 0.0099,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "failed checks: overlay not visible, no blocking fixed overlay left"
+    }
+  ]
+}

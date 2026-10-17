@@ -1,0 +1,279 @@
+{
+  "skill": "page-collect",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 14.1,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 15.2,
+      "cost_usd": 0.0017,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 16.3,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 11.3,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 15.1,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 15.1,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 11.8,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 10.9,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 18,
+      "cost_usd": 0.0018,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 14.9,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 16.9,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 12.8,
+      "cost_usd": 0.0014,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 15.5,
+      "cost_usd": 0.0018,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 14.6,
+      "cost_usd": 0.0018,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 11.3,
+      "cost_usd": 0.0013,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 14.8,
+      "cost_usd": 0.0014,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 12.2,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 15.1,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 15.3,
+      "cost_usd": 0.0015,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 13.9,
+      "cost_usd": 0.0014,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 16.1,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 18,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 17.8,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 14.6,
+      "cost_usd": 0.0014,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 12.7,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 21.1,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

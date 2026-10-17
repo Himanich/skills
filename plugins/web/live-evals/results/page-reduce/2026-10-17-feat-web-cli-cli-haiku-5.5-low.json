@@ -1,0 +1,69 @@
+{
+  "skill": "page-reduce",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full reduction",
+      "pass": false,
+      "latency_s": 27.7,
+      "cost_usd": 0.0032,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "failed checks: cards collapsed to two examples plus REPEAT:2"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full reduction",
+      "pass": false,
+      "latency_s": 19.3,
+      "cost_usd": 0.0021,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "failed checks: cards collapsed to two examples plus REPEAT:2"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full reduction",
+      "pass": false,
+      "latency_s": 21.2,
+      "cost_usd": 0.0024,
+      "used_cli": true,
+      "timed_out": false,
+      "why": "failed checks: cards collapsed to two examples plus REPEAT:2"
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full reduction",
+      "pass": true,
+      "latency_s": 94.6,
+      "cost_usd": 0.0149,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full reduction",
+      "pass": true,
+      "latency_s": 44.6,
+      "cost_usd": 0.0055,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full reduction",
+      "pass": true,
+      "latency_s": 60.8,
+      "cost_usd": 0.0087,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

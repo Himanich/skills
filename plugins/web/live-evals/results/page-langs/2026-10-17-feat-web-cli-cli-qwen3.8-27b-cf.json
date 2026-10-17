@@ -1,0 +1,279 @@
+{
+  "skill": "page-langs",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 117,
+      "cost_usd": 0.0171,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 120.4,
+      "cost_usd": 0.0054,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, English page declared en",
+      "pass": false,
+      "latency_s": 122.5,
+      "cost_usd": 0.0102,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 121.4,
+      "cost_usd": 0.0054,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0057,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": false,
+      "latency_s": 122.3,
+      "cost_usd": 0.0059,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": false,
+      "latency_s": 123.3,
+      "cost_usd": 0.0049,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 121.2,
+      "cost_usd": 0.007,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0026,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live (English)",
+      "pass": false,
+      "latency_s": 122.2,
+      "cost_usd": 0.0057,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live (English)",
+      "pass": true,
+      "latency_s": 122.1,
+      "cost_usd": 0.0113,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "aem.live (English)",
+      "pass": false,
+      "latency_s": 122.1,
+      "cost_usd": 0.0141,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0118,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 122.2,
+      "cost_usd": 0.0102,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": false,
+      "latency_s": 122.5,
+      "cost_usd": 0.0059,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 40.7,
+      "cost_usd": 0.0089,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0087,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "fixture, French page with no language markup",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0035,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 121.2,
+      "cost_usd": 0.0054,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 121.2,
+      "cost_usd": 0.0053,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0053,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0057,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": false,
+      "latency_s": 121.2,
+      "cost_usd": 0.0013,
+      "used_cli": false,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 121.1,
+      "cost_usd": 0.0048,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": true,
+      "latency_s": 120.1,
+      "cost_usd": 0.0051,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": false,
+      "latency_s": 120.1,
+      "cost_usd": 0.0097,
+      "used_cli": true,
+      "timed_out": true,
+      "why": "langs.json missing or invalid"
+    },
+    {
+      "model": "qwen3.8-27b-cf",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": true,
+      "latency_s": 121.1,
+      "cost_usd": 0.0046,
+      "used_cli": true,
+      "timed_out": true,
+      "why": []
+    }
+  ]
+}

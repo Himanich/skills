@@ -1,0 +1,99 @@
+{
+  "skill": "cdp-ext-pilot",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "opus-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 32.5,
+      "cost_usd": 0.053,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 25.8,
+      "cost_usd": 0.0469,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 42.3,
+      "cost_usd": 0.0548,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 21.7,
+      "cost_usd": 0.0439,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 24.3,
+      "cost_usd": 0.0465,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 24.7,
+      "cost_usd": 0.0464,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 16.1,
+      "cost_usd": 0.0391,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 13.8,
+      "cost_usd": 0.0366,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "extension id",
+      "pass": true,
+      "latency_s": 14,
+      "cost_usd": 0.0382,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

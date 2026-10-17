@@ -1,0 +1,279 @@
+{
+  "skill": "page-collect",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "cli",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 23.6,
+      "cost_usd": 0.0761,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 24.7,
+      "cost_usd": 0.0781,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, full inventory",
+      "pass": true,
+      "latency_s": 25.7,
+      "cost_usd": 0.0766,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 21.9,
+      "cost_usd": 0.0724,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 14,
+      "cost_usd": 0.0471,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, icons for Edge Delivery Services",
+      "pass": true,
+      "latency_s": 15.7,
+      "cost_usd": 0.0478,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 26,
+      "cost_usd": 0.068,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 27.5,
+      "cost_usd": 0.074,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, forms only",
+      "pass": true,
+      "latency_s": 28.6,
+      "cost_usd": 0.0758,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 32.5,
+      "cost_usd": 0.088,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 33.5,
+      "cost_usd": 0.0751,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live, full inventory",
+      "pass": true,
+      "latency_s": 25.4,
+      "cost_usd": 0.0617,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 14.6,
+      "cost_usd": 0.0534,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 15.1,
+      "cost_usd": 0.0524,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, icons from sprites, data URIs and inline SVG",
+      "pass": true,
+      "latency_s": 15.6,
+      "cost_usd": 0.0519,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 22.9,
+      "cost_usd": 0.0655,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 20.9,
+      "cost_usd": 0.0608,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, JSON-LD structured data",
+      "pass": true,
+      "latency_s": 14.3,
+      "cost_usd": 0.0486,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 19.5,
+      "cost_usd": 0.0347,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 26.4,
+      "cost_usd": 0.0532,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, backlinko.com metadata",
+      "pass": true,
+      "latency_s": 22.4,
+      "cost_usd": 0.0469,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 26.9,
+      "cost_usd": 0.0502,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 23.4,
+      "cost_usd": 0.0423,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wpbeginner.com social links",
+      "pass": true,
+      "latency_s": 28.6,
+      "cost_usd": 0.0545,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 31.5,
+      "cost_usd": 0.0552,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 34.2,
+      "cost_usd": 0.0565,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch social links",
+      "pass": true,
+      "latency_s": 27.1,
+      "cost_usd": 0.0399,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

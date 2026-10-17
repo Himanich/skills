@@ -1,0 +1,99 @@
+{
+  "skill": "cdp-ext-pilot",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "no-skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "opus-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 15.6,
+      "cost_usd": 0.0386,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 144.2,
+      "cost_usd": 0.0399,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "sidepanel, save a note",
+      "pass": true,
+      "latency_s": 71.5,
+      "cost_usd": 0.0676,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 62.4,
+      "cost_usd": 0.055,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 12.3,
+      "cost_usd": 0.0355,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "options page screenshot",
+      "pass": true,
+      "latency_s": 13.5,
+      "cost_usd": 0.0304,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "extension id",
+      "pass": false,
+      "latency_s": 14.3,
+      "cost_usd": 0.0401,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: extension id reported"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "extension id",
+      "pass": false,
+      "latency_s": 11.1,
+      "cost_usd": 0.0308,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: extension id reported"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "extension id",
+      "pass": false,
+      "latency_s": 12.3,
+      "cost_usd": 0.0353,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: extension id reported"
+    }
+  ]
+}

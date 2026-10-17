@@ -1,0 +1,159 @@
+{
+  "skill": "page-reduce",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full reduction",
+      "pass": true,
+      "latency_s": 27.2,
+      "cost_usd": 0.0039,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full reduction",
+      "pass": true,
+      "latency_s": 34,
+      "cost_usd": 0.0051,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, full reduction",
+      "pass": true,
+      "latency_s": 28.7,
+      "cost_usd": 0.0043,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, phase 1 only",
+      "pass": true,
+      "latency_s": 13.1,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, phase 1 only",
+      "pass": true,
+      "latency_s": 12.1,
+      "cost_usd": 0.0011,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "fixture, phase 1 only",
+      "pass": true,
+      "latency_s": 13.7,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full reduction",
+      "pass": true,
+      "latency_s": 38.3,
+      "cost_usd": 0.0063,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full reduction",
+      "pass": true,
+      "latency_s": 44.1,
+      "cost_usd": 0.008,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "aem.live, full reduction",
+      "pass": true,
+      "latency_s": 36.6,
+      "cost_usd": 0.0066,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wknd-adventures.com, phase 1 only",
+      "pass": true,
+      "latency_s": 16,
+      "cost_usd": 0.0016,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wknd-adventures.com, phase 1 only",
+      "pass": true,
+      "latency_s": 16.1,
+      "cost_usd": 0.0014,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, wknd-adventures.com, phase 1 only",
+      "pass": true,
+      "latency_s": 14,
+      "cost_usd": 0.0013,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch, phase 1 only",
+      "pass": true,
+      "latency_s": 23.3,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch, phase 1 only",
+      "pass": true,
+      "latency_s": 29.2,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "haiku-5.5-low",
+      "case": "live, stripe.com/fr-ch, phase 1 only",
+      "pass": true,
+      "latency_s": 22.5,
+      "cost_usd": 0.0012,
+      "used_cli": true,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

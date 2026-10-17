@@ -1,0 +1,279 @@
+{
+  "skill": "page-langs",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "no-skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 8.7,
+      "cost_usd": 0.0205,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 7,
+      "cost_usd": 0.021,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, English page declared en",
+      "pass": true,
+      "latency_s": 7.8,
+      "cost_usd": 0.0208,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 9.5,
+      "cost_usd": 0.0273,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 11.4,
+      "cost_usd": 0.0273,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, es+de body declared en with hreflang fr",
+      "pass": true,
+      "latency_s": 9.8,
+      "cost_usd": 0.0276,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 23.7,
+      "cost_usd": 0.0618,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 18.6,
+      "cost_usd": 0.0588,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "es.wikipedia.org/wiki/Madrid (Spanish)",
+      "pass": true,
+      "latency_s": 22.1,
+      "cost_usd": 0.0482,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live (English)",
+      "pass": false,
+      "latency_s": 14,
+      "cost_usd": 0.0347,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "html_lang: expected \"en\", got null"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live (English)",
+      "pass": false,
+      "latency_s": 12.4,
+      "cost_usd": 0.0312,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "html_lang: expected \"en\", got null"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live (English)",
+      "pass": true,
+      "latency_s": 19.5,
+      "cost_usd": 0.0435,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 8.1,
+      "cost_usd": 0.0242,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 10.2,
+      "cost_usd": 0.0245,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, nested lang attribute (en page with a German block)",
+      "pass": true,
+      "latency_s": 8.6,
+      "cost_usd": 0.0237,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 6.1,
+      "cost_usd": 0.0207,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 7.2,
+      "cost_usd": 0.0217,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, French page with no language markup",
+      "pass": true,
+      "latency_s": 7.1,
+      "cost_usd": 0.0212,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 17.8,
+      "cost_usd": 0.053,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 18.4,
+      "cost_usd": 0.0506,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)",
+      "pass": true,
+      "latency_s": 15.3,
+      "cost_usd": 0.0381,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 24.3,
+      "cost_usd": 0.0626,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 17.9,
+      "cost_usd": 0.0463,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch (regional html lang, many hreflang)",
+      "pass": true,
+      "latency_s": 19.7,
+      "cost_usd": 0.0521,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": true,
+      "latency_s": 19.1,
+      "cost_usd": 0.0442,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": true,
+      "latency_s": 18.6,
+      "cost_usd": 0.0441,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wpbeginner.com (English page, hreflang-only languages)",
+      "pass": true,
+      "latency_s": 22.3,
+      "cost_usd": 0.0544,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

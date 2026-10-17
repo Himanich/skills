@@ -1,0 +1,159 @@
+{
+  "skill": "page-prep",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "no-skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": true,
+      "latency_s": 17.1,
+      "cost_usd": 0.0237,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": true,
+      "latency_s": 10.9,
+      "cost_usd": 0.0225,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, cookie banner (reject, never accept)",
+      "pass": true,
+      "latency_s": 14,
+      "cost_usd": 0.0244,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 20.2,
+      "cost_usd": 0.0284,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 20.1,
+      "cost_usd": 0.0241,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, newsletter modal with scroll lock",
+      "pass": true,
+      "latency_s": 20.9,
+      "cost_usd": 0.0236,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 51.5,
+      "cost_usd": 0.0905,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 35.1,
+      "cost_usd": 0.0636,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "20minutes.fr consent wall",
+      "pass": true,
+      "latency_s": 23.5,
+      "cost_usd": 0.0333,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 46,
+      "cost_usd": 0.0754,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 47.5,
+      "cost_usd": 0.0755,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, backlinko.com CookieHub dialog",
+      "pass": true,
+      "latency_s": 58.6,
+      "cost_usd": 0.0877,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": true,
+      "latency_s": 85.6,
+      "cost_usd": 0.1179,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": true,
+      "latency_s": 38.3,
+      "cost_usd": 0.0503,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)",
+      "pass": true,
+      "latency_s": 107,
+      "cost_usd": 0.1456,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    }
+  ]
+}

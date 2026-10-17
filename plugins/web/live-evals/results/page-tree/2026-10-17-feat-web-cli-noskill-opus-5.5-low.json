@@ -1,0 +1,159 @@
+{
+  "skill": "page-tree",
+  "ref": "feat-web-cli",
+  "commit": "4940cfb9",
+  "arm": "no-skill",
+  "date": "2026-10-17",
+  "runs": [
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, default capture",
+      "pass": false,
+      "latency_s": 23,
+      "cost_usd": 0.0672,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: cards selector in node map"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, default capture",
+      "pass": false,
+      "latency_s": 31.6,
+      "cost_usd": 0.0956,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: cards selector in node map"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, default capture",
+      "pass": false,
+      "latency_s": 66.7,
+      "cost_usd": 0.0698,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: cards selector in node map"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 32.6,
+      "cost_usd": 0.0844,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 29.3,
+      "cost_usd": 0.0782,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "fixture, narrow elements included",
+      "pass": true,
+      "latency_s": 19.6,
+      "cost_usd": 0.062,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live, default capture",
+      "pass": true,
+      "latency_s": 29.6,
+      "cost_usd": 0.0883,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live, default capture",
+      "pass": false,
+      "latency_s": 38.7,
+      "cost_usd": 0.0893,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: root line"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "aem.live, default capture",
+      "pass": false,
+      "latency_s": 24.8,
+      "cost_usd": 0.0804,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: root line, node map has body root"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch, long page with grids",
+      "pass": true,
+      "latency_s": 33.9,
+      "cost_usd": 0.0789,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch, long page with grids",
+      "pass": true,
+      "latency_s": 33.3,
+      "cost_usd": 0.0815,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, stripe.com/fr-ch, long page with grids",
+      "pass": true,
+      "latency_s": 38.7,
+      "cost_usd": 0.1043,
+      "used_cli": false,
+      "timed_out": false,
+      "why": []
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wknd-adventures.com, image-background hero",
+      "pass": false,
+      "latency_s": 27.6,
+      "cost_usd": 0.0766,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: image background marked"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wknd-adventures.com, image-background hero",
+      "pass": false,
+      "latency_s": 30.7,
+      "cost_usd": 0.085,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: root line, image background marked"
+    },
+    {
+      "model": "opus-5.5-low",
+      "case": "live, wknd-adventures.com, image-background hero",
+      "pass": false,
+      "latency_s": 28.5,
+      "cost_usd": 0.0796,
+      "used_cli": false,
+      "timed_out": false,
+      "why": "failed checks: image background marked"
+    }
+  ]
+}

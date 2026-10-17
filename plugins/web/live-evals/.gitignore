@@ -3,3 +3,4 @@ workspace/
 output/
 .playwright-cli/
 REPORT-detail.html
+fixtures/**/*.log
