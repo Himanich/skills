@@ -11,10 +11,25 @@ export const pct = (n, d) => (d ? `${Math.round((100 * n) / d)}%` : '-');
 export const loadSkill = (skill) => {
   const { floor } = parse(read('skills', skill, 'skill.yaml'));
   const files = readdirSync(join(root, 'results', skill)).filter((f) => f.endsWith('.json'));
-  const all = files.map((f) => JSON.parse(read('results', skill, f)));
+  const all = files.sort().map((f) => JSON.parse(read('results', skill, f)));
   const summaries = all.filter((s) => (s.arm ?? 'skill') === 'skill');
-  const noSkillRows = all.filter((s) => s.arm === 'no-skill').flatMap((s) => s.runs);
-  return { skill, floor, noSkillRows, rows: summaries.flatMap((s) => s.runs), refs: [...new Set(summaries.map((s) => s.ref))] };
+  const ordered = summaries.map((s, i) => [s, i]).sort((a, b) => (a[0].date > b[0].date) - (a[0].date < b[0].date) || a[1] - b[1]).map(([s]) => s);
+  const latest = ordered.at(-1);
+  const ref = latest?.ref;
+  const earlierRefs = [...new Set(ordered.map((s) => s.ref))].filter((r) => r !== ref);
+  const current = summaries.filter((s) => s.ref === ref);
+  const noSkill = all.filter((s) => s.arm === 'no-skill');
+  return {
+    skill,
+    floor,
+    ref,
+    commit: latest?.commit,
+    earlierRefs,
+    refs: [ref, ...earlierRefs].filter(Boolean),
+    noSkillRef: noSkill.at(-1)?.ref,
+    noSkillRows: noSkill.flatMap((s) => s.runs),
+    rows: current.flatMap((s) => s.runs),
+  };
 };
 
 export const isGood = (r, floor) => r.pass && r.latency_s <= floor.max_latency_s;

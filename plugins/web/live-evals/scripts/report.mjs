@@ -24,8 +24,8 @@ function summaryRow(sk) {
 }
 
 function skillSection(sk) {
-  const { skill, floor, rows, refs } = sk;
-  const lines = [`## ${skill}`, '', `Floor: ≥ ${floor.min_pass_rate * 100}% of runs pass within ${floor.max_latency_s} s. Skill ref: ${refs.join(', ')}.`, ''];
+  const { skill, floor, rows, ref, commit, earlierRefs } = sk;
+  const lines = [`## ${skill}`, '', `Floor: ≥ ${floor.min_pass_rate * 100}% of runs pass within ${floor.max_latency_s} s. `, '', `Skill ref: ${ref}${commit ? ` (${commit})` : ''}.${earlierRefs.length ? ` Earlier refs, not pooled: ${earlierRefs.join(', ')}.` : ''}`, ''];
 
   const perModel = models.map((m) => [m, stats(rows.filter((r) => r.model === m.label), floor)]).filter(([, s]) => s.n);
   lines.push(table(['Model', 'Runs', 'Passed', 'Within floor', 'Flaky cases', 'Avg s', 'p95 s', 'Timeouts', '$/run'],
@@ -67,7 +67,7 @@ const costTable = table(['Skill', 'Lowest sufficient model', '$/run', 'Highest m
   }));
 const noSkillSkills = skills.filter((sk) => sk.noSkillRows.length);
 const noSkillTable = noSkillSkills.length
-  ? table(['Skill', 'Model', 'With skill', 'Without skill', 'Time with / without', 'Cost with / without'],
+  ? `No-skill rows come from the ref(s) named per skill: ${noSkillSkills.map((sk) => `${sk.skill} → ${sk.noSkillRef}`).join(', ')}.\n\n` + table(['Skill', 'Model', 'With skill', 'Without skill', 'Time with / without', 'Cost with / without'],
     noSkillSkills.flatMap((sk) => [...new Set(sk.noSkillRows.map((r) => r.model))].map((label) => {
       const cases = new Set(sk.noSkillRows.map((r) => r.case));
       const withSkill = stats(sk.rows.filter((r) => r.model === label && cases.has(r.case)), sk.floor);

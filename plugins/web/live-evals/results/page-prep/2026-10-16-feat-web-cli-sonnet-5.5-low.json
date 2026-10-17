@@ -1,6 +1,7 @@
 {
   "skill": "page-prep",
   "ref": "feat-web-cli",
+  "commit": "8610fca1",
   "arm": "skill",
   "date": "2026-10-16",
   "runs": [

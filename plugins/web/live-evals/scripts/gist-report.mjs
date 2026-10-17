@@ -98,7 +98,7 @@ ${rows}
 ${noSkillSection}
 <footer>${skills.length} skills, ${models.length} models, ${totalRuns} runs, generated ${date}. Floor: pass rate and time budget per skill (skills/&lt;skill&gt;/skill.yaml), usually 90% within 120 s.
 Models run in tier order; the baseline must meet the floor first. Cost is the average per run at the list prices configured in Pi (per-token estimates, not an invoice). Small samples (9 to 27 runs per cell): gaps of a few points are noise.
-How this was measured: <a href="methodology.html">methodology and stack</a>. Source and per-case results: <a href="https://github.com/aem-growth-adoption/skill-evals">GitHub repo</a>.</footer>
+How this was measured: <a href="methodology.html">methodology and stack</a>. Source and per-case results: <a href="https://github.com/adobe/skills/tree/main/plugins/web/live-evals">GitHub repo</a>.</footer>
 </main></body></html>
 `);
 console.log('REPORT.html written');

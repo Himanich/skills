@@ -23,6 +23,8 @@ npm run report                                      # results/ -> REPORT.html, M
 
 ## Reports
 
+Reports score the latest ref per skill; earlier refs are listed but not pooled.
+
 - `REPORT.html`: the one-page gist, skills x models, coloured by whether the model meets the skill's floor.
 - `METHODOLOGY.html`: how the evals work, the stack, what exists and what we added, what the numbers do and
   do not tell you. Published next to the report as `methodology.html`.
