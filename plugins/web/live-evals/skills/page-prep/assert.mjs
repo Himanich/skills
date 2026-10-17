@@ -7,7 +7,9 @@ const gone = (selector) =>
 const RESIDUAL = `[...document.querySelectorAll('*')].filter((el) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.position === 'fixed' && parseInt(s.zIndex) > 1000 && r.width > 300 && r.height > 50 && r.bottom > 0 && r.top < innerHeight && s.display !== 'none' && s.visibility !== 'hidden'; }).map((el) => el.id || el.className || el.tagName)`;
 
 // Nav and header bars are legitimately fixed; anything else large and fixed still blocks the page.
-const RESIDUAL_NO_NAV = `${RESIDUAL}.filter((name) => !/nav|header/i.test(name))`;
+// Live sites keep legitimate fixed chrome (nav bars, promo strips). Only dialog-sized elements
+// (taller than 100px) that are not navigation count as blocking overlays left behind.
+const RESIDUAL_LIVE = `[...document.querySelectorAll('*')].filter((el) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.position === 'fixed' && parseInt(s.zIndex) > 1000 && r.width > 300 && r.height > 100 && r.bottom > 0 && r.top < innerHeight && s.display !== 'none' && s.visibility !== 'hidden' && !/nav|header/i.test(el.id + ' ' + el.className) && el.getAttribute('role') !== 'navigation'; }).map((el) => el.id || el.className || el.tagName)`;
 // Consent managers store the answer in a cookie; an accepted one holds "allowed" categories or "accept".
 const NOT_ACCEPTED = `!/(cookiehub|consent|shopify_pc)[^=]*=[^;]*(accept|allowed%22%3A%5B%22|"allowed":\\[")/i.test(document.cookie)`;
 
@@ -28,7 +30,7 @@ const CHECKS = {
   }),
   'live-overlay': (r, v) => ({
     'overlay not visible': JSON.parse(evalJson(r, gone(v.overlay))),
-    'no blocking fixed overlay left': JSON.parse(evalJson(r, `(${RESIDUAL_NO_NAV}).length === 0`)),
+    'no blocking fixed overlay left': JSON.parse(evalJson(r, `(${RESIDUAL_LIVE}).length === 0`)),
     'no consent accepted': JSON.parse(evalJson(r, NOT_ACCEPTED)),
   }),
   residual: (r) => ({
