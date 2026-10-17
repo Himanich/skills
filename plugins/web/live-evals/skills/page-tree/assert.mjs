@@ -4,7 +4,24 @@ import { fail, graded, ok, readJson, readText } from '../../lib/outputs.mjs';
 const selectorOf = (node) => (typeof node === 'string' ? node : node?.selector);
 const problems = (checks) => Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
 
+const lineCount = (tree) => tree.split('\n').filter(Boolean).length;
+const treeIds = (tree) => tree.split('\n').map((l) => l.trim().split(' ')[0]).filter(Boolean);
+const idsInMap = (tree, map) => treeIds(tree).every((id) => id in map);
+
 const CHECKS = {
+  'tree-live-long': (tree, map) => ({
+    'root line': /^r @0,0 \d+x\d+/m.test(tree),
+    'at least 60 lines': lineCount(tree) >= 60,
+    'multi-column grid marker': /\[\d+x\d+\]/.test(tree),
+    'every tree id in node map': idsInMap(tree, map),
+  }),
+  'tree-live-image': (tree, map) => ({
+    'root line': /^r @0,0 \d+x\d+/m.test(tree),
+    'at least 25 lines': lineCount(tree) >= 25,
+    'multi-column grid marker': /\[\d+x\d+\]/.test(tree),
+    'image background marked': /\[bg:image\]/.test(tree),
+    'every tree id in node map': idsInMap(tree, map),
+  }),
   'layout-default': (tree, map) => ({
     'root line': /^r @0,0 \d+x\d+/m.test(tree),
     'three-column grid': /\[3x1\]/.test(tree),

@@ -15,9 +15,12 @@ export const langsMatchExpected = graded((_output, { vars, providerResponse }) =
     declared_not_detected: langs.reconciliation?.declaredNotDetected,
     agreement: langs.reconciliation?.agreement,
   };
-  const wrong = Object.entries(expect).filter(([key, want]) =>
-    Array.isArray(want) ? !sameSet(got[key], want) : got[key] !== want);
+  const matches = ([key, want]) => {
+    if (key.endsWith('_includes')) return want.every((l) => (got[key.slice(0, -9)] ?? []).includes(l));
+    return Array.isArray(want) ? sameSet(got[key], want) : got[key] === want;
+  };
+  const wrong = Object.entries(expect).filter((entry) => !matches(entry));
   return wrong.length
-    ? fail(wrong.map(([k, want]) => `${k}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got[k])}`).join('; '))
+    ? fail(wrong.map(([k, want]) => `${k}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got[k.replace(/_includes$/, '')])}`).join('; '))
     : ok(`matches ${Object.keys(expect).join(', ')}`);
 });

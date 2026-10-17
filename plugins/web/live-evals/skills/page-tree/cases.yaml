@@ -15,3 +15,13 @@
     check: tree-valid
     url: https://www.aem.live/
     task: Capture the rendered layout of the page below as a spatial tree. Save the text tree to ./out/tree.txt and the node map (node ID to CSS selector) to ./out/nodemap.json.
+- description: live, stripe.com/fr-ch, long page with grids
+  vars:
+    check: tree-live-long
+    url: https://stripe.com/fr-ch
+    task: Capture the rendered layout of the page below as a spatial tree. Save the text tree to ./out/tree.txt and the node map (node ID to CSS selector) to ./out/nodemap.json.
+- description: live, wknd-adventures.com, image-background hero
+  vars:
+    check: tree-live-image
+    url: https://wknd-adventures.com/
+    task: Capture the rendered layout of the page below as a spatial tree. Save the text tree to ./out/tree.txt and the node map (node ID to CSS selector) to ./out/nodemap.json.

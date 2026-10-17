@@ -16,3 +16,15 @@
     check: reduce-valid
     url: https://www.aem.live/
     task: Reduce the page below to a structural skeleton I can use as a blueprint for building blocks. Write the skeleton and the manifest to ./out/.
+- description: live, wknd-adventures.com, phase 1 only
+  metadata: { noskill: skip } # "phase 1" is the skill's own notion
+  vars:
+    check: phase1-wknd
+    url: https://wknd-adventures.com/
+    task: Run only the first, browser-side phase of the page reduction on the page below, with no skeleton and no structural reasoning. Write the raw tokenized JSON to ./out/phase1-output.json.
+- description: live, stripe.com/fr-ch, phase 1 only
+  metadata: { noskill: skip } # "phase 1" is the skill's own notion
+  vars:
+    check: phase1-stripe
+    url: https://stripe.com/fr-ch
+    task: Run only the first, browser-side phase of the page reduction on the page below, with no skeleton and no structural reasoning. Write the raw tokenized JSON to ./out/phase1-output.json.

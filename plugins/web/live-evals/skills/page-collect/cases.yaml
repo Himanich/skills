@@ -29,3 +29,18 @@
     check: jsonld-fixture
     url: http://localhost:8765/collect-sprites.html
     task: What structured data (JSON-LD) does the page below declare? Collect it from the page itself.
+- description: live, backlinko.com metadata
+  vars:
+    check: meta-backlinko
+    url: https://backlinko.com/
+    task: What are the page's title, canonical URL and Open Graph metadata? Collect them from the page itself.
+- description: live, wpbeginner.com social links
+  vars:
+    check: socials-wpbeginner
+    url: https://www.wpbeginner.com/
+    task: Which social networks does the page below link to? Collect them from the page itself.
+- description: live, stripe.com/fr-ch social links
+  vars:
+    check: socials-stripe
+    url: https://stripe.com/fr-ch
+    task: Which social networks does the page below link to? Collect them from the page itself.

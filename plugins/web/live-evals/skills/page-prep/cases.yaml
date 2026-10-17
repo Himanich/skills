@@ -17,3 +17,15 @@
     url: https://www.20minutes.fr/
     heading: ''
     overlay: ''
+- description: live, backlinko.com CookieHub dialog
+  vars:
+    check: live-overlay
+    url: https://backlinko.com/
+    heading: ''
+    overlay: '#ch2-dialog'
+- description: live, allbirds.com Shopify privacy banner (agent fallback, the CLI misses it)
+  vars:
+    check: live-overlay
+    url: https://www.allbirds.com/
+    heading: ''
+    overlay: '#shopify-pc__banner'

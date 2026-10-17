@@ -45,6 +45,10 @@ const CHECKS = {
     'reports the log': /counter-ready/.test(output),
     'reports the warning': /deprecated-api-used/.test(output),
   }),
+  basecamp: async (output) => ({
+    'tab shows the Basecamp title': (await pageEval('document.title', 'basecamp.com')) === 'Basecamp',
+    'answer mentions Basecamp': /Basecamp/.test(output),
+  }),
   buttons: async (output) => ({
     'lists Submit': /Submit/.test(output),
     'lists Reset': /Reset/.test(output),

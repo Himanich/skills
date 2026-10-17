@@ -1,5 +1,6 @@
 # `expect` keys (all optional): top (first detected language), detected (exact set),
-# html_lang, undeclared / declared_not_detected / agreement (exact sets).
+# html_lang, undeclared / declared_not_detected / agreement (exact sets); a `_includes` suffix
+# (agreement_includes, ...) asks only that those languages are in the set.
 - description: fixture, English page declared en
   vars:
     url: http://localhost:8765/langs-en.html
@@ -29,3 +30,15 @@
   vars:
     url: http://localhost:8765/langs-short.html
     expect: { detected: [], html_lang: fr, declared_not_detected: [fr], undeclared: [], agreement: [] }
+- description: live, webflowmarketingmain.com/fr (French, hreflang de/en/fr)
+  vars:
+    url: https://webflowmarketingmain.com/fr
+    expect: { top: fr, html_lang: fr, agreement_includes: [fr] }
+- description: live, stripe.com/fr-ch (regional html lang, many hreflang)
+  vars:
+    url: https://stripe.com/fr-ch
+    expect: { top: fr, html_lang: fr-CH }
+- description: live, wpbeginner.com (English page, hreflang-only languages)
+  vars:
+    url: https://www.wpbeginner.com/
+    expect: { detected: [en], html_lang: en-US, declared_not_detected_includes: [de, fr] }

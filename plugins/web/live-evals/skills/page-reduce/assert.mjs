@@ -5,7 +5,22 @@ import { fail, graded, ok, outDir, readJson, readText } from '../../lib/outputs.
 const problems = (checks) => Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
 const sectionMarkers = (skeleton) => (skeleton.match(/<!-- section:\d+ /g) ?? []).length;
 
+const phase1Live = (r, minSections, types) => {
+  const phase1 = readJson(r, 'phase1-output.json');
+  const sections = phase1?.sections ?? [];
+  return {
+    [`at least ${minSections} sections`]: sections.length >= minSections,
+    [`types include ${types.join(', ')}`]: types.every((t) => sections.some((s) => s.sectionType === t)),
+    'template hash present': Boolean(phase1?.templateHash),
+    'every section has xpath and tokenized html': sections.length > 0
+      && sections.every((s) => s.xpath && typeof s.tokenizedHtml === 'string'),
+    'stopped before phase 2': !existsSync(join(outDir(r), 'skeleton.html')),
+  };
+};
+
 const CHECKS = {
+  'phase1-wknd': (r) => phase1Live(r, 15, ['hero', 'carousel']),
+  'phase1-stripe': (r) => phase1Live(r, 30, ['cards']),
   'reduce-full': (r) => {
     const skeleton = readText(r, 'skeleton.html') ?? '';
     const manifest = readJson(r, 'manifest.json');

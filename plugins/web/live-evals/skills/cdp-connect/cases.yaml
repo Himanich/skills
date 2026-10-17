@@ -24,3 +24,7 @@
     check: console
     tabs: http://localhost:8765/cdp-counter.html
     task: Reload the "Inventory" tab and tell me everything the page writes to the browser console, including warnings.
+- description: live, open basecamp.com and read the title
+  vars:
+    check: basecamp
+    task: Open https://basecamp.com/ in the Chrome on 9222 and tell me the page title.

@@ -26,9 +26,12 @@ const runs = JSON.parse(readFileSync(file, 'utf-8')).results.results.map((r) => 
 const arm = process.env.SKILLS === 'off' ? 'no-skill' : 'skill';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const date = new Date().toISOString().slice(0, 10);
-const commit = execFileSync('git', ['-C', root, 'rev-parse', '--short', ref], { encoding: 'utf-8' }).trim();
+const git = (...args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf-8' }).trim();
+// `HEAD` is not a name: use the branch, or the short sha when detached.
+const refName = ref === 'HEAD' ? git('rev-parse', '--abbrev-ref', 'HEAD').replace(/^HEAD$/, git('rev-parse', '--short', 'HEAD')) : ref;
+const commit = git('rev-parse', '--short', ref);
 const dir = join(root, 'results', skill);
 mkdirSync(dir, { recursive: true });
-const name = `${date}-${ref.replace(/[^\w.-]+/g, '_')}${arm === 'skill' ? '' : '-noskill'}-${[...new Set(runs.map((r) => r.model))].join('+')}.json`;
-writeFileSync(join(dir, name), `${JSON.stringify({ skill, ref, commit, arm, date, runs }, null, 2)}\n`);
+const name = `${date}-${refName.replace(/[^\w.-]+/g, '_')}${arm === 'skill' ? '' : '-noskill'}-${[...new Set(runs.map((r) => r.model))].join('+')}.json`;
+writeFileSync(join(dir, name), `${JSON.stringify({ skill, ref: refName, commit, arm, date, runs }, null, 2)}\n`);
 console.log(`${runs.length} runs -> results/${skill}/${name}`);

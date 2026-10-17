@@ -8,7 +8,24 @@ const collector = (response, name) =>
 const problems = (checks) => Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
 const verdict = (list, what) => (list.length ? fail(`${what}: ${list.join(', ')}`) : ok(what));
 
+const platformsOf = (r) => (collector(r, 'socials')?.socials ?? []).map((s) => s.platform);
+
 const FIXTURE_CHECKS = {
+  'meta-backlinko': (r) => {
+    const meta = collector(r, 'metadata');
+    return {
+      'title names the brand': /Backlinko/.test(meta?.title ?? ''),
+      'og:site_name': meta?.tags?.['og:site_name'] === 'Backlinko',
+      'canonical': meta?.canonical?.replace(/\/$/, '') === 'https://backlinko.com',
+    };
+  },
+  'socials-wpbeginner': (r) => ({
+    'facebook, youtube, twitter': ['facebook', 'youtube', 'twitter'].every((p) => platformsOf(r).includes(p)),
+    'at least five platforms': new Set(platformsOf(r)).size >= 5,
+  }),
+  'socials-stripe': (r) => ({
+    'github and youtube': ['github', 'youtube'].every((p) => platformsOf(r).includes(p)),
+  }),
   'all-fixture': (r) => {
     const meta = collector(r, 'metadata');
     const forms = collector(r, 'forms')?.forms ?? [];

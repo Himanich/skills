@@ -68,7 +68,7 @@ tried, and a sweeper kills automation browsers started without `--headless`.
 | Skill | Cases | Notes |
 |---|---|---|
 | browser-probe | 4 real sites | recipe must match the probe report and load the page |
-| page-langs | 2 fixtures, 2 real | `langs.json` vs known languages and declarations |
+| page-langs | 2 fixtures, 5 real | `langs.json` vs known languages and declarations |
 | page-collect | 3 fixture tasks, 1 real | metadata, forms, videos, socials, icons vs the fixture markup |
 | page-tree | 2 fixture, 1 real | grid, gradient, image background, fixed banner, `minWidth` |
 | page-reduce | 2 fixture, 1 real | 5 sections, `{REPEAT:2}`, no scripts, phase 1 only |
