@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import {
   artifactPath,
   generateSessionName,
@@ -96,8 +96,10 @@ test('requireOpenSession throws NO_SESSION for missing and closed', () => {
   }
 });
 
-test('artifactPath prefixes with session and command', () => {
-  assert.equal(artifactPath('out', 's', 'screenshot', 'a.png'), 'out/s-screenshot-a.png');
+test('artifactPath prefixes with session and command and is absolute', () => {
+  const p = artifactPath('out', 's', 'screenshot', 'a.png');
+  assert.equal(p, resolve('out/s-screenshot-a.png'));
+  assert.ok(p.startsWith('/'));
 });
 
 test('loadRecipe returns cliConfig.browser and persistent; bad path → USAGE', () => {

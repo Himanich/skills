@@ -3645,7 +3645,7 @@ function createContext(command, deps, { timeoutMs } = {}) {
 // src/session.mjs
 import { randomBytes } from "node:crypto";
 import { mkdirSync as mkdirSync2, readFileSync } from "node:fs";
-import { join as join2 } from "node:path";
+import { join as join2, resolve as resolve2 } from "node:path";
 function generateSessionName() {
   return `web-${randomBytes(2).toString("hex")}`;
 }
@@ -3730,10 +3730,10 @@ function closeQuietlyIf(driver, name, failed) {
   }
 }
 function artifactPath(outputDir, session, command, name) {
-  return join2(outputDir, `${session}-${command}-${name}`);
+  return resolve2(outputDir, `${session}-${command}-${name}`);
 }
 function artifactDir(outputDir, session, command) {
-  const dir = join2(outputDir, `${session}-${command}`);
+  const dir = resolve2(outputDir, `${session}-${command}`);
   mkdirSync2(dir, { recursive: true });
   return dir;
 }
@@ -3940,7 +3940,7 @@ function registerBrowser(program2, deps) {
 
 // src/commands/probe.mjs
 import { randomBytes as randomBytes2 } from "node:crypto";
-import { join as join3, resolve as resolve2 } from "node:path";
+import { join as join3, resolve as resolve3 } from "node:path";
 import { rmSync as rmSync2, writeFileSync as writeFileSync2 } from "node:fs";
 
 // inline:inline-bundles
@@ -4590,7 +4590,7 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
   if (success.stepDef.stealth) {
     const stealthPath = join3(dir, "stealth-init.js");
     writeFileSync2(stealthPath, loadBundle("stealth-init.js"));
-    browser.initScript = [resolve2(stealthPath)];
+    browser.initScript = [resolve3(stealthPath)];
   }
   const recipe = {
     url,
@@ -4640,7 +4640,7 @@ import {
   unlinkSync,
   writeFileSync as writeFileSync3
 } from "node:fs";
-import { dirname, join as join4, resolve as resolve3 } from "node:path";
+import { dirname, join as join4, resolve as resolve4 } from "node:path";
 var HELP3 = {
   LAUNCH: `
 Example:
@@ -4809,7 +4809,7 @@ function verifyLoaded(driver, { session, extensionId, name }) {
 }
 function launch(ctx, distDir) {
   const { opts, driver, print } = ctx;
-  const abs = resolve3(distDir);
+  const abs = resolve4(distDir);
   const manifest = readManifest(abs);
   const surfaces = availableSurfaces(manifest);
   const session = opts.session ?? generateSessionName();
@@ -5001,9 +5001,9 @@ async function startMask({
       { key: readFileSync3(keyFile), cert: readFileSync3(certFile) },
       makeProxy({ target, displayDomain, log })
     );
-    await new Promise((resolve4, reject) => {
+    await new Promise((resolve5, reject) => {
       server.once("error", reject);
-      server.listen(port, resolve4);
+      server.listen(port, resolve5);
     });
   } catch (err) {
     removeHostsEntry(hostsFile, entry, log);
@@ -5015,8 +5015,8 @@ async function startMask({
   log(`${url} -> ${target.origin}`);
   const stop = async () => {
     log("Shutting down...");
-    await new Promise((resolve4) => {
-      server.close(resolve4);
+    await new Promise((resolve5) => {
+      server.close(resolve5);
       server.closeAllConnections();
     });
     removeHostsEntry(hostsFile, entry, log);
@@ -5029,12 +5029,12 @@ async function startMask({
   return { url, certDir, stop };
 }
 function waitForSignal(stop) {
-  return new Promise((resolve4) => {
+  return new Promise((resolve5) => {
     const handler = async () => {
       process.off("SIGINT", handler);
       process.off("SIGTERM", handler);
       await stop();
-      resolve4();
+      resolve5();
     };
     process.on("SIGINT", handler);
     process.on("SIGTERM", handler);

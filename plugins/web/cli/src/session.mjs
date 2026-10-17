@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { CliError } from '#src/errors.mjs';
 
 /** @returns {string} `web-` plus 4 hex characters */
@@ -110,14 +110,16 @@ function closeQuietlyIf(driver, name, failed) {
   }
 }
 
-/** @returns {string} `<outputDir>/<session>-<command>-<name>` */
+// Artifact paths are absolute: agents often change directory between commands and a relative
+// `.web/...` in the printed document sent weaker models hunting the filesystem for the file.
+/** @returns {string} absolute `<outputDir>/<session>-<command>-<name>` */
 export function artifactPath(outputDir, session, command, name) {
-  return join(outputDir, `${session}-${command}-${name}`);
+  return resolve(outputDir, `${session}-${command}-${name}`);
 }
 
-/** @returns {string} `<outputDir>/<session>-<command>`, created if missing */
+/** @returns {string} absolute `<outputDir>/<session>-<command>`, created if missing */
 export function artifactDir(outputDir, session, command) {
-  const dir = join(outputDir, `${session}-${command}`);
+  const dir = resolve(outputDir, `${session}-${command}`);
   mkdirSync(dir, { recursive: true });
   return dir;
 }
