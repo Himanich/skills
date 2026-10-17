@@ -33,18 +33,24 @@ Reports score the latest ref per skill; earlier refs are listed but not pooled.
   promptfoo itself. `lib/replay-provider.mjs` replays stored results, so no model is called.
 - `npx promptfoo view`: every raw run on this machine, with the agents' outputs and assertion reasons.
 
-## The no-skill arm
+## Comparison arms
 
-`SKILLS=off scripts/run.sh <skill> <ref>` runs the same cases with the skill withheld, on the models marked
-`noskill` in `models.yaml` (a comparison, not a benchmark). Pi loads no skill, the agent works in an empty
-directory under `/tmp/skill-evals-noskill` with a private `$HOME` that has no skills in it, and the prompt adds
-the output format (file names and fields, never the method). A grader fails any run that opens a skill file
-from disk. Cases that hinge on a skill's own method have `metadata: { noskill: skip }`. Results are stored with
-`arm: no-skill` and shown in the "Without the skill" table of `REPORT.md`.
+`ARM=skill|cli|none scripts/run.sh <skill> <ref>` (default `skill`; `SKILLS=off` is an alias for `ARM=none`).
+`cli` and `none` run the same cases and graders without the skill, on the models marked `noskill` in
+`models.yaml` unless a provider filter is given. They are comparisons, not benchmarks.
 
-The no-skill arm has no `web` CLI either: the point is no skill tooling.
+- `skill`: skill loaded, `web` CLI on PATH. The benchmark arm.
+- `cli`: no skill loaded or on disk; the CLI is built into the workspace (`/tmp/skill-evals-cli/<skill>/.web-cli`)
+  and on PATH. The prompt adds the output format, the headless line and `` A `web` CLI is installed; `web --help` documents it. ``
+  Stored with `arm: cli`, file suffix `-cli`.
+- `none`: no skill, no CLI, empty directory under `/tmp/skill-evals-noskill`. Stored with `arm: no-skill`,
+  suffix `-noskill`.
 
-All browsers are headless in both arms: agent shells refuse `--headed` and `open`, a grader fails runs that
+Both use a private `$HOME` with no skills in it, and a grader fails any run that opens a skill file from disk.
+Cases that hinge on a skill's own method have `metadata: { noskill: skip }`. `REPORT.md` shows the
+"Skill, CLI, or neither" table, with `CLI used` from each run's `used_cli` flag (a `web browser|page|probe|ext|mask` command).
+
+All browsers are headless in every arm: agent shells refuse `--headed` and `open`, a grader fails runs that
 tried, and a sweeper kills automation browsers started without `--headless`.
 
 ## How a run is graded

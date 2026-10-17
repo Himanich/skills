@@ -3,7 +3,7 @@
 // whether the model meets the skill's floor. REPORT-detail.html (promptfoo) has the per-case view.
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { costComparison, loadSkills, models, money, root, stats } from '../lib/results.mjs';
+import { abc, armComparison, armVerdicts, cliUsedText, costComparison, loadSkills, models, money, root, stats } from '../lib/results.mjs';
 
 const skills = loadSkills();
 const known = new Set(models.map((m) => m.label));
@@ -31,34 +31,22 @@ const rows = skills.map((sk) => {
 }).join('\n');
 
 const head = models.map((m) => `<th>${esc(m.label)}${m.baseline ? '<small>baseline</small>' : ''}</th>`).join('');
-// Verdicts compare pass rates, not floors alone: a gap of 12 points or less over so few runs is no signal.
-const verdictOf = (w, wo) => {
-  const gap = w.good / w.n - wo.good / wo.n;
-  if (Math.abs(gap) <= 0.12) return [w.meets || wo.meets ? 'no clear difference' : 'neither passes', w.meets || wo.meets ? 'Similar pass rates with and without' : 'Misses the floor both ways', w.meets || wo.meets ? 'same' : 'none'];
-  return gap > 0 ? ['skill adds value', 'Clearly better with the skill', 'adds'] : ['skill not helping', 'Clearly better without the skill', 'hurts'];
-};
-const pairs = skills.flatMap((sk) => [...new Set(sk.noSkillRows.map((r) => r.model))]
-  .sort((a, b) => models.findIndex((m) => m.label === a) - models.findIndex((m) => m.label === b))
-  .map((label) => {
-    const cases = new Set(sk.noSkillRows.map((r) => r.case));
-    const w = stats(sk.rows.filter((r) => r.model === label && cases.has(r.case)), sk.floor);
-    const wo = stats(sk.noSkillRows.filter((r) => r.model === label), sk.floor);
-    return { skill: sk.skill, label, w, wo, verdict: verdictOf(w, wo), floor: sk.floor };
-  }));
-const pct = (x) => `${Math.round((100 * x.good) / x.n)}%`;
-const delta = (a, b, fmt) => { const d = b - a; return `${d > 0 ? '+' : d < 0 ? '−' : ''}${fmt(Math.abs(d))}`; };
-const noSkillRows = pairs.map((p) => `<tr><th>${esc(p.skill)}<small>${esc(p.label)}</small></th>
-<td class="${heat(p.w, p.floor)}"><b>${pct(p.w)}</b><small>${p.w.good}/${p.w.n} · ${p.w.avg.toFixed(0)} s · ${money(p.w.cost)}</small></td>
-<td class="${heat(p.wo, p.floor)}"><b>${pct(p.wo)}</b><small>${p.wo.good}/${p.wo.n} · ${p.wo.avg.toFixed(0)} s · ${money(p.wo.cost)}</small></td>
-<td class="delta"><b>${delta(p.w.avg, p.wo.avg, (v) => `${v.toFixed(0)} s`)}</b><small>${delta(p.w.cost, p.wo.cost, money)} per run</small></td>
-<td class="verdict ${p.verdict[2]}"><b>${p.verdict[0]}</b><small>${p.verdict[1]}</small></td></tr>`).join('\n');
-const stillPass = pairs.filter((p) => p.wo.meets).length;
-const noSkillSection = pairs.length ? `
-<h2>Is the skill needed at all?</h2>
-<p>The same cases without the skill: Pi loads none, the agent works in an empty folder with no skills on disk, and the prompt only adds the output format. Only two models are run this way. Without the skill, <b>${stillPass} of ${pairs.length}</b> skill and model pairs still meet the floor.</p>
-<table class="cmp"><thead><tr><th>Skill and model</th><th>With the skill</th><th>Without the skill</th><th>Time and cost change without the skill</th><th>Verdict</th></tr></thead>
+const pct = (x) => (x.n ? `${Math.round((100 * x.good) / x.n)}%` : '·');
+const armCell = (s, floor) => (s.n
+  ? `<td class="${heat(s, floor)}"><b>${pct(s)}</b><small>${s.good}/${s.n}</small></td>` : '<td class="none">·</td>');
+const armRows = skills.flatMap(armComparison);
+const armBody = armRows.map((x) => `<tr><th>${esc(x.skill)}<small>${esc(x.label)}</small></th>
+${armCell(x.a, x.floor)}${armCell(x.b, x.floor)}${armCell(x.c, x.floor)}
+<td><b>${abc(x.a, x.b, x.c, (s) => s.avg.toFixed(0))}</b><small>seconds</small></td>
+<td><b>${abc(x.a, x.b, x.c, (s) => money(s.cost))}</b><small>per run</small></td>
+<td><b>${cliUsedText(x)}</b><small>CLI-only runs</small></td></tr>
+<tr><td colspan="7" style="text-align:left;background:none"><small>${esc(armVerdicts(x).join('; '))}.</small></td></tr>`).join('\n');
+const noSkillSection = armRows.length ? `
+<h2>Skill, CLI, or neither?</h2>
+<p>The same cases in three arms: the skill with its CLI, the CLI alone (no skill on disk, the prompt only says <code>web --help</code> documents it), and neither. Each cell covers the same cases. A comparison on a few models, not a benchmark.</p>
+<table class="cmp"><thead><tr><th>Skill and model</th><th>skill + CLI</th><th>CLI only</th><th>neither</th><th>Time</th><th>Cost</th><th>CLI used</th></tr></thead>
 <tbody>
-${noSkillRows}
+${armBody}
 </tbody></table>
 <p class="legend" style="margin-top:10px"><span class="ok">meets the floor</span><span class="near">within 20 points</span><span class="bad">well below</span></p>` : '';
 const date = new Date().toISOString().slice(0, 10);

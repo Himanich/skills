@@ -4,7 +4,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
-import { costComparison, loadSkills, models, money, root, stats } from '../lib/results.mjs';
+import { armComparison, costComparison, loadSkills, models, money, root, stats } from '../lib/results.mjs';
 
 const skills = loadSkills();
 const known = new Set(models.map((m) => m.label));
@@ -83,19 +83,17 @@ const bars = skills
 const chart = `<svg viewBox="0 0 980 ${bars.length * 44 + 40}" role="img" aria-label="Cost per run">
 <text x="150" y="14" class="t2">average cost per run: lowest sufficient model (green) vs the highest-tier model run (orange)</text>${bars.join('\n')}</svg>`;
 
-// ---------- no-skill comparison chart ----------
-const pairs = skills.flatMap((sk) => [...new Set(sk.noSkillRows.map((r) => r.model))].map((label) => {
-  const cases = new Set(sk.noSkillRows.map((r) => r.case));
-  const withSkill = stats(sk.rows.filter((r) => r.model === label && cases.has(r.case)), sk.floor);
-  const without = stats(sk.noSkillRows.filter((r) => r.model === label), sk.floor);
-  return { name: `${sk.skill} · ${label.split('-')[0]}`, w: withSkill.good / withSkill.n, wo: without.good / without.n };
+// ---------- three-arm comparison chart ----------
+const BAR_COLORS = ['#147d42', '#2157d6', '#b4561d'];
+const pairs = skills.flatMap(armComparison).map((x) => ({
+  name: `${x.skill} · ${x.label.split('-')[0]}`,
+  bars: [x.a, x.b, x.c].map((s) => (s.n ? s.good / s.n : null)),
 }));
 const noSkillChart = pairs.length
-  ? `<svg viewBox="0 0 980 ${pairs.length * 34 + 40}" role="img" aria-label="With and without the skill">
-<text x="230" y="14" class="t2">share of runs within the floor: with the skill (green) and without it (orange)</text>
-${pairs.map((p, i) => { const y = 26 + i * 34; return `<text x="0" y="${y + 18}" class="t3">${esc(p.name)}</text>
-<rect x="230" y="${y}" width="${Math.max(2, Math.round(p.w * 600))}" height="12" rx="3" fill="#147d42"/><text x="${236 + Math.round(p.w * 600)}" y="${y + 10}" class="t2">${Math.round(p.w * 100)}%</text>
-<rect x="230" y="${y + 14}" width="${Math.max(2, Math.round(p.wo * 600))}" height="12" rx="3" fill="#b4561d"/><text x="${236 + Math.round(p.wo * 600)}" y="${y + 24}" class="t2">${Math.round(p.wo * 100)}%</text>`; }).join('\n')}</svg>`
+  ? `<svg viewBox="0 0 980 ${pairs.length * 48 + 40}" role="img" aria-label="Skill, CLI, or neither">
+<text x="230" y="14" class="t2">share of runs within the floor: skill + CLI (green), CLI only (blue), neither (orange)</text>
+${pairs.map((p, i) => { const y = 26 + i * 48; return `<text x="0" y="${y + 24}" class="t3">${esc(p.name)}</text>
+${p.bars.map((v, k) => (v === null ? '' : `<rect x="230" y="${y + k * 14}" width="${Math.max(2, Math.round(v * 600))}" height="12" rx="3" fill="${BAR_COLORS[k]}"/><text x="${236 + Math.round(v * 600)}" y="${y + k * 14 + 10}" class="t2">${Math.round(v * 100)}%</text>`)).join('')}`; }).join('\n')}</svg>`
   : '';
 
 const coverage = caseFiles.map((c) => {
@@ -186,10 +184,10 @@ ${gate}
 <h2>The cost of the model choice</h2>
 ${chart}
 
-${noSkillChart ? `<h2>Is the skill needed at all?</h2>
-<p>The same cases also run with the skill withheld. Pi loads no skill and the workspace holds none, and a grader fails any run that opens a skill file from disk (the skills are installed on this machine, so this is checked, not assumed). The graders read the skills' own output formats, so this arm's prompt adds the output format, meaning file names and fields, never how to produce them. Cases that hinge on a skill's own method are left out, and browser-probe is judged only on whether the recipe loads the page. To limit cost it runs on two models only.</p>
+${noSkillChart ? `<h2>Skill, CLI, or neither?</h2>
+<p>The same cases run in three arms. <b>skill + CLI</b>: the skill is loaded and the <code>web</code> CLI is on PATH. <b>CLI only</b>: no skill is loaded or on disk, the CLI is on PATH, and the prompt adds one line: <code>A \`web\` CLI is installed; \`web --help\` documents it.</code> <b>Neither</b>: no skill and no CLI. Both comparison arms run in an empty workspace under a private home, and a grader fails any run that opens a skill file from disk (the skills are installed on this machine, so this is checked, not assumed). Their prompts also add the output format, meaning file names and fields, never how to produce them. Cases that hinge on a skill's own method are left out, every bar covers the same cases, and browser-probe is judged only on whether the recipe loads the page. To limit cost they run on a few models only. The report also records whether each CLI-only run actually called <code>web</code>.</p>
 ${noSkillChart}
-<p style="color:var(--muted);font-size:14px">Read it as: how much of the skill's value is more than a clear output format. Where the bars match, a strong model manages without the skill; where the orange bar is short, the skill's method is doing the work.</p>` : ''}
+<p style="color:var(--muted);font-size:14px">Read it as: what the CLI adds over a clear output format, and what the skill adds over the CLI. These are comparisons on small samples, not benchmarks.</p>` : ''}
 
 <h2>Browsers stay invisible</h2>
 <p>Evals must never open a window on the machine running them. Every agent shell refuses <code>--headed</code> and <code>open</code>, a grader fails any run that still tried, and a sweeper kills automation browsers started without <code>--headless</code>. The extension skill, which launches a headed Chromium by default, goes through a headless shim.</p>

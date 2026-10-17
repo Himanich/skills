@@ -6,7 +6,7 @@
 // scripts/promptfoo-report.mjs renders the same data as promptfoo HTML reports.
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cell, costComparison, isGood, loadSkills, models, money, pct, root, stats, table } from '../lib/results.mjs';
+import { abc, armComparison, armVerdicts, cell, cliUsedText, costComparison, isGood, loadSkills, models, money, pct, root, stats, table } from '../lib/results.mjs';
 
 /** Failure reasons with numbers and quoted values stripped, so similar failures group together. */
 const reasonKey = (r) => {
@@ -65,15 +65,12 @@ const costTable = table(['Skill', 'Lowest sufficient model', '$/run', 'Highest m
     if (c.lowestCost === undefined) return [sk.skill, c.lowest ?? 'none', '-', c.top ?? '-', '-', '-'];
     return [sk.skill, c.lowest, money(c.lowestCost), c.top + (c.topMeets ? '' : ' (misses floor)'), money(c.topCost), c.factor && c.lowest !== c.top ? `${fmtFactor(c.factor)}× cheaper` : 'same model'];
   }));
-const noSkillSkills = skills.filter((sk) => sk.noSkillRows.length);
-const noSkillTable = noSkillSkills.length
-  ? `No-skill rows come from the ref(s) named per skill: ${noSkillSkills.map((sk) => `${sk.skill} → ${sk.noSkillRef}`).join(', ')}.\n\n` + table(['Skill', 'Model', 'With skill', 'Without skill', 'Time with / without', 'Cost with / without'],
-    noSkillSkills.flatMap((sk) => [...new Set(sk.noSkillRows.map((r) => r.model))].map((label) => {
-      const cases = new Set(sk.noSkillRows.map((r) => r.case));
-      const withSkill = stats(sk.rows.filter((r) => r.model === label && cases.has(r.case)), sk.floor);
-      const without = stats(sk.noSkillRows.filter((r) => r.model === label), sk.floor);
-      return [sk.skill, label, cell(withSkill), cell(without), `${withSkill.avg.toFixed(0)} s / ${without.avg.toFixed(0)} s`, `${money(withSkill.cost)} / ${money(without.cost)}`];
-    })))
+const armRows = skills.flatMap(armComparison);
+const armSkills = skills.filter((sk) => sk.cliRows.length || sk.noSkillRows.length);
+const armTable = armRows.length
+  ? `Comparison rows come from the ref(s): ${armSkills.map((sk) => `${sk.skill} → CLI only ${sk.cliRef ?? '·'}, neither ${sk.noSkillRef ?? '·'}`).join('; ')}.\n\n` + table(['Skill', 'Model', 'skill + CLI', 'CLI only', 'neither', 'time (s)', '$/run', 'CLI used'],
+    armRows.map((x) => [x.skill, x.label, cell(x.a), cell(x.b), cell(x.c), abc(x.a, x.b, x.c, (s) => s.avg.toFixed(0)), abc(x.a, x.b, x.c, (s) => money(s.cost)), cliUsedText(x)]))
+    + '\n\n' + armRows.map((x) => `- ${x.skill} · ${x.label}: ${armVerdicts(x).join('; ')}.`).join('\n')
   : '';
 const summary = table(['Skill', ...models.map((m) => `${m.label}${m.baseline ? ' (baseline)' : ''}`), 'Lowest model meeting the floor'], skills.map(summaryRow));
 
@@ -97,11 +94,11 @@ ${costTable}
 
 ${summary}
 
-${noSkillTable ? `## Without the skill
+${armTable ? `## Skill, CLI, or neither
 
-Same cases and the same graders, but Pi has no skill loaded and the workspace contains none; runs are checked for reads of skill files. The prompt gets one addition: the output format (file names and fields, never how to produce them), because the graders read the skill's own formats. Cases that depend on a skill's own method are left out, and browser-probe is judged on "the recipe really loads the page" only. With-skill figures are restricted to the same cases. Only a few models are run this way: it is a comparison, not a benchmark.
+Same cases and the same graders in three arms. \`skill + CLI\`: the skill is loaded and the \`web\` CLI is on PATH. \`CLI only\`: no skill anywhere, the CLI is on PATH and the prompt says \`web --help\` documents it. \`neither\`: no skill and no CLI. The two comparison arms get the output format (file names and fields, never how to produce them) appended to the prompt, because the graders read the skill's own formats; runs that open a skill file fail. Cases that depend on a skill's own method are left out, and every cell covers the same cases. Only a few models are run this way: it is a comparison, not a benchmark. \`CLI used\` is the share of CLI-only runs whose shell commands called \`web\`.
 
-${noSkillTable}
+${armTable}
 ` : ''}
 ${skills.map(skillSection).join('\n')}
 ## How to read this

@@ -10,6 +10,9 @@ ref=${2:-HEAD}
 filter=${3:-}
 cases=${4:-}
 cd "$(dirname "$0")/.."
+arm=${ARM:-}
+[[ -z $arm && ${SKILLS:-on} == off ]] && arm=none
+export ARM=${arm:-skill}
 scripts/setup.sh "$skill" "$ref"
 
 if ! curl -sf -o /dev/null http://localhost:8765/index.html; then
@@ -38,9 +41,9 @@ eval_models() {
   last=$out
 }
 
-# The no-skill arm (SKILLS=off) is a comparison, not a benchmark: it runs only on models marked
+# The comparison arms (ARM=cli, ARM=none; SKILLS=off = none) are a comparison, not a benchmark: it runs only on models marked
 # `noskill` in models.yaml, unless a filter says otherwise.
-if [[ ${SKILLS:-on} == off && -z $filter ]]; then
+if [[ $ARM != skill && -z $filter ]]; then
   filter=$(node -e "
     const {parse}=require('yaml');
     console.log('^(' + parse(require('fs').readFileSync('models.yaml','utf8')).filter((m)=>m.noskill).map((m)=>m.label).join('|') + ')\$')")

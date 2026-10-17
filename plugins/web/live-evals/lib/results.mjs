@@ -18,7 +18,13 @@ export const loadSkill = (skill) => {
   const ref = latest?.ref;
   const earlierRefs = [...new Set(ordered.map((s) => s.ref))].filter((r) => r !== ref);
   const current = summaries.filter((s) => s.ref === ref);
-  const noSkill = all.filter((s) => s.arm === 'no-skill');
+  const latestArm = (name) => {
+    const arm = all.filter((s) => s.arm === name);
+    const armRef = arm.at(-1)?.ref;
+    return { ref: armRef, rows: arm.filter((s) => s.ref === armRef).flatMap((s) => s.runs) };
+  };
+  const noSkill = latestArm('no-skill');
+  const cli = latestArm('cli');
   return {
     skill,
     floor,
@@ -26,8 +32,10 @@ export const loadSkill = (skill) => {
     commit: latest?.commit,
     earlierRefs,
     refs: [ref, ...earlierRefs].filter(Boolean),
-    noSkillRef: noSkill.at(-1)?.ref,
-    noSkillRows: noSkill.flatMap((s) => s.runs),
+    noSkillRef: noSkill.ref,
+    noSkillRows: noSkill.rows,
+    cliRef: cli.ref,
+    cliRows: cli.rows,
     rows: current.flatMap((s) => s.runs),
   };
 };
@@ -82,3 +90,35 @@ export function costComparison(sk) {
     factor: lowest.s.cost > 0 ? top.s.cost / lowest.s.cost : null,
   };
 }
+
+/**
+ * Skill + CLI vs CLI only vs neither, per model that has rows in a comparison arm, all over the
+ * cases present in every comparison arm that has rows (the intersection).
+ */
+export function armComparison(sk) {
+  const arms = [sk.cliRows, sk.noSkillRows].filter((r) => r.length);
+  if (!arms.length) return [];
+  const caseSets = arms.map((r) => new Set(r.map((x) => x.case)));
+  const shared = [...caseSets[0]].filter((c) => caseSets.every((s) => s.has(c)));
+  const pick = (rows, label) => rows.filter((r) => r.model === label && shared.includes(r.case));
+  const labels = new Set([...sk.cliRows, ...sk.noSkillRows].map((r) => r.model));
+  return models.filter((m) => labels.has(m.label)).map((m) => {
+    const runs = [pick(sk.rows, m.label), pick(sk.cliRows, m.label), pick(sk.noSkillRows, m.label)];
+    const [a, b, c] = runs.map((r) => stats(r, sk.floor));
+    const cliUsed = runs[1].length ? runs[1].filter((r) => r.used_cli).length / runs[1].length : null;
+    return { skill: sk.skill, label: m.label, floor: sk.floor, a, b, c, cliUsed };
+  });
+}
+
+const rate = (s) => (s.n ? s.good / s.n : null);
+const pts = (x) => Math.round(100 * x);
+/** Three neutral one-line verdicts from an armComparison row (empty when an arm has no runs). */
+export function armVerdicts({ a, b, c, floor }) {
+  const out = [];
+  if (a.n && b.n) out.push(`the skill adds ${pts(rate(a) - rate(b))} points over CLI only`);
+  if (b.n && c.n) out.push(`the CLI adds ${pts(rate(b) - rate(c))} points over neither`);
+  if (b.n) out.push(`CLI only ${b.meets ? 'reaches' : 'does not reach'} the floor (${pts(floor.min_pass_rate)}%)`);
+  return out;
+}
+export const abc = (a, b, c, f) => [a, b, c].map((s) => (s.n ? f(s) : '·')).join(' / ');
+export const cliUsedText = (x) => (x.cliUsed === null ? '·' : pct(Math.round(x.cliUsed * 100), 100));

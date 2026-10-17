@@ -43,28 +43,43 @@ per cell): treat gaps of a few points as noise. Live sites drift, so rerun befor
 | [page-reduce](#page-reduce) | · | · | · | · | ✓ 100% (15/15) | · | **sonnet-5.5-low** |
 | [page-tree](#page-tree) | · | · | · | · | ✓ 100% (15/15) | · | **sonnet-5.5-low** |
 
-## Without the skill
+## Skill, CLI, or neither
 
-Same cases and the same graders, but Pi has no skill loaded and the workspace contains none; runs are checked for reads of skill files. The prompt gets one addition: the output format (file names and fields, never how to produce them), because the graders read the skill's own formats. Cases that depend on a skill's own method are left out, and browser-probe is judged on "the recipe really loads the page" only. With-skill figures are restricted to the same cases. Only a few models are run this way: it is a comparison, not a benchmark.
+Same cases and the same graders in three arms. `skill + CLI`: the skill is loaded and the `web` CLI is on PATH. `CLI only`: no skill anywhere, the CLI is on PATH and the prompt says `web --help` documents it. `neither`: no skill and no CLI. The two comparison arms get the output format (file names and fields, never how to produce them) appended to the prompt, because the graders read the skill's own formats; runs that open a skill file fail. Cases that depend on a skill's own method are left out, and every cell covers the same cases. Only a few models are run this way: it is a comparison, not a benchmark. `CLI used` is the share of CLI-only runs whose shell commands called `web`.
 
-No-skill rows come from the ref(s) named per skill: browser-probe → fix-web-skills-best-practices, cdp-connect → fix-web-skills-best-practices, page-collect → fix-web-skills-best-practices, page-langs → fix-web-skills-best-practices, page-prep → fix-web-skills-best-practices, page-reduce → fix-web-skills-best-practices, page-tree → fix-web-skills-best-practices.
+Comparison rows come from the ref(s): browser-probe → CLI only ·, neither fix-web-skills-best-practices; cdp-connect → CLI only ·, neither fix-web-skills-best-practices; page-collect → CLI only ·, neither fix-web-skills-best-practices; page-langs → CLI only ·, neither fix-web-skills-best-practices; page-prep → CLI only ·, neither fix-web-skills-best-practices; page-reduce → CLI only ·, neither fix-web-skills-best-practices; page-tree → CLI only ·, neither fix-web-skills-best-practices.
 
-| Skill | Model | With skill | Without skill | Time with / without | Cost with / without |
-|---|---|---|---|---|---|
-| browser-probe | sonnet-5.5-low | ✓ 100% (12/12) | ✓ 100% (12/12) | 30 s / 24 s | $0.021 / $0.025 |
-| browser-probe | haiku-5.5-low | · | ✗ 58% (7/12) | 0 s / 63 s | $0.0000 / $0.0032 |
-| cdp-connect | haiku-5.5-low | · | ✗ 89% (16/18) | 0 s / 12 s | $0.0000 / $0.0013 |
-| cdp-connect | sonnet-5.5-low | ✓ 100% (18/18) | ✓ 94% (17/18) | 15 s / 10 s | $0.017 / $0.014 |
-| page-collect | sonnet-5.5-low | ✓ 100% (18/18) | ✓ 100% (18/18) | 17 s / 18 s | $0.022 / $0.039 |
-| page-collect | haiku-5.5-low | · | ✓ 100% (18/18) | 0 s / 29 s | $0.0000 / $0.0047 |
-| page-langs | sonnet-5.5-low | ✓ 100% (18/18) | ✗ 83% (15/18) | 11 s / 10 s | $0.018 / $0.016 |
-| page-langs | haiku-5.5-low | · | ✓ 100% (18/18) | 0 s / 13 s | $0.0000 / $0.0017 |
-| page-prep | sonnet-5.5-low | ✓ 100% (9/9) | ✓ 100% (9/9) | 24 s / 12 s | $0.027 / $0.013 |
-| page-prep | haiku-5.5-low | · | ✓ 100% (9/9) | 0 s / 25 s | $0.0000 / $0.0017 |
-| page-reduce | sonnet-5.5-low | ✓ 100% (6/6) | ✗ 50% (3/6) | 31 s / 19 s | $0.076 / $0.045 |
-| page-reduce | haiku-5.5-low | · | ✗ 83% (5/6) | 0 s / 29 s | $0.0000 / $0.0044 |
-| page-tree | haiku-5.5-low | · | ✗ 44% (4/9) | 0 s / 38 s | $0.0000 / $0.0035 |
-| page-tree | sonnet-5.5-low | ✓ 100% (9/9) | ✗ 78% (7/9) | 16 s / 21 s | $0.018 / $0.037 |
+| Skill | Model | skill + CLI | CLI only | neither | time (s) | $/run | CLI used |
+|---|---|---|---|---|---|---|---|
+| browser-probe | haiku-5.5-low | · | · | ✗ 58% (7/12) | · / · / 63 | · / · / $0.0032 | · |
+| browser-probe | sonnet-5.5-low | ✓ 100% (12/12) | · | ✓ 100% (12/12) | 30 / · / 24 | $0.021 / · / $0.025 | · |
+| cdp-connect | haiku-5.5-low | · | · | ✗ 89% (16/18) | · / · / 12 | · / · / $0.0013 | · |
+| cdp-connect | sonnet-5.5-low | ✓ 100% (18/18) | · | ✓ 94% (17/18) | 15 / · / 10 | $0.017 / · / $0.014 | · |
+| page-collect | haiku-5.5-low | · | · | ✓ 100% (18/18) | · / · / 29 | · / · / $0.0047 | · |
+| page-collect | sonnet-5.5-low | ✓ 100% (18/18) | · | ✓ 100% (18/18) | 17 / · / 18 | $0.022 / · / $0.039 | · |
+| page-langs | haiku-5.5-low | · | · | ✓ 100% (18/18) | · / · / 13 | · / · / $0.0017 | · |
+| page-langs | sonnet-5.5-low | ✓ 100% (18/18) | · | ✗ 83% (15/18) | 11 / · / 10 | $0.018 / · / $0.016 | · |
+| page-prep | haiku-5.5-low | · | · | ✓ 100% (9/9) | · / · / 25 | · / · / $0.0017 | · |
+| page-prep | sonnet-5.5-low | ✓ 100% (9/9) | · | ✓ 100% (9/9) | 24 / · / 12 | $0.027 / · / $0.013 | · |
+| page-reduce | haiku-5.5-low | · | · | ✗ 83% (5/6) | · / · / 29 | · / · / $0.0044 | · |
+| page-reduce | sonnet-5.5-low | ✓ 100% (6/6) | · | ✗ 50% (3/6) | 31 / · / 19 | $0.076 / · / $0.045 | · |
+| page-tree | haiku-5.5-low | · | · | ✗ 44% (4/9) | · / · / 38 | · / · / $0.0035 | · |
+| page-tree | sonnet-5.5-low | ✓ 100% (9/9) | · | ✗ 78% (7/9) | 16 / · / 21 | $0.018 / · / $0.037 | · |
+
+- browser-probe · haiku-5.5-low: .
+- browser-probe · sonnet-5.5-low: .
+- cdp-connect · haiku-5.5-low: .
+- cdp-connect · sonnet-5.5-low: .
+- page-collect · haiku-5.5-low: .
+- page-collect · sonnet-5.5-low: .
+- page-langs · haiku-5.5-low: .
+- page-langs · sonnet-5.5-low: .
+- page-prep · haiku-5.5-low: .
+- page-prep · sonnet-5.5-low: .
+- page-reduce · haiku-5.5-low: .
+- page-reduce · sonnet-5.5-low: .
+- page-tree · haiku-5.5-low: .
+- page-tree · sonnet-5.5-low: .
 
 ## browser-probe
 
