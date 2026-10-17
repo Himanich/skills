@@ -16,7 +16,15 @@ if (!file || !skill || !ref) {
 const CLI_USE = /(^|[\s;&|(`$])(web|\$WEB|\$W)\s+(browser|page|probe|ext|mask)\b/;
 const usedCli = (r) => (r.response?.metadata?.toolCalls ?? []).some((c) => CLI_USE.test(String(c.input?.command ?? '')));
 const isScored = (c) => (c.assertion?.weight ?? 1) !== 0;
-const runs = JSON.parse(readFileSync(file, 'utf-8')).results.results.map((r) => ({
+// Provider errors (quota, auth, outages) are not observations about the skill: they are dropped
+// from the summary and reported on stderr so the run can be repeated.
+const all = JSON.parse(readFileSync(file, 'utf-8')).results.results;
+const errored = all.filter((r) => r.error && !r.gradingResult);
+if (errored.length) {
+  console.error(`summarize: ${errored.length} run(s) hit a provider error and were dropped: ` +
+    `${[...new Set(errored.map((r) => String(r.error).slice(0, 80)))].join(' | ')}`);
+}
+const runs = all.filter((r) => !errored.includes(r)).map((r) => ({
   model: r.provider.label,
   case: r.testCase.vars.slug ?? r.testCase.description,
   pass: r.success,
@@ -36,6 +44,10 @@ const refName = ref === 'HEAD' ? git('rev-parse', '--abbrev-ref', 'HEAD').replac
 const commit = git('rev-parse', '--short', ref);
 const dir = join(root, 'results', skill);
 mkdirSync(dir, { recursive: true });
+if (runs.length === 0) {
+  console.error('summarize: no scored runs, nothing written');
+  process.exit(0);
+}
 const name = `${date}-${refName.replace(/[^\w.-]+/g, '_')}${ARM_SUFFIX}-${[...new Set(runs.map((r) => r.model))].join('+')}.json`;
 writeFileSync(join(dir, name), `${JSON.stringify({ skill, ref: refName, commit, arm, date, runs }, null, 2)}\n`);
 console.log(`${runs.length} runs -> results/${skill}/${name}`);

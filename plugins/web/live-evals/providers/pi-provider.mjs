@@ -76,9 +76,15 @@ export default class PiProvider {
     const toolCalls = [];
     const skillNames = skillPaths.map((p) => basename(p));
     const toolResults = [];
+    // A provider/API failure (quota, auth, 5xx) ends the assistant message with stopReason 'error'
+    // instead of throwing; it must surface as a promptfoo error, never as a failed run.
+    let apiError = null;
     session.subscribe((event) => {
       if (event.type === 'tool_execution_start') toolCalls.push({ name: event.toolName, input: event.args });
       if (event.type === 'tool_execution_end') toolResults.push({ name: event.toolName, text: resultText(event.result) });
+      if (event.type === 'message_end' && event.message?.role === 'assistant' && event.message.stopReason === 'error') {
+        apiError = event.message.errorMessage || 'provider error';
+      }
     });
 
     const timedOut = Symbol('timeout');
@@ -89,6 +95,7 @@ export default class PiProvider {
         new Promise((resolveTimeout) => { timer = setTimeout(() => resolveTimeout(timedOut), timeoutMs); }),
       ]);
       if (outcome === timedOut) await session.abort();
+      if (apiError && toolCalls.length === 0) throw new Error(`${provider}/${model}: ${apiError}`);
       const stats = session.getSessionStats();
       return {
         output: session.getLastAssistantText() ?? '',
