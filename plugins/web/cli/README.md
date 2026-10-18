@@ -38,5 +38,4 @@ npm run build         # rebuild dist/web.mjs
 npm run check:dist    # fails when dist/web.mjs is stale
 ```
 
-Commit `dist/web.mjs` with any change under `src/`. Design:
-`docs/superpowers/specs/2026-10-16-web-cli-design.md` (repository root).
+Commit `dist/web.mjs` with any change under `src/`.

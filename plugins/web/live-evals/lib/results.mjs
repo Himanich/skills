@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
@@ -66,8 +66,11 @@ export const table = (head, rows) => [`| ${head.join(' | ')} |`, `|${head.map(()
 
 
 /** Skills that have a suite and stored results. */
-export const loadSkills = () =>
-  readdirSync(join(root, 'skills')).filter((s) => readdirSync(join(root, 'results')).includes(s)).map(loadSkill);
+export const loadSkills = () => {
+  const resultsDir = join(root, 'results');
+  if (!existsSync(resultsDir)) return [];
+  return readdirSync(join(root, 'skills')).filter((s) => readdirSync(resultsDir).includes(s)).map(loadSkill);
+};
 
 const usd = (v) => (v < 0.01 ? `$${v.toFixed(4)}` : `$${v.toFixed(3)}`);
 export const money = usd;

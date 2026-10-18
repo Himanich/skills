@@ -2,7 +2,8 @@
 
 Live, real-world evals for agent skills, run with promptfoo through Pi, plus a report of the
 lowest model that is good enough per skill (`REPORT.md`). Fixture-based scenarios (Tessl) stay in
-`plugins/web/evals`.
+`plugins/web/evals`. Results and reports are local artifacts (gitignored): they name real third-party
+sites. Share conclusions, not the files.
 
 ```
 cd plugins/web/live-evals && npm ci
@@ -18,8 +19,11 @@ npm run report                                      # results/ -> REPORT.html, M
   `plugins/web/cli/dist/web.mjs` from that ref to `workspace/<skill>/.web-cli/` with a `bin/web` shim, and installs the CLI's runtime dependencies (`cld3-asm`) there.
 - `fixtures/`: controlled pages served on http://localhost:8765 by `scripts/fixtures-server.mjs`
   (started by `run.sh`). Each suite mixes fixtures (known ground truth) with real sites.
-- `results/`: one summary per run. Raw promptfoo output stays in `output/` (gitignored); do not use
-  `promptfoo share`, results contain real site names.
+- `results/`: one summary per run (gitignored, like `output/` with the raw promptfoo output); do not
+  use `promptfoo share`, results contain real site names.
+
+Run one suite at a time: `cdp-connect` starts a shared Chrome on port 9222 (`pre.sh`) and two
+suites running side by side tear each other's browser down.
 
 ## Reports
 
@@ -29,7 +33,7 @@ Reports score the latest ref per skill; earlier refs are listed but not pooled.
 - `METHODOLOGY.html`: how the evals work, the stack, what exists and what we added, what the numbers do and
   do not tell you. Published next to the report as `methodology.html`.
 - `REPORT.md`: the gist plus per-skill tables, per-case matrices and common failure reasons.
-- `REPORT-detail.html` (not committed, `npm run report` builds it): the per-case matrix rendered by
+- `REPORT-detail.html` (`npm run report` builds it): the per-case matrix rendered by
   promptfoo itself. `lib/replay-provider.mjs` replays stored results, so no model is called.
 - `npx promptfoo view`: every raw run on this machine, with the agents' outputs and assertion reasons.
 
