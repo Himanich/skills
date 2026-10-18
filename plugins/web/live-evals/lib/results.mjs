@@ -40,7 +40,8 @@ export const loadSkill = (skill) => {
   };
 };
 
-export const isGood = (r, floor) => r.pass && r.latency_s <= floor.max_latency_s;
+// A run aborted at the budget is outside it even when its artifacts pass the checks.
+export const isGood = (r, floor) => r.pass && !r.timed_out && r.latency_s <= floor.max_latency_s;
 export const stats = (runs, floor) => {
   const sorted = runs.map((r) => r.latency_s).sort((a, b) => a - b);
   const good = runs.filter((r) => isGood(r, floor)).length;
