@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "report": "node scripts/report.mjs && node scripts/gist-report.mjs && node scripts/methodology-report.mjs && node scripts/promptfoo-report.mjs"
+    "report": "node scripts/report.mjs && node scripts/gist-report.mjs && node scripts/methodology-report.mjs && node scripts/promptfoo-report.mjs",
+    "test": "node --test 'lib/*.test.mjs'"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "1.0.4",
