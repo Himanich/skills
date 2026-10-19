@@ -24,11 +24,11 @@ Requires Node 22+ and `playwright-cli` >= 0.1.20 on PATH
 cd plugins/web/cli
 npm test              # unit tests (node --test, fake driver)
 npm run test:smoke    # real browser; skipped when playwright-cli is absent
-npm run build         # rebuild dist/web.mjs
-npm run check:dist    # fails when dist/web.mjs is stale (also run in CI)
+npm run build         # rebuild dist/web.mjs and dist/lib.mjs
+npm run check:dist    # fails when a dist file is stale (also run in CI)
 ```
 
-Commit `dist/web.mjs` with any change under `cli/src/`.
+Commit `dist/` with any change under `cli/src/`.
 
 ## Testing SKILL.md changes
 

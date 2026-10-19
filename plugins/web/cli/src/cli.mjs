@@ -6,6 +6,7 @@ import { registerProbe } from '#src/commands/probe.mjs';
 import { registerExt } from '#src/commands/ext.mjs';
 import { registerMask } from '#src/commands/mask.mjs';
 import { registerPage } from '#src/commands/page.mjs';
+import { registerDoc } from '#src/commands/doc.mjs';
 
 const ROOT_HELP = `
 Output contract:
@@ -33,6 +34,9 @@ Artifacts:
   <session>-<command>/ with stable file names (metadata.json, probe-report.json, ...).
 
 Requires playwright-cli >= 0.1.20 on PATH (npm install -g @playwright/cli@latest).
+
+Long-form docs ship in the binary: web doc (topics), web doc extending (add your own
+commands on top of web through the library export of @adobe/web-cli).
 
 Typical flows:
   one-shot:  web page tree <url>
@@ -79,6 +83,7 @@ export function createProgram(deps = {}) {
   registerPage(program, deps);
   registerExt(program, deps);
   registerMask(program, deps);
+  registerDoc(program, deps);
   deps.extend?.(program, deps);
   return program;
 }

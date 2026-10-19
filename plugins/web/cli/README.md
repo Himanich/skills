@@ -27,39 +27,21 @@ so `$WEB … > file.json` is safe.
 Fallback when published: `npx -y @adobe/web-cli …`.
 
 `web --help`, `web <group> --help` and `web <group> <command> --help` list every
-option, output shape and exit code.
+option, output shape and exit code; `web doc` lists the long-form topics.
 
 ## Extending with your own commands
 
-The package also exports a library (`dist/lib.mjs`, the package's `exports`) so another
-program can ship `web` plus its own subcommands and keep the output, session and
-exit-code contract:
+The package also exports a library (`dist/lib.mjs`, the package's `exports`): another program
+can build the stock `web` program, add its own subcommands with `runCli(argv, { extend })` and
+ship the result as its own binary, with the output, session and exit-code contract intact. The
+guide, the exported surface and the rules live in `web doc extending`
+(source: `src/docs/extending.md`); `src/lib.test.mjs` is a runnable example.
 
-```js
-#!/usr/bin/env node
-import { runCli, runPageCommand, CliError } from '@adobe/web-cli';
+## Long-form docs inside the binary
 
-const extend = (program, deps) =>
-  program.command('acme').command('audit [url]').option('--strict')
-    .action((url, _opts, command) =>
-      runPageCommand(command, deps, {
-        url,
-        fn: (driver, session, opts) => {
-          const n = driver.run(session, { code: 'document.querySelectorAll("h1").length' });
-          if (opts.strict && n !== 1) throw new CliError('EMPTY_RESULT', `${n} h1 elements`);
-          return { h1: n };
-        },
-      }));
-
-process.exitCode = await runCli(process.argv, { extend });
-```
-
-`acme audit <url>` then behaves like a stock `page` command: one-shot or `--session`,
-blocked-page gate, `{ ...result, url, session, durationMs }` on stdout, JSON errors and the
-exit codes above. The surface is `createProgram`, `runCli`, `runPageCommand`,
-`createContext`, `withSession`, `artifactDir`, `artifactPath`, `emit`, `fail`, `CliError`,
-`EXIT` and `createDriver` (see `src/lib.mjs`); the skills keep working against the
-extended binary through `WEB=acme-web`.
+`web doc` lists the topics and `web doc <topic>` prints Markdown to stdout, like `--help`.
+Topics are the `.md` files in `src/docs/`, inlined into both dist files by the build, so an
+agent with only the binary can read them.
 
 ## Development
 

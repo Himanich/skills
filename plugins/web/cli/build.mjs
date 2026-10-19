@@ -8,37 +8,30 @@ import {
 } from 'node:fs';
 import { build } from 'esbuild';
 
-const BUNDLES_DIR = new URL('./src/bundles/', import.meta.url);
 const DIST = new URL('./dist/', import.meta.url);
 const ENTRIES = [
   ['bin/web.mjs', 'web.mjs'],
   ['src/lib.mjs', 'lib.mjs'],
 ];
+// `src/<dir>/files.mjs` reads sibling assets at runtime; the bundle replaces it with a table.
+const ASSET_DIRS = ['bundles', 'docs'];
 
-function inlineBundles() {
-  const files = readdirSync(BUNDLES_DIR)
-    .filter((f) => f !== 'index.mjs')
+function inlineFiles(dir) {
+  const base = new URL(`./src/${dir}/`, import.meta.url);
+  const names = readdirSync(base)
+    .filter((f) => !f.endsWith('.mjs'))
     .sort();
-  const table = Object.fromEntries(
-    files.map((f) => [f, readFileSync(new URL(f, BUNDLES_DIR), 'utf-8')]),
-  );
-  return `const T = ${JSON.stringify(table)};
-export function loadBundle(name) {
-  if (!(name in T)) throw new Error(\`unknown bundle: \${name}\`);
-  return T[name];
-}
-`;
+  const table = Object.fromEntries(names.map((f) => [f, readFileSync(new URL(f, base), 'utf-8')]));
+  return `export const FILES = ${JSON.stringify(table)};\n`;
 }
 
 const inlinePlugin = {
-  name: 'inline-bundles',
+  name: 'inline-files',
   setup(b) {
-    b.onResolve({ filter: /^#src\/bundles\/index\.mjs$/ }, () => ({
-      path: 'inline-bundles',
-      namespace: 'inline',
-    }));
-    b.onLoad({ filter: /.*/, namespace: 'inline' }, () => ({
-      contents: inlineBundles(),
+    const filter = new RegExp(`^#src/(${ASSET_DIRS.join('|')})/files\\.mjs$`);
+    b.onResolve({ filter }, (args) => ({ path: args.path.split('/')[1], namespace: 'inline' }));
+    b.onLoad({ filter: /.*/, namespace: 'inline' }, (args) => ({
+      contents: inlineFiles(args.path),
       loader: 'js',
     }));
   },
