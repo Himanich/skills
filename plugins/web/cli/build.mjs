@@ -9,7 +9,11 @@ import {
 import { build } from 'esbuild';
 
 const BUNDLES_DIR = new URL('./src/bundles/', import.meta.url);
-const OUT = new URL('./dist/web.mjs', import.meta.url);
+const DIST = new URL('./dist/', import.meta.url);
+const ENTRIES = [
+  ['bin/web.mjs', 'web.mjs'],
+  ['src/lib.mjs', 'lib.mjs'],
+];
 
 function inlineBundles() {
   const files = readdirSync(BUNDLES_DIR)
@@ -40,28 +44,33 @@ const inlinePlugin = {
   },
 };
 
-const result = await build({
-  entryPoints: ['bin/web.mjs'],
-  bundle: true,
-  platform: 'node',
-  format: 'esm',
-  target: 'node22',
-  outfile: 'dist/web.mjs',
-  external: ['cld3-asm'],
-  legalComments: 'none',
-  write: false,
-  plugins: [inlinePlugin],
-  absWorkingDir: new URL('./', import.meta.url).pathname,
-});
-const text = result.outputFiles[0].text;
+async function bundle(entry, name) {
+  const result = await build({
+    entryPoints: [entry],
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    target: 'node22',
+    outfile: `dist/${name}`,
+    external: ['cld3-asm'],
+    legalComments: 'none',
+    write: false,
+    plugins: [inlinePlugin],
+    absWorkingDir: new URL('./', import.meta.url).pathname,
+  });
+  return result.outputFiles[0].text;
+}
 
-if (process.argv.includes('--check')) {
-  if (!existsSync(OUT) || readFileSync(OUT, 'utf-8') !== text) {
-    console.error('dist/web.mjs is stale — run: npm run build');
+const check = process.argv.includes('--check');
+mkdirSync(DIST, { recursive: true });
+for (const [entry, name] of ENTRIES) {
+  const out = new URL(name, DIST);
+  const text = await bundle(entry, name);
+  if (!check) {
+    writeFileSync(out, text);
+    if (name === 'web.mjs') chmodSync(out, 0o755);
+  } else if (!existsSync(out) || readFileSync(out, 'utf-8') !== text) {
+    console.error(`dist/${name} is stale — run: npm run build`);
     process.exit(1);
   }
-} else {
-  mkdirSync(new URL('./dist/', import.meta.url), { recursive: true });
-  writeFileSync(OUT, text);
-  chmodSync(OUT, 0o755);
 }

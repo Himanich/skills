@@ -3645,7 +3645,7 @@ function createContext(command, deps, { timeoutMs } = {}) {
 // src/session.mjs
 import { randomBytes } from "node:crypto";
 import { mkdirSync as mkdirSync2, readFileSync } from "node:fs";
-import { join as join2, resolve as resolve2 } from "node:path";
+import { resolve as resolve2 } from "node:path";
 function generateSessionName() {
   return `web-${randomBytes(2).toString("hex")}`;
 }
@@ -3940,7 +3940,7 @@ function registerBrowser(program2, deps) {
 
 // src/commands/probe.mjs
 import { randomBytes as randomBytes2 } from "node:crypto";
-import { join as join3, resolve as resolve3 } from "node:path";
+import { join as join2, resolve as resolve3 } from "node:path";
 import { rmSync as rmSync2, writeFileSync as writeFileSync2 } from "node:fs";
 
 // inline:inline-bundles
@@ -4490,7 +4490,7 @@ function collectHeaders(driver, session, health, log) {
   }
 }
 async function runStep(driver, { url, dir, stepDef, headed, log }) {
-  const stealthPath = join3(dir, `stealth-${stepDef.name}.js`);
+  const stealthPath = join2(dir, `stealth-${stepDef.name}.js`);
   const browserConfig = buildBrowserConfig(stepDef);
   const base = { name: stepDef.name, config: stepDef.config };
   const start = Date.now();
@@ -4583,12 +4583,12 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
       steps.map((s) => s.health)
     )
   };
-  writeFileSync2(join3(dir, "probe-report.json"), JSON.stringify(report, null, 2));
+  writeFileSync2(join2(dir, "probe-report.json"), JSON.stringify(report, null, 2));
   if (!success) return { report, recipePath: null };
-  const recipePath = join3(dir, "browser-recipe.json");
+  const recipePath = join2(dir, "browser-recipe.json");
   const browser = { ...success.browserConfig };
   if (success.stepDef.stealth) {
-    const stealthPath = join3(dir, "stealth-init.js");
+    const stealthPath = join2(dir, "stealth-init.js");
     writeFileSync2(stealthPath, loadBundle("stealth-init.js"));
     browser.initScript = [resolve3(stealthPath)];
   }
@@ -4640,7 +4640,7 @@ import {
   unlinkSync,
   writeFileSync as writeFileSync3
 } from "node:fs";
-import { dirname, join as join4, resolve as resolve4 } from "node:path";
+import { dirname, join as join3, resolve as resolve4 } from "node:path";
 var HELP3 = {
   LAUNCH: `
 Example:
@@ -4694,7 +4694,7 @@ function readManifest(dir) {
     throw new CliError("USAGE", `extension directory not found: ${dir}`, { hint });
   }
   try {
-    return JSON.parse(readFileSync2(join4(dir, "manifest.json"), "utf8"));
+    return JSON.parse(readFileSync2(join3(dir, "manifest.json"), "utf8"));
   } catch (err) {
     throw new CliError("USAGE", `cannot read manifest.json in ${dir}: ${err.message}`, { hint });
   }
@@ -4911,7 +4911,7 @@ import { mkdtempSync, readFileSync as readFileSync3, rmSync as rmSync3, writeFil
 import { request as httpRequest } from "node:http";
 import { createServer as createHttpsServer, request as httpsRequest } from "node:https";
 import { tmpdir } from "node:os";
-import { join as join5 } from "node:path";
+import { join as join4 } from "node:path";
 var SUDO_LINE = 'sudo env CAROOT="$(mkcert -CAROOT)" web mask <display-domain> <target-url>';
 var DOMAIN_RE = /^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$/;
 function validateDisplayDomain(s) {
@@ -4987,9 +4987,9 @@ async function startMask({
 }) {
   const target = new URL(targetUrl);
   const entry = `127.0.0.1 ${displayDomain}`;
-  const certDir = mkdtempSync(join5(tmpdir(), "domain-mask-"));
-  const keyFile = join5(certDir, "key.pem");
-  const certFile = join5(certDir, "cert.pem");
+  const certDir = mkdtempSync(join4(tmpdir(), "domain-mask-"));
+  const keyFile = join4(certDir, "key.pem");
+  const certFile = join4(certDir, "cert.pem");
   let server;
   try {
     execFileSync("mkcert", ["-key-file", keyFile, "-cert-file", certFile, displayDomain], {
@@ -5199,11 +5199,11 @@ function registerReduce(group, deps) {
 
 // src/commands/page/collect.mjs
 import { writeFileSync as writeFileSync6 } from "node:fs";
-import { join as join7 } from "node:path";
+import { join as join6 } from "node:path";
 
 // src/page/icons.mjs
 import { mkdirSync as mkdirSync4, writeFileSync as writeFileSync5 } from "node:fs";
-import { join as join6 } from "node:path";
+import { join as join5 } from "node:path";
 var ICON_MAX_SIZE = 48;
 var KNOWN_PATTERNS = [
   "search",
@@ -5342,7 +5342,7 @@ function writeIcons(svgs, url, iconsDir) {
     usedNames.add(name);
     const optimized = optimizeSvg(svgContent, classification);
     const filename = `${name}.svg`;
-    writeFileSync5(join6(iconsDir, filename), optimized);
+    writeFileSync5(join5(iconsDir, filename), optimized);
     const context = [
       entry.containerTag ? entry.containerTag.toLowerCase() : "",
       entry.parentTag ? entry.parentTag.toLowerCase() : "",
@@ -5358,7 +5358,7 @@ function writeIcons(svgs, url, iconsDir) {
     });
   }
   const manifest = { url, icons };
-  writeFileSync5(join6(iconsDir, "icons.json"), JSON.stringify(manifest, null, 2));
+  writeFileSync5(join5(iconsDir, "icons.json"), JSON.stringify(manifest, null, 2));
   return manifest;
 }
 
@@ -5402,7 +5402,7 @@ function collectPage(driver, session, { what, outputDir, stderr = process.stderr
   const data = extract(driver, session, what);
   const { url } = driver.pageHealth(session);
   const dir = artifactDir(outputDir, session, "collect");
-  const path3 = (name) => join7(dir, name);
+  const path3 = (name) => join6(dir, name);
   const files = {};
   const results = {};
   if (data.svgs) {
@@ -5445,7 +5445,7 @@ function registerCollect(group, deps) {
 
 // src/page/langs-detect.mjs
 import { existsSync as existsSync3 } from "node:fs";
-import { dirname as dirname2, join as join8 } from "node:path";
+import { dirname as dirname2, join as join7 } from "node:path";
 import { fileURLToPath } from "node:url";
 var MIN_BLOCK_BYTES = 50;
 var MAX_CLD3_BYTES = 1e3;
@@ -5536,7 +5536,7 @@ function detectLanguages(signals, detector) {
 }
 function findPackageDir(start) {
   let dir = start;
-  while (!existsSync3(join8(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
+  while (!existsSync3(join7(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
   return dir;
 }
 async function loadDetector(importer = (m) => import(m)) {
@@ -5977,7 +5977,7 @@ function createProgram(deps = {}) {
   registerPage(program2, deps);
   registerExt(program2, deps);
   registerMask(program2, deps);
-  deps.registerTestCommands?.(program2, deps);
+  deps.extend?.(program2, deps);
   return program2;
 }
 async function runCli(argv, deps = {}) {

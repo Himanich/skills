@@ -55,12 +55,12 @@ const thrower = (err) => (program) =>
 
 test('a CliError thrown by a command yields its error document and exit code', async () => {
   const stdout = sink();
-  const registerTestCommands = thrower(new CliError('BLOCKED', 'm', { hint: 'h' }));
+  const extend = thrower(new CliError('BLOCKED', 'm', { hint: 'h' }));
   const code = await runCli(['node', 'web', 'boom'], {
     stdout,
     stderr: sink(),
     env: {},
-    registerTestCommands,
+    extend,
   });
   assert.equal(code, 3);
   assert.deepEqual(JSON.parse(stdout.buf), { error: { code: 'BLOCKED', message: 'm', hint: 'h' } });
@@ -68,12 +68,12 @@ test('a CliError thrown by a command yields its error document and exit code', a
 
 test('a plain Error is wrapped as INTERNAL with exit 1', async () => {
   const stdout = sink();
-  const registerTestCommands = thrower(new Error('boom'));
+  const extend = thrower(new Error('boom'));
   const code = await runCli(['node', 'web', 'boom'], {
     stdout,
     stderr: sink(),
     env: {},
-    registerTestCommands,
+    extend,
   });
   assert.equal(code, 1);
   assert.equal(JSON.parse(stdout.buf).error.code, 'INTERNAL');

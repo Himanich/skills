@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { CliError } from '#src/errors.mjs';
 
 /** @returns {string} `web-` plus 4 hex characters */

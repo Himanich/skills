@@ -44,9 +44,10 @@ Typical flows:
 `;
 
 /**
- * Build the root program with all command groups.
+ * Build the root program with all command groups. `deps.extend(program, deps)` runs last,
+ * so a consumer can add its own commands and still get the error and exit-code contract.
  * @param {{ driverFactory?: Function, env?: NodeJS.ProcessEnv, stdout?: object,
- *   stderr?: object, registerTestCommands?: Function }} [deps]
+ *   stderr?: object, extend?: Function }} [deps]
  */
 export function createProgram(deps = {}) {
   const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
@@ -78,7 +79,7 @@ export function createProgram(deps = {}) {
   registerPage(program, deps);
   registerExt(program, deps);
   registerMask(program, deps);
-  deps.registerTestCommands?.(program, deps);
+  deps.extend?.(program, deps);
   return program;
 }
 

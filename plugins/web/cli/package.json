@@ -5,6 +5,9 @@
   "bin": {
     "web": "./dist/web.mjs"
   },
+  "exports": {
+    ".": "./dist/lib.mjs"
+  },
   "files": [
     "dist"
   ],

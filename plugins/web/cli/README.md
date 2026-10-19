@@ -29,13 +29,45 @@ Fallback when published: `npx -y @adobe/web-cli …`.
 `web --help`, `web <group> --help` and `web <group> <command> --help` list every
 option, output shape and exit code.
 
+## Extending with your own commands
+
+The package also exports a library (`dist/lib.mjs`, the package's `exports`) so another
+program can ship `web` plus its own subcommands and keep the output, session and
+exit-code contract:
+
+```js
+#!/usr/bin/env node
+import { runCli, runPageCommand, CliError } from '@adobe/web-cli';
+
+const extend = (program, deps) =>
+  program.command('acme').command('audit [url]').option('--strict')
+    .action((url, _opts, command) =>
+      runPageCommand(command, deps, {
+        url,
+        fn: (driver, session, opts) => {
+          const n = driver.run(session, { code: 'document.querySelectorAll("h1").length' });
+          if (opts.strict && n !== 1) throw new CliError('EMPTY_RESULT', `${n} h1 elements`);
+          return { h1: n };
+        },
+      }));
+
+process.exitCode = await runCli(process.argv, { extend });
+```
+
+`acme audit <url>` then behaves like a stock `page` command: one-shot or `--session`,
+blocked-page gate, `{ ...result, url, session, durationMs }` on stdout, JSON errors and the
+exit codes above. The surface is `createProgram`, `runCli`, `runPageCommand`,
+`createContext`, `withSession`, `artifactDir`, `artifactPath`, `emit`, `fail`, `CliError`,
+`EXIT` and `createDriver` (see `src/lib.mjs`); the skills keep working against the
+extended binary through `WEB=acme-web`.
+
 ## Development
 
 ```bash
 npm test              # unit tests (node --test, fake driver)
 npm run test:smoke    # real browser; skipped without playwright-cli
-npm run build         # rebuild dist/web.mjs
-npm run check:dist    # fails when dist/web.mjs is stale
+npm run build         # rebuild dist/web.mjs and dist/lib.mjs
+npm run check:dist    # fails when either dist file is stale
 ```
 
-Commit `dist/web.mjs` with any change under `src/`.
+Commit `dist/` with any change under `src/`.
