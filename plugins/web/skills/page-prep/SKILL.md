@@ -76,7 +76,7 @@ and consent choices never need to persist.
 Detection: `{ overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }`
 
 With `--dismiss` also: `applied: [{ id, strategy: hide|dismiss, ok }]` and
-`residual: [{ tag, id, ... }]`.
+`residual: [{ tag, id, role, ... }]`.
 
 Each overlay has `source`: `"cmp-match"` or `"heuristic"`. Field details and the
 dismiss/hide schema: [references/formats.md](references/formats.md).
@@ -89,9 +89,9 @@ dismiss/hide schema: [references/formats.md](references/formats.md).
 - **heuristic** (`dismiss: null`): the CLI hides it.
 - `applied[].strategy`: `dismiss` = clicked through the CMP's steps; `hide` = CSS
   hidden (no safe steps, or clicks left it in place). `ok: false` means it failed.
-- `residual[]`: `position:fixed` elements with z-index > 1000 and non-trivial size
-  still covering the visible viewport. **Check it is empty.** Ignore legitimate
-  elements (navigation bars, toolbars); for the rest, run the Agent Fallback below
+- `residual[]`: visible `position:fixed` elements covering at least half the viewport,
+  or with z-index > 1000 and non-trivial size. **Check it is empty.** Ignore legitimate
+  elements (navigation bars, toolbars; `role` is `banner`/`landmark` for site headers); for the rest, run the Agent Fallback below
   and re-run `--dismiss` to confirm.
 
 ## Agent Fallback (residual or `dismiss: null` overlays)

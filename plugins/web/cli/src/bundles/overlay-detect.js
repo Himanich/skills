@@ -57,6 +57,7 @@ function detectScrollLock(doc) {
 const SIGNAL_WEIGHTS = {
   'high-z-index': 0.15,
   'viewport-cover': 0.25,
+  'full-cover': 0.05,
   'aria-modal': 0.20,
   'keyword-match': 0.15,
   'generic-selector-match': 0.10,
@@ -83,6 +84,11 @@ function scoreElement(el, computedStyle, viewport, genericSelectors, scrollLocke
   if (coverage > 0.5) {
     signals.push('viewport-cover');
     confidence += SIGNAL_WEIGHTS['viewport-cover'];
+  }
+  // A fixed element filling the viewport above the page is a gate even without keywords.
+  if (coverage >= 0.9 && zIndex > 0 && computedStyle.position === 'fixed') {
+    signals.push('full-cover');
+    confidence += SIGNAL_WEIGHTS['full-cover'];
   }
 
   const ariaModal = el.getAttribute('aria-modal');
@@ -119,12 +125,32 @@ function scoreElement(el, computedStyle, viewport, genericSelectors, scrollLocke
   return { confidence: Math.round(confidence * 100) / 100, signals };
 }
 
-function buildSelector(el) {
+function isRendered(el, style) {
+  if (style.display === 'none' || style.visibility === 'hidden') return false;
+  const rect = el.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+function simpleSelector(el) {
   const esc = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape : (s) => s;
   if (el.id) return `#${esc(el.id)}`;
   const tag = el.tagName.toLowerCase();
   const cls = el.className?.split?.(' ')?.filter(Boolean)?.[0];
   return cls ? `${tag}.${esc(cls)}` : tag;
+}
+
+function isUnique(el, sel) {
+  try { return el.ownerDocument.querySelectorAll(sel).length === 1; } catch { return true; }
+}
+
+// Falls back to a parent > tag:nth-of-type path when tag.class matches several elements.
+function buildSelector(el) {
+  const simple = simpleSelector(el);
+  if (el.id || !el.parentElement || isUnique(el, simple)) return simple;
+  const tag = el.tagName.toLowerCase();
+  const index = [...el.parentElement.children].filter((c) => c.tagName === el.tagName).indexOf(el) + 1;
+  const step = `${tag}:nth-of-type(${index})`;
+  return `${buildSelector(el.parentElement)} > ${step}`;
 }
 
 function matchesAnySelector(el, selectors) {
@@ -153,6 +179,7 @@ function heuristicScan(doc, genericSelectors, knownSelectors, scrollLocked) {
     } catch { continue; }
 
     if (style.position !== 'fixed' && style.position !== 'sticky') continue;
+    if (!isRendered(el, style)) continue;
 
     const sel = buildSelector(el);
     if (seen.has(sel)) continue;
@@ -202,7 +229,7 @@ function detect(patterns, doc) {
 // In browser (bundled): PATTERNS is defined by the IIFE wrapper from buildBundle.
 // The `return` statement returns from the IIFE, which evaluate() picks up.
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { matchKnownPatterns, scoreElement, heuristicScan, matchesAnySelector, detectScrollLock, detect };
+  module.exports = { matchKnownPatterns, scoreElement, heuristicScan, isRendered, buildSelector, matchesAnySelector, detectScrollLock, detect };
 } else {
   window.__pagePrepScan = function() {
     return heuristicScan(

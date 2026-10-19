@@ -7,12 +7,17 @@ const MODES = ['quick', 'thorough'];
 
 const RESIDUAL_EXPRESSION =
   `JSON.stringify([...document.querySelectorAll('*')].filter(el => { var s = ` +
-  `getComputedStyle(el); var r = el.getBoundingClientRect(); return s.position ` +
-  `=== 'fixed' && parseInt(s.zIndex, 10) > 1000 && (el.offsetWidth > 100 || ` +
-  `el.offsetHeight > 100) && r.right > 0 && r.bottom > 0 && r.left < ` +
-  `window.innerWidth && r.top < window.innerHeight; }).map(el => { var s = ` +
+  `getComputedStyle(el); var r = el.getBoundingClientRect(); if (s.position !== ` +
+  `'fixed' || s.display === 'none' || s.visibility === 'hidden') return false; ` +
+  `var vw = Math.min(r.right, window.innerWidth) - Math.max(r.left, 0); var vh = ` +
+  `Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0); if (vw <= 0 || vh ` +
+  `<= 0) return false; var covers = vw * vh >= 0.5 * window.innerWidth * ` +
+  `window.innerHeight; return covers || (parseInt(s.zIndex, 10) > 1000 && ` +
+  `(el.offsetWidth > 100 || el.offsetHeight > 100)); }).map(el => { var s = ` +
   `getComputedStyle(el); return { tag: el.tagName, id: el.id, cls: (el.className ` +
-  `|| '').slice(0, 50), z: s.zIndex, w: el.offsetWidth, h: el.offsetHeight }; }))`;
+  `|| '').slice(0, 50), role: el.getAttribute('role') || (/^(HEADER|NAV)$/.test(` +
+  `el.tagName) ? 'landmark' : null), z: s.zIndex, w: el.offsetWidth, h: ` +
+  `el.offsetHeight }; }))`;
 
 const parseMaybe = (data) => (typeof data === 'string' ? JSON.parse(data) : data);
 
@@ -117,11 +122,12 @@ Example:
   web page overlays --session "$S" --dismiss --mode thorough
 Output:
   { overlays: [{ id, type, selector, ... }], scrollLocked, scrollFix, url, session, durationMs }
-  with --dismiss also: applied: [{ id, strategy, ok, error? }], scrollUnlocked, residual: [{ tag, id, ... }]
+  with --dismiss also: applied: [{ id, strategy, ok, error? }], scrollUnlocked, residual: [{ tag, id, role, ... }]
 Notes:
   --dismiss quick hides every overlay with CSS. thorough (default) clicks the CMP's dismiss steps
   and hides overlays that have none or whose dismiss failed; scroll lock is fixed in both.
-  residual[] lists fixed high-z-index elements still covering the viewport: check it is empty.
+  residual[] lists visible fixed elements still covering the viewport (or z-index > 1000): check it is empty.
+  Site headers/navs may appear with role set; filter them rather than hiding every entry.
 `;
 
 /**

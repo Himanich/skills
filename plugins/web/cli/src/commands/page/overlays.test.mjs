@@ -60,9 +60,9 @@ async function run(
     pageHealth: () => OK,
     run: (s, o) => {
       calls.push(['run', o.code]);
-      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0'))
+      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('var covers'))
         throw new Error('boom');
-      if (o.code.includes('r.right > 0')) return '[]';
+      if (o.code.includes('var covers')) return '[]';
       return o.code.includes('page.evaluate(') ? JSON.stringify(report ?? REPORT) : dismissResult;
     },
     evaluate: (s, expr) => {
