@@ -227,7 +227,13 @@ const fixedEl = (over = {}) => ({
   offsetHeight: 900,
   getAttribute: (n) => over.attrs?.[n] ?? null,
   getBoundingClientRect: () => over.rect ?? { left: 0, top: 0, right: 1440, bottom: 900 },
-  style: { position: 'fixed', zIndex: '100', display: 'block', visibility: 'visible', ...over.style },
+  style: {
+    position: 'fixed',
+    zIndex: '100',
+    display: 'block',
+    visibility: 'visible',
+    ...over.style,
+  },
   ...over.props,
 });
 
