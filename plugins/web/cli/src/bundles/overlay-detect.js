@@ -80,7 +80,11 @@ function scoreElement(el, computedStyle, viewport, genericSelectors, scrollLocke
 
   const rect = el.getBoundingClientRect();
   const vpArea = viewport.width * viewport.height;
-  const coverage = vpArea > 0 ? (rect.width * rect.height) / vpArea : 0;
+  const left = rect.left ?? 0;
+  const top = rect.top ?? 0;
+  const visibleW = Math.min(left + rect.width, viewport.width) - Math.max(left, 0);
+  const visibleH = Math.min(top + rect.height, viewport.height) - Math.max(top, 0);
+  const coverage = vpArea > 0 && visibleW > 0 && visibleH > 0 ? (visibleW * visibleH) / vpArea : 0;
   if (coverage > 0.5) {
     signals.push('viewport-cover');
     confidence += SIGNAL_WEIGHTS['viewport-cover'];

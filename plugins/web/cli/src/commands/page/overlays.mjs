@@ -5,7 +5,7 @@ import { buildBundle, buildHideExpression, loadPatterns } from '#src/page/overla
 
 const MODES = ['quick', 'thorough'];
 
-const RESIDUAL_EXPRESSION =
+export const RESIDUAL_EXPRESSION =
   `JSON.stringify([...document.querySelectorAll('*')].filter(el => { var s = ` +
   `getComputedStyle(el); var r = el.getBoundingClientRect(); if (s.position !== ` +
   `'fixed' || s.display === 'none' || s.visibility === 'hidden') return false; ` +
@@ -14,8 +14,8 @@ const RESIDUAL_EXPRESSION =
   `<= 0) return false; var covers = vw * vh >= 0.5 * window.innerWidth * ` +
   `window.innerHeight; return covers || (parseInt(s.zIndex, 10) > 1000 && ` +
   `(el.offsetWidth > 100 || el.offsetHeight > 100)); }).map(el => { var s = ` +
-  `getComputedStyle(el); return { tag: el.tagName, id: el.id, cls: (el.className ` +
-  `|| '').slice(0, 50), role: el.getAttribute('role') || (/^(HEADER|NAV)$/.test(` +
+  `getComputedStyle(el); return { tag: el.tagName, id: el.id, cls: (el.getAttribute(` +
+  `'class') || '').slice(0, 50), role: el.getAttribute('role') || (/^(HEADER|NAV)$/.test(` +
   `el.tagName) ? 'landmark' : null), z: s.zIndex, w: el.offsetWidth, h: ` +
   `el.offsetHeight }; }))`;
 
