@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/adobe/skills/compare/web-cli-v1.0.0...web-cli-v1.0.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **web-cli:** clamp overlay coverage to viewport and harden residual ([7b9956c](https://github.com/adobe/skills/commit/7b9956c7aa32ef7f148d8d401e29665c8a8671de))
+* **web-cli:** detect full-viewport low-z overlays and skip hidden ones ([2f98f56](https://github.com/adobe/skills/commit/2f98f56436ac0d018e3fb607d471b022f5afab93))
+
 # 1.0.0 (2026-10-19)
 
 
