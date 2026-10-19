@@ -4,6 +4,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
+import { RESIDUAL_EXPRESSION } from '#src/commands/page/overlays.mjs';
 
 const sink = () => ({
   buf: '',
@@ -60,9 +61,9 @@ async function run(
     pageHealth: () => OK,
     run: (s, o) => {
       calls.push(['run', o.code]);
-      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('r.right > 0'))
+      if (runFails && !o.code.includes('page.evaluate(') && !o.code.includes('var covers'))
         throw new Error('boom');
-      if (o.code.includes('r.right > 0')) return '[]';
+      if (o.code.includes('var covers')) return '[]';
       return o.code.includes('page.evaluate(') ? JSON.stringify(report ?? REPORT) : dismissResult;
     },
     evaluate: (s, expr) => {
@@ -206,4 +207,52 @@ test('hide that leaves the element visible reports ok:false', async () => {
 test('scroll lock re-check is reported as scrollUnlocked', async () => {
   const { doc } = await run(['http://x', '--dismiss']);
   assert.equal(doc.scrollUnlocked, true);
+});
+
+function residualFor(elements, vw = 1440, vh = 900) {
+  const globals = {
+    document: { querySelectorAll: () => elements },
+    getComputedStyle: (e) => e.style,
+    window: { innerWidth: vw, innerHeight: vh },
+  };
+  const names = Object.keys(globals);
+  const fn = new Function(...names, `return ${RESIDUAL_EXPRESSION};`);
+  return JSON.parse(fn(...names.map((n) => globals[n])));
+}
+
+const fixedEl = (over = {}) => ({
+  tagName: 'DIV',
+  id: '',
+  offsetWidth: 1440,
+  offsetHeight: 900,
+  getAttribute: (n) => over.attrs?.[n] ?? null,
+  getBoundingClientRect: () => over.rect ?? { left: 0, top: 0, right: 1440, bottom: 900 },
+  style: {
+    position: 'fixed',
+    zIndex: '100',
+    display: 'block',
+    visibility: 'visible',
+    ...over.style,
+  },
+  ...over.props,
+});
+
+test('residual reports a low-z full-viewport element and skips hidden or offscreen ones', () => {
+  const offscreen = { left: 1440, top: 0, right: 2880, bottom: 900 };
+  const out = residualFor([
+    fixedEl(),
+    fixedEl({ style: { display: 'none' } }),
+    fixedEl({ rect: offscreen }),
+  ]);
+  assert.equal(out.length, 1);
+});
+
+test('residual does not crash on a fixed SVG whose className is not a string', () => {
+  const svg = fixedEl({ props: { tagName: 'svg', className: { baseVal: 'bg' } } });
+  assert.equal(residualFor([svg]).length, 1);
+});
+
+test('residual tags header elements with a landmark role', () => {
+  const [hit] = residualFor([fixedEl({ props: { tagName: 'HEADER' }, style: { zIndex: '9999' } })]);
+  assert.equal(hit.role, 'landmark');
 });
