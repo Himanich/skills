@@ -108,3 +108,39 @@ test('clippedAway: a clip-path that leaves no width or no height hides the eleme
   assert.equal(hidden('none'), false);
   assert.equal(clippedAway({}, rect), false, 'no clip-path at all');
 });
+
+test('processTree: a fixed element is never absorbed by a collapse; it floats to root', () => {
+  const banner = node('DIV', '#cmp', box(0, 520, 1280, 200), [], { id: 'cmp', fixed: true });
+  const deeper = node('DIV', 'div.deeper', box(0, 133, 1280, 0), [banner], {
+    className: 'deeper',
+  });
+  const main = node('DIV', 'div.content', box(0, 53, 1280, 3000), [deeper], {
+    className: 'content',
+  });
+  const { root, nodeMap, promotedToRoot } = processTree(page([utility(), main, footer(4000)]));
+  assert.deepEqual(
+    [...promotedToRoot].map((n) => n.selector),
+    ['#cmp'],
+  );
+  assert.deepEqual(
+    Array.from(root.children, (c) => c.selector),
+    ['#utility', 'div.content', 'div.footer', '#cmp'],
+  );
+  assert.deepEqual(plain(nodeMap.rc4.overlay), { occluding: ['rc2'] });
+});
+
+test('processTree: a fixed element goes to the root even when an ancestor contains it', () => {
+  const chat = node('DIV', '#chat', box(960, 400, 300, 60), [], { id: 'chat', fixed: true });
+  const card = node('DIV', 'div.card', box(0, 300, 1280, 50), [], { className: 'card' });
+  const inner = node('DIV', 'div.inner', box(0, 300, 1280, 50), [card, chat], {
+    className: 'inner',
+  });
+  const section = node('DIV', 'div.section', box(0, 53, 1280, 1000), [inner], {
+    className: 'section',
+  });
+  const { root } = processTree(page([section, footer(4000)]));
+  assert.deepEqual(
+    Array.from(root.children, (c) => c.selector),
+    ['div.section', 'div.footer', '#chat'],
+  );
+});
