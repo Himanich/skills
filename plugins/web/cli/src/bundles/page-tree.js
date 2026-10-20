@@ -308,9 +308,11 @@ window.__visualTree = (() => {
     if (/^circle\(0(px|%)?[\s)]/.test(clip)) return true;
     const inset = clip.match(/^inset\(([^)]*)\)/);
     if (!inset) return false;
-    const parts = inset[1].trim().split(/\s+/).slice(0, 4);
+    const parts = inset[1].split(/\sround\s/)[0].trim().split(/\s+/);
+    // Only plain lengths are read; calc() and the like count as not clipped.
+    if (parts.length > 4 || !parts.every((v) => /^-?[\d.]+(px|%)$|^0$/.test(v))) return false;
     const [t, r = t, b = t, l = r] = parts;
-    const px = (v, size) => v.endsWith("%") ? size * parseFloat(v) / 100 : parseFloat(v) || 0;
+    const px = (v, size) => v.endsWith("%") ? size * parseFloat(v) / 100 : parseFloat(v);
     return rect.width - px(l, rect.width) - px(r, rect.width) <= 0 || rect.height - px(t, rect.height) - px(b, rect.height) <= 0;
   }
   // shortcut: ignores descendants that escape the clip (fixed, or absolute with a containing

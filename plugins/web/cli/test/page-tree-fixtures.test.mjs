@@ -79,6 +79,10 @@ fixtureTest('a mega menu clipped to nothing is not a node', async () => {
     text,
   );
   assert.doesNotMatch(text, /Menu panel/);
+  assert.ok(
+    find(tree, (n) => n.className === 'pill'),
+    'a rounded inset clips nothing',
+  );
 });
 
 fixtureTest('transparent header over a hero: the nav is a node with its own box', async () => {

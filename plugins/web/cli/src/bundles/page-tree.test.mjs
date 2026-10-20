@@ -107,6 +107,9 @@ test('clippedAway: a clip-path that leaves no width or no height hides the eleme
   assert.equal(hidden('polygon(0px 0px, 100% 0px, 100% 100%)'), false);
   assert.equal(hidden('none'), false);
   assert.equal(clippedAway({}, rect), false, 'no clip-path at all');
+  assert.equal(hidden('inset(0px round 999px)'), false, 'corner radii are not offsets');
+  assert.equal(hidden('inset(0px 0px 100% round 8px)'), true, 'a rounded closed menu');
+  assert.equal(hidden('inset(calc(50% + 0px))'), false, 'unread values: not clipped');
 });
 
 test('processTree: a fixed element is never absorbed by a collapse; it floats to root', () => {
