@@ -95,6 +95,88 @@ test('bands: fixed elements float over the page, they are listed apart, not slic
   ]);
 });
 
+test('bands: siblings above or below a tall child are kept, not passed through', () => {
+  // A long article: main is over 95 % of the page, header and footer are thin.
+  const long = node('BODY', 'body', box(0, 0, 1280, 10000), [
+    node('HEADER', 'header', box(0, 0, 1280, 100)),
+    node('MAIN', 'main', box(0, 100, 1280, 9800), [
+      node('DIV', 'div.a', box(0, 100, 1280, 4900)),
+      node('DIV', 'div.b', box(0, 5000, 1280, 4900)),
+    ]),
+    node('FOOTER', 'footer', box(0, 9900, 1280, 100)),
+  ]);
+  assert.deepEqual(
+    bands(long).map((b) => [b.top, b.bottom, b.selectors[0]]),
+    [
+      [0, 100, 'header'],
+      [100, 9900, 'main'],
+      [9900, 10000, 'footer'],
+    ],
+  );
+});
+
+test('bands: text elements side by side are columns, not a text run', () => {
+  const page = node('BODY', 'body', box(0, 0, 1280, 1000), [
+    node('DIV', 'div.top', box(0, 0, 1280, 400)),
+    node('IMG', 'img.l', box(0, 400, 600, 400)),
+    node('IMG', 'img.r', box(680, 400, 600, 400)),
+    node('P', 'p', box(0, 800, 1280, 200)),
+  ]);
+  const out = bands(page, { depth: 'all' });
+  assert.deepEqual(
+    out.map((b) => [b.top, b.bottom, b.text, b.side]),
+    [
+      [0, 400, false, false],
+      [400, 800, false, true],
+      [800, 1000, true, false],
+    ],
+  );
+  assert.deepEqual(
+    out[1].children.map((k) => [k.left, k.right]),
+    [
+      [0, 600],
+      [680, 1280],
+    ],
+  );
+});
+
+// The contract: a stack of bands covers its range with no gap and no overlap; columns lie
+// within their parent and do not overlap each other across.
+function assertContract(list, range, where) {
+  const ctx = `${where} ${list.map((b) => b.id).join(',')}`;
+  list.forEach((b) => {
+    assert.ok(b.top < b.bottom, `${ctx}: ${b.id} is empty`);
+    assert.ok(b.top >= range.top && b.bottom <= range.bottom, `${ctx}: ${b.id} is outside`);
+  });
+  for (let i = 1; i < list.length; i += 1) {
+    assert.equal(list[i].top, list[i - 1].bottom, `${ctx}: gap or overlap at ${list[i].id}`);
+  }
+  assert.equal(list[0].top, range.top, `${ctx}: starts below its range`);
+  assert.equal(list.at(-1).bottom, range.bottom, `${ctx}: ends above its range`);
+  for (const b of list.filter((x) => x.children)) {
+    if (!b.side) {
+      assertContract(b.children, b, where);
+      continue;
+    }
+    b.children.forEach((k, i) => {
+      assert.ok(k.top >= b.top && k.bottom <= b.bottom, `${ctx}: ${k.id} is outside`);
+      if (i > 0) assert.ok(k.left >= b.children[i - 1].left, `${ctx}: ${k.id} out of order`);
+      if (k.children) assertContract(k.children, k, where);
+    });
+  }
+}
+
+test('contract: bands tile their range at every depth', () => {
+  assertContract(bands(TREE, { depth: 'all' }), { top: 0, bottom: 4000 }, 'TREE');
+  for (const site of ['wknd', 'govuk', 'mdn']) {
+    const { tree } = JSON.parse(
+      readFileSync(new URL(`../../test/fixtures/bands/${site}.json`, import.meta.url), 'utf8'),
+    );
+    const out = bands(tree, { depth: 'all' });
+    assertContract(out, { top: out[0].top, bottom: out.at(-1).bottom }, site);
+  }
+});
+
 test('bands: a page with nothing to slice is one band', () => {
   const empty = node('BODY', 'body', box(0, 0, 1280, 900));
   assert.deepEqual(
@@ -206,7 +288,8 @@ test('cut: a background layer is passed through; a layer over the top is carried
 });
 
 // Stored trees of the migration pipeline's bench: the same level-1 slices as its
-// `candidates()` gave on them (130 of 130 bench pages when this was ported).
+// `candidates()` gave on them. They differ only where the pipeline passed through a tall child
+// and dropped the siblings above or below it (23 of 130 bench pages); these three are not such.
 for (const site of ['wknd', 'govuk', 'mdn']) {
   test(`parity with the pipeline's level 1: ${site}`, () => {
     const fixture = JSON.parse(

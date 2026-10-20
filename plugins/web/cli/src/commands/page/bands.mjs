@@ -12,7 +12,8 @@ Output:
   bands[]: { id, top, bottom, left, right, side, text, selectors, children? }
   fixed[]: { selector, top, bottom, left, right }
 Notes:
-  Slices the page top to bottom along its visual tree, so no cut passes through an element.
+  Slices the page top to bottom along its visual tree: a cut passes between elements, through
+  at most the 8 px where two neighbours overlap.
   Elements sharing a vertical range are one band with parts side by side (side: true); a run of
   text elements (paragraphs, headings, images) is one band (text: true). The header and footer
   are bands like any other, unless fixed: fixed elements float over the page and are listed

@@ -1,10 +1,10 @@
 {
-  "source": "govuk https://www.gov.uk/guidance/national-planning-policy-framework-chapter-1-introduction",
-  "range": { "top": 61, "bottom": 5533 },
+  "source": "govuk https://www.gov.uk/government/news/war-graves-damaged-in-libya",
+  "range": { "top": 61, "bottom": 1935 },
   "tree": {
     "tag": "BODY",
     "selector": "body",
-    "bounds": { "x": 0, "y": -1, "width": 1280, "height": 6455 },
+    "bounds": { "x": 0, "y": -1, "width": 1280, "height": 2857 },
     "children": [
       {
         "tag": "HEADER",
@@ -51,7 +51,7 @@
       {
         "tag": "DIV",
         "selector": "body > div:nth-child(5)",
-        "bounds": { "x": 160, "y": 76, "width": 960, "height": 5397 },
+        "bounds": { "x": 160, "y": 76, "width": 960, "height": 1799 },
         "children": [
           {
             "tag": "DIV",
@@ -76,23 +76,23 @@
                 "className": "govuk-breadcrumbs__list"
               }
             ],
-            "text": "Home Housing, local and commun",
-            "layout": "4x1"
+            "text": "Home International Foreign aff",
+            "layout": "3x1"
           },
           {
             "tag": "MAIN",
             "selector": "#content",
-            "bounds": { "x": 160, "y": 111, "width": 960, "height": 5362 },
+            "bounds": { "x": 160, "y": 111, "width": 960, "height": 1764 },
             "children": [
               {
                 "tag": "DIV",
                 "selector": "#content > div.page-title",
-                "bounds": { "x": 145, "y": 151, "width": 990, "height": 406 },
+                "bounds": { "x": 145, "y": 151, "width": 990, "height": 336 },
                 "children": [
                   {
                     "tag": "DIV",
                     "selector": "#content > div.page-title > div.page-title__column.page-title__heading",
-                    "bounds": { "x": 160, "y": 151, "width": 630, "height": 215 },
+                    "bounds": { "x": 160, "y": 151, "width": 630, "height": 115 },
                     "children": [
                       {
                         "tag": "SPAN",
@@ -100,15 +100,15 @@
                         "bounds": { "x": 160, "y": 151, "width": 630, "height": 30 },
                         "children": [],
                         "className": "govuk-caption-xl gem-c-heading__context",
-                        "text": "Guidance"
+                        "text": "News story"
                       },
                       {
                         "tag": "H1",
                         "selector": "#content > div.page-title > div.page-title__column.page-title__heading > div > h1",
-                        "bounds": { "x": 160, "y": 186, "width": 630, "height": 150 },
+                        "bounds": { "x": 160, "y": 186, "width": 630, "height": 50 },
                         "children": [],
                         "className": "gem-c-heading__text govuk-heading-xl",
-                        "text": "National Planning Policy Frame"
+                        "text": "War graves damaged in Libya"
                       }
                     ],
                     "className": "page-title__column page-title__heading",
@@ -128,48 +128,36 @@
                   {
                     "tag": "DIV",
                     "selector": "#content > div.page-title > div.page-title__column.page-title__content",
-                    "bounds": { "x": 160, "y": 366, "width": 630, "height": 191 },
+                    "bounds": { "x": 160, "y": 266, "width": 630, "height": 221 },
                     "children": [
                       {
                         "tag": "P",
                         "selector": "#content > div.page-title > div.page-title__column.page-title__content > p",
-                        "bounds": { "x": 160, "y": 366, "width": 630, "height": 60 },
+                        "bounds": { "x": 160, "y": 266, "width": 630, "height": 90 },
                         "children": [],
                         "className": "gem-c-lead-paragraph govuk-!-margin-bottom-6",
-                        "text": "This is the introduction to th"
+                        "text": "Over 200 headstones and the Cr"
                       },
                       {
                         "tag": "DIV",
                         "selector": "#content > div.page-title > div.page-title__column.page-title__content > div",
-                        "bounds": { "x": 160, "y": 456, "width": 630, "height": 71 },
+                        "bounds": { "x": 160, "y": 386, "width": 630, "height": 71 },
                         "children": [
                           {
                             "tag": "DD",
                             "selector": "#content > div.page-title > div.page-title__column.page-title__content > div > dl > dd:nth-child(2)",
-                            "bounds": { "x": 243, "y": 472, "width": 547, "height": 22 },
+                            "bounds": { "x": 243, "y": 402, "width": 547, "height": 22 },
                             "children": [],
                             "className": "gem-c-metadata__definition",
-                            "collapsed": [
-                              {
-                                "tag": "DD",
-                                "selector": "#content > div.page-title > div.page-title__column.page-title__content > div > dl > dd:nth-child(2)",
-                                "className": "gem-c-metadata__definition"
-                              },
-                              {
-                                "tag": "A",
-                                "selector": "#content > div.page-title > div.page-title__column.page-title__content > div > dl > dd:nth-child(2) > a",
-                                "className": "govuk-link"
-                              }
-                            ],
-                            "text": "Ministry of Housing, Communiti"
+                            "text": "Foreign & Commonwealth Office"
                           },
                           {
                             "tag": "DD",
                             "selector": "#content > div.page-title > div.page-title__column.page-title__content > div > dl > dd:nth-child(4)",
-                            "bounds": { "x": 243, "y": 504, "width": 547, "height": 22 },
+                            "bounds": { "x": 243, "y": 434, "width": 547, "height": 22 },
                             "children": [],
                             "className": "gem-c-metadata__definition",
-                            "text": "29 September 2026"
+                            "text": "4 March 2012"
                           }
                         ],
                         "className": "gem-c-metadata gem-c-metadata--border-top govuk-!-margin-bottom-6",
@@ -193,7 +181,7 @@
                   {
                     "tag": "DIV",
                     "selector": "#content > div.page-title > div.page-title__column.page-title__sidebar",
-                    "bounds": { "x": 820, "y": 366, "width": 300, "height": 191 },
+                    "bounds": { "x": 820, "y": 266, "width": 300, "height": 221 },
                     "children": [],
                     "className": "page-title__column page-title__sidebar"
                   }
@@ -204,497 +192,149 @@
               {
                 "tag": "DIV",
                 "selector": "#content > div:nth-child(3)",
-                "bounds": { "x": 145, "y": 557, "width": 990, "height": 4739 },
+                "bounds": { "x": 145, "y": 487, "width": 990, "height": 1120 },
                 "children": [
-                  {
-                    "tag": "DIV",
-                    "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.published-dates-button-group",
-                    "bounds": { "x": 160, "y": 557, "width": 630, "height": 72 },
-                    "children": [],
-                    "className": "published-dates-button-group",
-                    "layout": "2x1",
-                    "collapsed": [
-                      {
-                        "tag": "DIV",
-                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.published-dates-button-group",
-                        "className": "published-dates-button-group"
-                      },
-                      {
-                        "tag": "DIV",
-                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.published-dates-button-group > div.gem-c-single-page-notification-button.govuk-\\!-display-none-print.govuk-\\!-margin-bottom-6",
-                        "className": "gem-c-single-page-notification-button govuk-!-display-none-print govuk-!-margin-bottom-6"
-                      }
-                    ],
-                    "text": "Get emails about this page"
-                  },
                   {
                     "tag": "SECTION",
                     "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > section",
-                    "bounds": { "x": 160, "y": 629, "width": 630, "height": 65 },
+                    "bounds": { "x": 160, "y": 487, "width": 630, "height": 140 },
                     "children": [],
-                    "className": "gem-c-devolved-nations",
+                    "className": "govuk-notification-banner gem-c-notice govuk-!-margin-bottom-8",
+                    "role": "region",
                     "background": {
                       "type": "color",
-                      "value": "rgb(243, 243, 243)",
-                      "raw": "rgb(243, 243, 243) none repeat scroll 0% 0% / auto padding-box border-box",
+                      "value": "rgb(29, 112, 184)",
+                      "raw": "rgb(29, 112, 184) none repeat scroll 0% 0% / auto padding-box border-box",
                       "source": "css"
                     },
                     "collapsed": [
                       {
                         "tag": "SECTION",
                         "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > section",
-                        "className": "gem-c-devolved-nations"
+                        "className": "govuk-notification-banner gem-c-notice govuk-!-margin-bottom-8"
                       },
                       {
-                        "tag": "H2",
-                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > section > h2",
-                        "className": "govuk-heading-s govuk-!-margin-bottom-0"
+                        "tag": "DIV",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > section > div",
+                        "className": "govuk-notification-banner__content"
+                      },
+                      {
+                        "tag": "SPAN",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > section > div > span",
+                        "className": "gem-c-notice__title govuk-notification-banner__heading"
+                      },
+                      {
+                        "tag": "SPAN",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > section > div > span > span"
                       }
                     ],
-                    "text": "Applies to England"
+                    "text": "This was published under the"
+                  },
+                  {
+                    "tag": "FIGURE",
+                    "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > figure",
+                    "bounds": { "x": 160, "y": 677, "width": 300, "height": 195 },
+                    "children": [],
+                    "className": "gem-c-figure govuk-!-margin-bottom-8",
+                    "background": {
+                      "type": "image",
+                      "value": "/media/5a37dae240f0b649cceb1839/s300_Main-building-gov.uk.jpg?_origin=https%3A%2F%2Fassets.publishing.service.gov.uk",
+                      "raw": "",
+                      "source": "img"
+                    },
+                    "collapsed": [
+                      {
+                        "tag": "FIGURE",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > figure",
+                        "className": "gem-c-figure govuk-!-margin-bottom-8"
+                      },
+                      {
+                        "tag": "IMG",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > figure > img",
+                        "className": "gem-c-figure__image"
+                      }
+                    ]
                   },
                   {
                     "tag": "DIV",
-                    "selector": "#contents",
-                    "bounds": { "x": 160, "y": 744, "width": 630, "height": 4552 },
+                    "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8",
+                    "bounds": { "x": 160, "y": 922, "width": 630, "height": 460 },
                     "children": [
                       {
-                        "tag": "DIV",
-                        "selector": "#contents > div.gem-c-contents-list-with-body__list-container",
-                        "bounds": { "x": 160, "y": 744, "width": 630, "height": 109 },
-                        "children": [
-                          {
-                            "tag": "H2",
-                            "selector": "#contents > div.gem-c-contents-list-with-body__list-container > nav > h2",
-                            "bounds": { "x": 160, "y": 744, "width": 630, "height": 24 },
-                            "children": [],
-                            "className": "gem-c-contents-list__title",
-                            "text": "Contents"
-                          },
-                          {
-                            "tag": "OL",
-                            "selector": "#contents > div.gem-c-contents-list-with-body__list-container > nav > ol",
-                            "bounds": { "x": 160, "y": 768, "width": 630, "height": 85 },
-                            "children": [
-                              {
-                                "tag": "LI",
-                                "selector": "#contents > div.gem-c-contents-list-with-body__list-container > nav > ol > li:nth-child(1)",
-                                "bounds": { "x": 160, "y": 768, "width": 630, "height": 28 },
-                                "children": [],
-                                "className": "gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed",
-                                "text": "Using the Framework"
-                              },
-                              {
-                                "tag": "LI",
-                                "selector": "#contents > div.gem-c-contents-list-with-body__list-container > nav > ol > li:nth-child(2)",
-                                "bounds": { "x": 160, "y": 796, "width": 630, "height": 28 },
-                                "children": [],
-                                "className": "gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed",
-                                "text": "Other policy and guidance"
-                              },
-                              {
-                                "tag": "LI",
-                                "selector": "#contents > div.gem-c-contents-list-with-body__list-container > nav > ol > li:nth-child(3)",
-                                "bounds": { "x": 160, "y": 824, "width": 630, "height": 28 },
-                                "children": [],
-                                "className": "gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed",
-                                "text": "Purpose of the planning system"
-                              }
-                            ],
-                            "className": "gem-c-contents-list__list"
-                          }
-                        ],
-                        "className": "gem-c-contents-list-with-body__list-container",
-                        "collapsed": [
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.gem-c-contents-list-with-body__list-container",
-                            "className": "gem-c-contents-list-with-body__list-container"
-                          },
-                          {
-                            "tag": "NAV",
-                            "selector": "#contents > div.gem-c-contents-list-with-body__list-container > nav",
-                            "className": "gem-c-contents-list govuk-!-margin-bottom-4"
-                          }
-                        ],
-                        "background": {
-                          "type": "color",
-                          "value": "rgb(255, 255, 255)",
-                          "raw": "rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box",
-                          "source": "css"
-                        }
-                      },
-                      {
-                        "tag": "DIV",
-                        "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8",
-                        "bounds": { "x": 160, "y": 903, "width": 630, "height": 4251 },
-                        "children": [
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.application-notice.info-notice",
-                            "bounds": { "x": 160, "y": 903, "width": 630, "height": 65 },
-                            "children": [],
-                            "className": "application-notice info-notice",
-                            "role": "note",
-                            "collapsed": [
-                              {
-                                "tag": "DIV",
-                                "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.application-notice.info-notice",
-                                "className": "application-notice info-notice"
-                              },
-                              {
-                                "tag": "P",
-                                "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.application-notice.info-notice > p"
-                              },
-                              {
-                                "tag": "A",
-                                "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.application-notice.info-notice > p > a"
-                              }
-                            ],
-                            "text": "This is the introduction to th"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(2)",
-                            "bounds": { "x": 160, "y": 988, "width": 630, "height": 125 },
-                            "children": [],
-                            "text": "1. The National Planning Polic"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(3)",
-                            "bounds": { "x": 160, "y": 1133, "width": 630, "height": 125 },
-                            "children": [],
-                            "text": "2. The planning system should "
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(4)",
-                            "bounds": { "x": 160, "y": 1278, "width": 630, "height": 200 },
-                            "children": [],
-                            "text": "3. Planning law requires that "
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(5)",
-                            "bounds": { "x": 160, "y": 1498, "width": 630, "height": 100 },
-                            "children": [],
-                            "text": "4. This chapter explains the r"
-                          },
-                          {
-                            "tag": "H2",
-                            "selector": "#using-the-framework",
-                            "bounds": { "x": 160, "y": 1618, "width": 630, "height": 50 },
-                            "children": [],
-                            "id": "using-the-framework",
-                            "text": "Using the Framework"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(7)",
-                            "bounds": { "x": 160, "y": 1688, "width": 630, "height": 150 },
-                            "children": [],
-                            "text": "5. and set out general procedu",
-                            "layout": "2x1"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(8)",
-                            "bounds": { "x": 160, "y": 1858, "width": 630, "height": 300 },
-                            "children": [],
-                            "text": "6. The plan-making policies sh"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(9)",
-                            "bounds": { "x": 160, "y": 2178, "width": 630, "height": 150 },
-                            "children": [],
-                            "text": "7. The national decision-makin"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(10)",
-                            "bounds": { "x": 160, "y": 2348, "width": 630, "height": 100 },
-                            "children": [],
-                            "text": "8. The thematic chapters conta"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(11)",
-                            "bounds": { "x": 160, "y": 2468, "width": 630, "height": 50 },
-                            "children": [],
-                            "text": "9. The annexes included with t"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(12)",
-                            "bounds": { "x": 160, "y": 2538, "width": 630, "height": 75 },
-                            "children": [],
-                            "text": "10. Short objectives are inclu"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(13)",
-                            "bounds": { "x": 160, "y": 2633, "width": 630, "height": 100 },
-                            "children": [],
-                            "text": "11. Where policies in this Fra"
-                          },
-                          {
-                            "tag": "H2",
-                            "selector": "#other-policy-and-guidance",
-                            "bounds": { "x": 160, "y": 2753, "width": 630, "height": 50 },
-                            "children": [],
-                            "id": "other-policy-and-guidance",
-                            "text": "Other policy and guidance"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(15)",
-                            "bounds": { "x": 160, "y": 2823, "width": 630, "height": 175 },
-                            "children": [],
-                            "text": "12. There are other national p"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(16)",
-                            "bounds": { "x": 160, "y": 3018, "width": 630, "height": 175 },
-                            "children": [],
-                            "text": "13. The Framework does not con"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(17)",
-                            "bounds": { "x": 160, "y": 3213, "width": 630, "height": 125 },
-                            "children": [],
-                            "text": "14. National planning policy i"
-                          },
-                          {
-                            "tag": "H2",
-                            "selector": "#purpose-of-the-planning-system",
-                            "bounds": { "x": 160, "y": 3358, "width": 630, "height": 50 },
-                            "children": [],
-                            "id": "purpose-of-the-planning-system",
-                            "text": "Purpose of the planning system"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(19)",
-                            "bounds": { "x": 160, "y": 3428, "width": 630, "height": 75 },
-                            "children": [],
-                            "text": "15. The purpose of the plannin"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(20)",
-                            "bounds": { "x": 160, "y": 3523, "width": 630, "height": 175 },
-                            "children": [],
-                            "text": "16. At a very high level, the "
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(21)",
-                            "bounds": { "x": 160, "y": 3718, "width": 630, "height": 125 },
-                            "children": [],
-                            "text": "17. Achieving sustainable deve"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(22)",
-                            "bounds": { "x": 160, "y": 3863, "width": 630, "height": 125 },
-                            "children": [],
-                            "text": "a. – to help build a strong, r"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(23)",
-                            "bounds": { "x": 160, "y": 4008, "width": 630, "height": 150 },
-                            "children": [],
-                            "text": "b. – to support strong, vibran"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(24)",
-                            "bounds": { "x": 160, "y": 4178, "width": 630, "height": 125 },
-                            "children": [],
-                            "text": "c. – to support efforts to mit"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > p:nth-child(25)",
-                            "bounds": { "x": 160, "y": 4323, "width": 630, "height": 175 },
-                            "children": [],
-                            "text": "18. These objectives should be"
-                          },
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action",
-                            "bounds": { "x": 160, "y": 4518, "width": 630, "height": 175 },
-                            "children": [
-                              {
-                                "tag": "P",
-                                "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(1)",
-                                "bounds": { "x": 190, "y": 4548, "width": 570, "height": 25 },
-                                "children": [],
-                                "collapsed": [
-                                  {
-                                    "tag": "P",
-                                    "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(1)"
-                                  },
-                                  {
-                                    "tag": "STRONG",
-                                    "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(1) > strong"
-                                  }
-                                ],
-                                "text": "This is Chapter 1 of the Natio"
-                              },
-                              {
-                                "tag": "P",
-                                "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(2)",
-                                "bounds": { "x": 190, "y": 4593, "width": 570, "height": 25 },
-                                "children": [],
-                                "text": "Continue to .",
-                                "collapsed": [
-                                  {
-                                    "tag": "P",
-                                    "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(2)"
-                                  },
-                                  {
-                                    "tag": "A",
-                                    "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(2) > a"
-                                  }
-                                ]
-                              },
-                              {
-                                "tag": "P",
-                                "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(3)",
-                                "bounds": { "x": 190, "y": 4638, "width": 570, "height": 25 },
-                                "children": [],
-                                "text": "Return to the homepage.",
-                                "collapsed": [
-                                  {
-                                    "tag": "P",
-                                    "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(3)"
-                                  },
-                                  {
-                                    "tag": "A",
-                                    "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > div.call-to-action > p:nth-child(3) > a"
-                                  }
-                                ]
-                              }
-                            ],
-                            "className": "call-to-action",
-                            "background": {
-                              "type": "color",
-                              "value": "rgb(243, 243, 243)",
-                              "raw": "rgb(243, 243, 243) none repeat scroll 0% 0% / auto padding-box border-box",
-                              "source": "css"
-                            }
-                          },
-                          {
-                            "tag": "HR",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div > hr",
-                            "bounds": { "x": 160, "y": 4722, "width": 630, "height": 2 },
-                            "children": []
-                          },
-                          {
-                            "tag": "H3",
-                            "selector": "#footnotes",
-                            "bounds": { "x": 160, "y": 4754, "width": 630, "height": 45 },
-                            "children": [],
-                            "id": "footnotes",
-                            "text": "Footnotes"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#footnote1",
-                            "bounds": { "x": 160, "y": 4819, "width": 630, "height": 50 },
-                            "children": [
-                              {
-                                "tag": "A",
-                                "selector": "#footnote1 > a:nth-child(1)",
-                                "bounds": { "x": 176, "y": 4820, "width": 541, "height": 23 },
-                                "children": [],
-                                "text": "Section 38(6) of the Planning "
-                              },
-                              {
-                                "tag": "A",
-                                "selector": "#footnote1 > a:nth-child(2)",
-                                "bounds": { "x": 160, "y": 4845, "width": 466, "height": 23 },
-                                "children": [],
-                                "text": "section 70(2) of the Town and "
-                              }
-                            ],
-                            "id": "footnote1",
-                            "text": "1. and .",
-                            "layout": "2x2"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#footnote2",
-                            "bounds": { "x": 160, "y": 4889, "width": 630, "height": 150 },
-                            "children": [],
-                            "id": "footnote2",
-                            "text": "2. The National Planning Polic"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#footnote3",
-                            "bounds": { "x": 160, "y": 5059, "width": 630, "height": 25 },
-                            "children": [],
-                            "id": "footnote3",
-                            "text": "3. Resolution 42/187 of the Un"
-                          },
-                          {
-                            "tag": "P",
-                            "selector": "#footnote4",
-                            "bounds": { "x": 160, "y": 5104, "width": 630, "height": 50 },
-                            "children": [],
-                            "id": "footnote4",
-                            "text": "4. .",
-                            "collapsed": [
-                              { "tag": "P", "selector": "#footnote4", "id": "footnote4" },
-                              { "tag": "A", "selector": "#footnote4 > a:nth-child(1)" }
-                            ]
-                          }
-                        ],
-                        "className": "gem-c-govspeak govuk-!-margin-bottom-8",
-                        "collapsed": [
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8",
-                            "className": "gem-c-govspeak govuk-!-margin-bottom-8"
-                          },
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.gem-c-govspeak.govuk-\\!-margin-bottom-8 > div",
-                            "className": "govspeak"
-                          }
-                        ]
-                      },
-                      {
-                        "tag": "DIV",
-                        "selector": "#contents > div.published-dates-button-group",
-                        "bounds": { "x": 160, "y": 5204, "width": 630, "height": 92 },
+                        "tag": "P",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8 > div > p:nth-child(1)",
+                        "bounds": { "x": 160, "y": 922, "width": 630, "height": 50 },
                         "children": [],
-                        "className": "published-dates-button-group",
-                        "layout": "2x1",
-                        "collapsed": [
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.published-dates-button-group",
-                            "className": "published-dates-button-group"
-                          },
-                          {
-                            "tag": "DIV",
-                            "selector": "#contents > div.published-dates-button-group > div.gem-c-single-page-notification-button.govuk-\\!-display-none-print.govuk-\\!-margin-bottom-3",
-                            "className": "gem-c-single-page-notification-button govuk-!-display-none-print govuk-!-margin-bottom-3"
-                          }
-                        ],
-                        "text": "Get emails about this page"
+                        "text": "Approximately a quarter of the"
+                      },
+                      {
+                        "tag": "P",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8 > div > p:nth-child(2)",
+                        "bounds": { "x": 160, "y": 992, "width": 630, "height": 25 },
+                        "children": [],
+                        "text": "A Foreign Office spokesperson "
+                      },
+                      {
+                        "tag": "P",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8 > div > p:nth-child(3)",
+                        "bounds": { "x": 160, "y": 1037, "width": 630, "height": 125 },
+                        "children": [],
+                        "text": "“Officials from our Embassy in"
+                      },
+                      {
+                        "tag": "P",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8 > div > p:nth-child(4)",
+                        "bounds": { "x": 160, "y": 1182, "width": 630, "height": 200 },
+                        "children": [],
+                        "text": "“In response to these incident"
                       }
                     ],
-                    "id": "contents",
-                    "className": "gem-c-contents-list-with-body"
+                    "className": "gem-c-govspeak gem-c-govspeak--direction-ltr govuk-!-margin-bottom-8",
+                    "collapsed": [
+                      {
+                        "tag": "DIV",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8",
+                        "className": "gem-c-govspeak gem-c-govspeak--direction-ltr govuk-!-margin-bottom-8"
+                      },
+                      {
+                        "tag": "DIV",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-govspeak.gem-c-govspeak--direction-ltr.govuk-\\!-margin-bottom-8 > div",
+                        "className": "govspeak"
+                      }
+                    ]
+                  },
+                  {
+                    "tag": "DIV",
+                    "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-share-links.govuk-\\!-display-none-print.govuk-\\!-margin-bottom-8",
+                    "bounds": { "x": 160, "y": 1432, "width": 630, "height": 125 },
+                    "children": [
+                      {
+                        "tag": "H2",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-share-links.govuk-\\!-display-none-print.govuk-\\!-margin-bottom-8 > h2",
+                        "bounds": { "x": 160, "y": 1432, "width": 630, "height": 25 },
+                        "children": [],
+                        "className": "govuk-heading-s",
+                        "text": "Share this page"
+                      },
+                      {
+                        "tag": "P",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-share-links.govuk-\\!-display-none-print.govuk-\\!-margin-bottom-8 > p",
+                        "bounds": { "x": 160, "y": 1477, "width": 630, "height": 20 },
+                        "children": [],
+                        "className": "govuk-body-s",
+                        "text": "The following links open in a "
+                      },
+                      {
+                        "tag": "UL",
+                        "selector": "#content > div:nth-child(3) > div.govuk-grid-column-two-thirds > div.gem-c-share-links.govuk-\\!-display-none-print.govuk-\\!-margin-bottom-8 > ul",
+                        "bounds": { "x": 160, "y": 1517, "width": 630, "height": 40 },
+                        "children": [],
+                        "className": "gem-c-share-links__list",
+                        "layout": "2x1",
+                        "text": "Share on Facebook (opens in ne"
+                      }
+                    ],
+                    "className": "gem-c-share-links govuk-!-display-none-print govuk-!-margin-bottom-8"
                   }
                 ],
                 "className": "govuk-grid-row gem-print-columns-none",
@@ -714,36 +354,81 @@
               {
                 "tag": "DIV",
                 "selector": "#content > div:nth-child(4)",
-                "bounds": { "x": 145, "y": 5296, "width": 990, "height": 137 },
+                "bounds": { "x": 145, "y": 1607, "width": 990, "height": 228 },
                 "children": [
                   {
-                    "tag": "H2",
-                    "selector": "#related-nav-topics-1785ce06",
-                    "bounds": { "x": 160, "y": 5313, "width": 630, "height": 25 },
-                    "children": [],
-                    "id": "related-nav-topics-1785ce06",
-                    "className": "gem-c-related-navigation__sub-heading gem-c-related-navigation__sub-heading--footer",
-                    "text": "Explore the topic"
-                  },
-                  {
-                    "tag": "UL",
-                    "selector": "#content > div:nth-child(4) > div > div > div > nav > ul",
-                    "bounds": { "x": 160, "y": 5353, "width": 630, "height": 20 },
-                    "children": [],
-                    "className": "gem-c-related-navigation__link-list",
-                    "collapsed": [
+                    "tag": "NAV",
+                    "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(1)",
+                    "bounds": { "x": 160, "y": 1624, "width": 630, "height": 60 },
+                    "children": [
                       {
-                        "tag": "UL",
-                        "selector": "#content > div:nth-child(4) > div > div > div > nav > ul",
-                        "className": "gem-c-related-navigation__link-list"
+                        "tag": "H2",
+                        "selector": "#related-nav-topics-ab4ebea2",
+                        "bounds": { "x": 160, "y": 1624, "width": 630, "height": 25 },
+                        "children": [],
+                        "id": "related-nav-topics-ab4ebea2",
+                        "className": "gem-c-related-navigation__sub-heading gem-c-related-navigation__sub-heading--footer",
+                        "text": "Explore the topic"
                       },
                       {
-                        "tag": "LI",
-                        "selector": "#content > div:nth-child(4) > div > div > div > nav > ul > li",
-                        "className": "gem-c-related-navigation__link"
+                        "tag": "UL",
+                        "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(1) > ul",
+                        "bounds": { "x": 160, "y": 1664, "width": 630, "height": 20 },
+                        "children": [],
+                        "className": "gem-c-related-navigation__link-list",
+                        "collapsed": [
+                          {
+                            "tag": "UL",
+                            "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(1) > ul",
+                            "className": "gem-c-related-navigation__link-list"
+                          },
+                          {
+                            "tag": "LI",
+                            "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(1) > ul > li",
+                            "className": "gem-c-related-navigation__link"
+                          }
+                        ],
+                        "text": "Foreign affairs"
                       }
                     ],
-                    "text": "Planning system"
+                    "className": "gem-c-related-navigation__nav-section"
+                  },
+                  {
+                    "tag": "NAV",
+                    "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(2)",
+                    "bounds": { "x": 160, "y": 1714, "width": 630, "height": 60 },
+                    "children": [
+                      {
+                        "tag": "H2",
+                        "selector": "#related-nav-world_locations-ab4ebea2",
+                        "bounds": { "x": 160, "y": 1714, "width": 630, "height": 25 },
+                        "children": [],
+                        "id": "related-nav-world_locations-ab4ebea2",
+                        "className": "gem-c-related-navigation__sub-heading gem-c-related-navigation__sub-heading--footer",
+                        "text": "World locations"
+                      },
+                      {
+                        "tag": "UL",
+                        "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(2) > ul",
+                        "bounds": { "x": 160, "y": 1754, "width": 630, "height": 20 },
+                        "children": [],
+                        "className": "gem-c-related-navigation__link-list",
+                        "collapsed": [
+                          {
+                            "tag": "UL",
+                            "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(2) > ul",
+                            "className": "gem-c-related-navigation__link-list"
+                          },
+                          {
+                            "tag": "LI",
+                            "selector": "#content > div:nth-child(4) > div > div > div > nav:nth-child(2) > ul > li",
+                            "className": "gem-c-related-navigation__link"
+                          }
+                        ],
+                        "text": "Libya"
+                      }
+                    ],
+                    "className": "gem-c-related-navigation__nav-section"
                   }
                 ],
                 "className": "govuk-grid-row gem-print-columns-none",
@@ -767,11 +452,6 @@
                     "tag": "DIV",
                     "selector": "#content > div:nth-child(4) > div > div > div",
                     "className": "gem-c-related-navigation govuk-!-display-none-print"
-                  },
-                  {
-                    "tag": "NAV",
-                    "selector": "#content > div:nth-child(4) > div > div > div > nav",
-                    "className": "gem-c-related-navigation__nav-section"
                   }
                 ]
               }
@@ -785,7 +465,7 @@
       {
         "tag": "DIV",
         "selector": "body > div:nth-child(6)",
-        "bounds": { "x": 160, "y": 5533, "width": 960, "height": 78 },
+        "bounds": { "x": 160, "y": 1935, "width": 960, "height": 78 },
         "children": [],
         "className": "govuk-width-container",
         "collapsed": [
@@ -832,22 +512,22 @@
       {
         "tag": "FOOTER",
         "selector": "body > footer",
-        "bounds": { "x": 0, "y": 5611, "width": 1280, "height": 843 },
+        "bounds": { "x": 0, "y": 2013, "width": 1280, "height": 843 },
         "children": [
           {
             "tag": "DIV",
             "selector": "body > footer > div > div.govuk-footer__navigation",
-            "bounds": { "x": 145, "y": 5722, "width": 990, "height": 481 },
+            "bounds": { "x": 145, "y": 2124, "width": 990, "height": 481 },
             "children": [
               {
                 "tag": "DIV",
                 "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print",
-                "bounds": { "x": 145, "y": 5722, "width": 660, "height": 481 },
+                "bounds": { "x": 145, "y": 2124, "width": 660, "height": 481 },
                 "children": [
                   {
                     "tag": "H2",
                     "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > h2",
-                    "bounds": { "x": 160, "y": 5722, "width": 630, "height": 51 },
+                    "bounds": { "x": 160, "y": 2124, "width": 630, "height": 51 },
                     "children": [],
                     "className": "govuk-footer__heading govuk-heading-m",
                     "text": "Services and information"
@@ -855,12 +535,12 @@
                   {
                     "tag": "UL",
                     "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul",
-                    "bounds": { "x": 160, "y": 5803, "width": 630, "height": 400 },
+                    "bounds": { "x": 160, "y": 2205, "width": 630, "height": 400 },
                     "children": [
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(1)",
-                        "bounds": { "x": 160, "y": 5803, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2205, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Benefits"
@@ -868,7 +548,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(2)",
-                        "bounds": { "x": 160, "y": 5848, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2250, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "collapsed": [
@@ -888,7 +568,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(3)",
-                        "bounds": { "x": 160, "y": 5893, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2295, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Business and self-employed"
@@ -896,7 +576,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(4)",
-                        "bounds": { "x": 160, "y": 5938, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2340, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Childcare and parenting"
@@ -904,7 +584,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(5)",
-                        "bounds": { "x": 160, "y": 5983, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2385, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "collapsed": [
@@ -924,7 +604,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(6)",
-                        "bounds": { "x": 160, "y": 6028, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2430, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Crime, justice and the law"
@@ -932,7 +612,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(7)",
-                        "bounds": { "x": 160, "y": 6073, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2475, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Disabled people"
@@ -940,7 +620,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(8)",
-                        "bounds": { "x": 160, "y": 6118, "width": 297, "height": 25 },
+                        "bounds": { "x": 160, "y": 2520, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Driving and transport"
@@ -948,7 +628,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(9)",
-                        "bounds": { "x": 490, "y": 5803, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2205, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Education and learning"
@@ -956,7 +636,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(10)",
-                        "bounds": { "x": 490, "y": 5848, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2250, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Employing people"
@@ -964,7 +644,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(11)",
-                        "bounds": { "x": 490, "y": 5893, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2295, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Environment and countryside"
@@ -972,7 +652,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(12)",
-                        "bounds": { "x": 490, "y": 5938, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2340, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Housing and local services"
@@ -980,7 +660,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(13)",
-                        "bounds": { "x": 490, "y": 5983, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2385, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Money and tax"
@@ -988,7 +668,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(14)",
-                        "bounds": { "x": 490, "y": 6028, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2430, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "collapsed": [
@@ -1008,7 +688,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(15)",
-                        "bounds": { "x": 490, "y": 6073, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2475, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Visas and immigration"
@@ -1016,7 +696,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-two-thirds.govuk-\\!-display-none-print > ul > li:nth-child(16)",
-                        "bounds": { "x": 490, "y": 6118, "width": 297, "height": 25 },
+                        "bounds": { "x": 490, "y": 2520, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Working, jobs and pensions"
@@ -1031,12 +711,12 @@
               {
                 "tag": "DIV",
                 "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print",
-                "bounds": { "x": 805, "y": 5722, "width": 330, "height": 461 },
+                "bounds": { "x": 805, "y": 2124, "width": 330, "height": 461 },
                 "children": [
                   {
                     "tag": "H2",
                     "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > h2",
-                    "bounds": { "x": 820, "y": 5722, "width": 300, "height": 51 },
+                    "bounds": { "x": 820, "y": 2124, "width": 300, "height": 51 },
                     "children": [],
                     "className": "govuk-footer__heading govuk-heading-m",
                     "text": "Government activity"
@@ -1044,12 +724,12 @@
                   {
                     "tag": "UL",
                     "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul",
-                    "bounds": { "x": 820, "y": 5803, "width": 300, "height": 380 },
+                    "bounds": { "x": 820, "y": 2205, "width": 300, "height": 380 },
                     "children": [
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(1)",
-                        "bounds": { "x": 820, "y": 5803, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2205, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Departments"
@@ -1057,7 +737,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(2)",
-                        "bounds": { "x": 820, "y": 5848, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2250, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "News"
@@ -1065,7 +745,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(3)",
-                        "bounds": { "x": 820, "y": 5893, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2295, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Guidance and regulation"
@@ -1073,7 +753,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(4)",
-                        "bounds": { "x": 820, "y": 5938, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2340, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Research and statistics"
@@ -1081,7 +761,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(5)",
-                        "bounds": { "x": 820, "y": 5983, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2385, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "collapsed": [
@@ -1101,7 +781,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(6)",
-                        "bounds": { "x": 820, "y": 6028, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2430, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Transparency"
@@ -1109,7 +789,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(7)",
-                        "bounds": { "x": 820, "y": 6073, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2475, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "How government works"
@@ -1117,7 +797,7 @@
                       {
                         "tag": "LI",
                         "selector": "body > footer > div > div.govuk-footer__navigation > div.govuk-grid-column-one-third.govuk-\\!-display-none-print > ul > li:nth-child(8)",
-                        "bounds": { "x": 820, "y": 6118, "width": 297, "height": 25 },
+                        "bounds": { "x": 820, "y": 2520, "width": 297, "height": 25 },
                         "children": [],
                         "className": "govuk-footer__list-item",
                         "text": "Get involved"
@@ -1135,19 +815,19 @@
           {
             "tag": "HR",
             "selector": "body > footer > div > hr",
-            "bounds": { "x": 160, "y": 6203, "width": 960, "height": 1 },
+            "bounds": { "x": 160, "y": 2605, "width": 960, "height": 1 },
             "children": [],
             "className": "govuk-footer__section-break govuk-!-display-none-print"
           },
           {
             "tag": "DIV",
             "selector": "body > footer > div > div.govuk-footer__meta",
-            "bounds": { "x": 145, "y": 6254, "width": 990, "height": 175 },
+            "bounds": { "x": 145, "y": 2656, "width": 990, "height": 175 },
             "children": [
               {
                 "tag": "UL",
                 "selector": "body > footer > div > div.govuk-footer__meta > div.govuk-footer__meta-item.govuk-footer__meta-item--grow > ul",
-                "bounds": { "x": 160, "y": 6254, "width": 775, "height": 60 },
+                "bounds": { "x": 160, "y": 2656, "width": 775, "height": 60 },
                 "children": [],
                 "className": "govuk-footer__inline-list govuk-!-display-none-print",
                 "layout": "6x2",
@@ -1173,7 +853,7 @@
               {
                 "tag": "SPAN",
                 "selector": "body > footer > div > div.govuk-footer__meta > div.govuk-footer__meta-item.govuk-footer__meta-item--grow > span",
-                "bounds": { "x": 160, "y": 6354, "width": 775, "height": 50 },
+                "bounds": { "x": 160, "y": 2756, "width": 775, "height": 50 },
                 "children": [],
                 "className": "govuk-footer__licence-description",
                 "text": "All content is available under",
@@ -1233,8 +913,7 @@
     }
   },
   "expected": [
-    [61, 557],
-    [557, 5296],
-    [5296, 5533]
+    [61, 111],
+    [111, 1935]
   ]
 }

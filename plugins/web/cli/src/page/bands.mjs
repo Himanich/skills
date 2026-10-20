@@ -1,8 +1,9 @@
 // A page sliced into bands from its visual tree, with no model: siblings stacked top to bottom,
 // siblings sharing a vertical range one band with parts side by side, consecutive text
-// elements one run. The cut never passes through an element. Ported from the migration
-// pipeline's structure.mjs (`siblings`, `stack`, `runs`, `cut`), where it is the cut of every
-// depth; measured there on 70 pages of seven sites.
+// elements one run. A cut passes between elements, through at most the 8 px where neighbours
+// overlap (negative margins, borders): cutting there beats merging the two. Ported from the
+// migration pipeline's structure.mjs (`siblings`, `stack`, `runs`, `cut`), where it is the cut
+// of every depth, measured on 70 pages of seven sites; two rules differ, noted where they are.
 
 export const MIN_PART_WIDTH = 120; // narrower parts beside a wide one are decoration, not columns
 // Side by side: two wide parts mostly clear of each other across — a grid's columns may
@@ -33,7 +34,7 @@ export const TEXT_TAGS = new Set([
 /**
  * The level of the tree at which a range's parts are siblings: from the node, through
  * wrapper chains (one child inside the range, or one child covering it with only slivers
- * beside it) to the first node with two or more children inside the range.
+ * beside it or over it) to the first node with two or more children inside the range.
  */
 export function siblings(tree, range) {
   const inside = (n) =>
@@ -47,7 +48,8 @@ export function siblings(tree, range) {
       continue;
     }
     const big = kids.filter((k) => k.bounds.height >= 0.95 * (range.bottom - range.top));
-    if (big.length === 1 && kids.length <= 3 && !kids.some((k) => beside(k, big[0]))) {
+    const kept = (k) => beside(k, big[0]) || stacked(k, big[0]);
+    if (big.length === 1 && kids.length <= 3 && !kids.some(kept)) {
       [node] = big;
       continue;
     }
@@ -66,6 +68,14 @@ function beside(k, big) {
     a.width * a.height >= 0.05 * b.width * b.height &&
     (a.x >= b.x + b.width - 8 || a.x + a.width <= b.x + 8)
   );
+}
+
+// Above or below a child as tall as the range: a band of its own (a header over a long main),
+// never passed through. Unlike the pipeline, whose body range left the header out.
+function stacked(k, big) {
+  const a = k.bounds;
+  const b = big.bounds;
+  return k !== big && (a.y + a.height <= b.y + 8 || a.y >= b.y + b.height - 8);
 }
 
 const dedupeX = (parts) =>
@@ -91,6 +101,7 @@ export function stack(nodes, range) {
     const y1 = Math.min(range.bottom, n.bounds.y + n.bounds.height);
     if (y1 - y0 < 4) continue;
     const last = out.at(-1);
+    // An overlap of 8 px or less is cut through, not merged: see the module comment.
     if (last && y0 < last.bottom - 8) {
       last.bottom = Math.max(last.bottom, y1);
       last.nodes.push(n);
@@ -110,7 +121,8 @@ export function stack(nodes, range) {
   }));
 }
 
-const isText = (c) => c.nodes.every((n) => TEXT_TAGS.has(n.tag));
+// Text elements side by side are columns (a row of images), not a run of prose.
+const isText = (c) => c.nodes.every((n) => TEXT_TAGS.has(n.tag)) && !sideBySide(c);
 
 // Consecutive runs of text elements are one slice.
 function runs(slices) {
