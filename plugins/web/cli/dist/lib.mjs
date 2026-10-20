@@ -6180,7 +6180,20 @@ import { resolve as resolve6 } from "node:path";
 import { createServer } from "node:http";
 import { createHash as createHash2 } from "node:crypto";
 import { existsSync as existsSync4, mkdirSync as mkdirSync5, readdirSync, readFileSync as readFileSync4, writeFileSync as writeFileSync7 } from "node:fs";
-import { dirname as dirname3, extname, join as join8, resolve as resolve5 } from "node:path";
+import { dirname as dirname3, extname, join as join8, resolve as resolve5, sep } from "node:path";
+var UNCACHEABLE_REQUEST_HEADERS = [
+  "host",
+  "cookie",
+  "connection",
+  "referer",
+  "accept-encoding",
+  "range",
+  "if-range",
+  "if-match",
+  "if-none-match",
+  "if-modified-since",
+  "if-unmodified-since"
+];
 var escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var isUtf8 = (ct) => {
   const m = /charset=["']?([^\s;"']+)/i.exec(ct);
@@ -6203,12 +6216,15 @@ function cachePath(cacheDir, url) {
   else if (!extname(seg)) seg += "/index~.html";
   let p = join8(`${u.hostname}_${hash}`, seg);
   if (u.search) {
-    let qs = u.search.substring(1);
+    let qs = encodeURIComponent(u.search.substring(1));
     if (p.length + qs.length > 200) qs = createHash2("md5").update(qs).digest("hex");
     const ext = extname(p);
     p = ext ? `${p.slice(0, -ext.length)}!${qs}${ext}` : `${p}!${qs}`;
   }
-  return resolve5(cacheDir, p);
+  const root = resolve5(cacheDir);
+  const full = resolve5(root, p);
+  if (!full.startsWith(`${root}${sep}`)) throw new Error(`cache path escapes ${root}: ${url}`);
+  return full;
 }
 function countFiles(dir) {
   let n = 0;
@@ -6233,17 +6249,26 @@ function rewriteOrigin(buf, origin, contentType) {
   );
   return Buffer.from(text, "utf-8");
 }
+var withOrigin = (path3, origin) => `${path3}${path3.includes("?") ? "&" : "?"}_origin=${encodeURIComponent(origin)}`;
+function absolutizeCssUrls(buf, cssUrl, contentType) {
+  if (!isUtf8(contentType)) return buf;
+  const text = buf.toString("utf-8").replace(/url\(\s*(['"]?)([^)'"]*?)\1\s*\)/gi, (m, q, ref) => {
+    if (!ref || ref.startsWith("data:") || ref.startsWith("#")) return m;
+    try {
+      return `url(${q}${new URL(ref, cssUrl).href}${q})`;
+    } catch {
+      return m;
+    }
+  });
+  return Buffer.from(text, "utf-8");
+}
 function rewriteAlso(buf, also, contentType) {
   if (!also.size || !isUtf8(contentType)) return buf;
   let text = buf.toString("utf-8");
   for (const origin of also) {
     const esc = escapeRe(origin.replace(/^https?:/, ""));
     const re = new RegExp(`(?:https?:)?${esc}(/[^\\s"'<>)\\\\]*)?(?![\\w.-])`, "g");
-    const param = `_origin=${encodeURIComponent(origin)}`;
-    text = text.replace(re, (_, p) => {
-      const path3 = p || "/";
-      return `${path3}${path3.includes("?") ? "&" : "?"}${param}`;
-    });
+    text = text.replace(re, (_, p) => withOrigin(p || "/", origin));
   }
   return Buffer.from(text, "utf-8");
 }
@@ -6277,7 +6302,7 @@ async function startCacheProxy({
   async function fetchAndStore(req, origin, originUrl) {
     log(`[fetch] ${originUrl}`);
     const fwd = { ...req.headers };
-    for (const k of ["host", "cookie", "connection", "referer", "accept-encoding"]) delete fwd[k];
+    for (const k of UNCACHEABLE_REQUEST_HEADERS) delete fwd[k];
     const resp = await fetch(originUrl, {
       method: "GET",
       headers: fwd,
@@ -6301,11 +6326,18 @@ async function startCacheProxy({
     if (headers.location) {
       try {
         const loc = new URL(headers.location, originUrl);
-        if (loc.origin === origin) headers.location = loc.pathname + loc.search;
+        if (loc.origin === origin || alsoSet.has(loc.origin)) {
+          headers.location = loc.pathname + loc.search;
+          if (alsoSet.has(loc.origin)) headers.location = withOrigin(headers.location, loc.origin);
+        }
       } catch {
       }
     }
-    if (ct.includes("html") || ct.includes("css")) body = rewriteOrigin(body, origin, ct);
+    if (alsoSet.has(origin)) {
+      if (ct.includes("css")) body = absolutizeCssUrls(body, originUrl, ct);
+    } else if (ct.includes("html") || ct.includes("css")) {
+      body = rewriteOrigin(body, origin, ct);
+    }
     if (isText2(ct)) body = rewriteAlso(body, alsoSet, ct);
     try {
       write(originUrl, { body, headers, status: resp.status });
@@ -6532,7 +6564,7 @@ async function fetchBody({ url, timeoutMs, headers }) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   let buf = Buffer.from(await res.arrayBuffer());
   if (buf[0] === 31 && buf[1] === 139) buf = gunzipSync(buf);
-  return { text: buf.toString("utf-8"), type: res.headers.get("content-type") ?? "" };
+  return { text: buf.toString("utf-8"), type: res.headers.get("content-type") ?? "", url: res.url };
 }
 async function crawl(origin, options = {}) {
   const { strategy = "sitemaps", limit, timeoutMs = 1e4, headers } = options;
@@ -6553,6 +6585,11 @@ async function crawl(origin, options = {}) {
       return void 0;
     }
   };
+  const matches = (u) => {
+    const target = u.pathname + u.search;
+    if (exclude.some((re) => re.test(target))) return false;
+    return include.length === 0 || include.some((re) => re.test(target));
+  };
   const accept = (raw) => {
     let u;
     try {
@@ -6563,10 +6600,7 @@ async function crawl(origin, options = {}) {
     u.hash = "";
     if (u.origin !== base.origin || seen.has(u.href)) return null;
     seen.add(u.href);
-    const target = u.pathname + u.search;
-    if (exclude.some((re) => re.test(target))) return null;
-    if (include.length && !include.some((re) => re.test(target))) return null;
-    return u;
+    return matches(u) ? u : null;
   };
   const keep = (raw) => {
     const u = accept(raw);
@@ -6599,9 +6633,15 @@ async function crawl(origin, options = {}) {
       const url = queue.shift();
       await attempt(url, async () => {
         const doc = await get(url);
-        if (!doc.type.includes("html")) return;
-        urls.push({ url, lang: langOf(new URL(url).pathname) });
-        for (const link of extractLinks(doc.text, url)) {
+        const final = new URL(doc.url || url);
+        final.hash = "";
+        if (final.origin !== base.origin || !doc.type.includes("html")) return;
+        if (final.href !== url) {
+          if (seen.has(final.href)) return;
+          seen.add(final.href);
+        }
+        if (matches(final)) urls.push({ url: final.href, lang: langOf(final.pathname) });
+        for (const link of extractLinks(doc.text, final.href)) {
           const u = accept(link);
           if (u) queue.push(u.href);
         }

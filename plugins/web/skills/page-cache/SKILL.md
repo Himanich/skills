@@ -48,7 +48,12 @@ until Ctrl-C, SIGTERM or `GET /__stop`. Run it in the background and keep the ou
 
 ```bash
 $WEB cache serve --port 0 --cache .page-cache > .page-cache.json 2>.page-cache.log &
-PROXY=$(jq -r .url .page-cache.json)
+PID=$!
+for _ in $(seq 50); do   # wait for the startup document; stop early if the process died
+  PROXY=$(jq -er .url .page-cache.json 2>/dev/null) && break
+  kill -0 "$PID" 2>/dev/null || { cat .page-cache.log >&2; break; }
+  sleep 0.2
+done
 ```
 
 ## Workflow
@@ -71,7 +76,8 @@ PROXY=$(jq -r .url .page-cache.json)
 
 `<cache>/<host>_<hash8>/<path>` plus `<path>.json`. `/x/` is `x/index.html`, `/x` without an
 extension is `x/index~.html` (so a stored `/x` → `/x/` redirect never answers `/x/`). Queries
-are appended before the extension after `!` (MD5-hashed past 200 characters). The hash is of
+are percent-encoded into one component appended before the extension after `!` (MD5-hashed past
+200 characters); a path can never leave the cache directory. The hash is of
 the full origin, so scheme and port never collide.
 
 ## What gets cached
@@ -81,8 +87,11 @@ the full origin, so scheme and port never collide.
 - Other origins are fetched by the browser directly and not cached (they need the network on
   replay), unless named with `--also`: every absolute URL on that origin, in HTML, CSS or
   JavaScript text, is rewritten to a proxy path carrying `_origin`, at cache time and at serve
-  time. Pages cached before naming it are served rewritten too; one more online pass fills
+  time, and so are the `url()` references of a CDN stylesheet (relative ones resolved against the
+  stylesheet) and the `Location` of a CDN redirect. Pages cached before naming it are served rewritten too; one more online pass fills
   the assets.
+- Range and conditional request headers (`Range`, `If-None-Match`, …) are not sent upstream, so
+  what is stored is always the full resource; a client's Range request gets the full body.
 - Only GET and HEAD; others answer 405. Redirects are cached with `Location` rewritten.
 - Non-UTF-8 responses are not rewritten.
 

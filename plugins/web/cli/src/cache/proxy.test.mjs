@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { cachePath, startCacheProxy } from '#src/cache/proxy.mjs';
@@ -156,5 +156,88 @@ test("--also: another origin's assets go through the proxy, cached, served offli
   } finally {
     cdn.server.close();
     site.server.close();
+  }
+});
+
+test('a query cannot write outside the cache directory', async () => {
+  const site = await listen((_req, res) => {
+    res.writeHead(200, { 'content-type': 'text/plain' });
+    res.end('upstream');
+  });
+  const root = await mkdtemp(path.join(os.tmpdir(), 'page-cache-escape-'));
+  const victim = path.join(root, 'victim.txt');
+  await writeFile(victim, 'mine');
+  const p = await start({ cacheDir: path.join(root, 'cache') });
+  try {
+    const res = await fetch(`${p.url}/a.txt?x/../../../victim&_origin=${site.origin}`);
+    assert.equal(res.status, 200);
+    assert.equal(await readFile(victim, 'utf-8'), 'mine');
+    const stored = cachePath(path.join(root, 'cache'), `${site.origin}/a.txt?x/../../../victim`);
+    assert.ok(stored.startsWith(path.join(root, 'cache') + path.sep));
+  } finally {
+    site.server.close();
+    await p.stop();
+  }
+});
+
+test('a Range or conditional request is cached as the full resource', async () => {
+  const seen = [];
+  const site = await listen((req, res) => {
+    seen.push(req.headers);
+    res.writeHead(200, { 'content-type': 'text/plain' });
+    res.end('abcdef');
+  });
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'page-cache-range-'));
+  const p = await start({ cacheDir: dir });
+  try {
+    const first = await fetch(`${p.url}/f.txt?_origin=${site.origin}`, {
+      headers: {
+        range: 'bytes=0-1',
+        'if-none-match': '"x"',
+        'if-modified-since': 'Wed, 01 Jan 2020 00:00:00 GMT',
+      },
+    });
+    assert.equal(first.status, 200);
+    assert.equal(await first.text(), 'abcdef');
+    assert.equal(seen[0].range, undefined);
+    assert.equal(seen[0]['if-none-match'], undefined);
+    assert.equal(seen[0]['if-modified-since'], undefined);
+    assert.equal(
+      await fetch(`${p.url}/f.txt?_origin=${site.origin}`).then((r) => r.text()),
+      'abcdef',
+    );
+  } finally {
+    site.server.close();
+    await p.stop();
+  }
+});
+
+test('--also: a CDN stylesheet and redirect keep routing to the CDN', async () => {
+  const cdn = await listen((req, res) => {
+    if (req.url === '/old.png') {
+      res.writeHead(302, { location: '/new.png' });
+      return res.end();
+    }
+    res.writeHead(200, { 'content-type': req.url.startsWith('/css/') ? 'text/css' : 'image/png' });
+    return res.end(
+      req.url.startsWith('/css/')
+        ? `a{background:url(../img/a.png)} b{background:url(b.png)} c{background:url(${cdn.origin}/c.png)} d{background:url(data:image/png;base64,AA==)}`
+        : `png:${req.url}`,
+    );
+  });
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'page-cache-cdn-'));
+  const enc = encodeURIComponent(cdn.origin);
+  const p = await start({ cacheDir: dir, also: [cdn.origin] });
+  try {
+    const css = await fetch(`${p.url}/css/site.css?_origin=${cdn.origin}`).then((r) => r.text());
+    assert.match(css, new RegExp(`url\\(/img/a.png\\?_origin=${enc}\\)`), 'parent-relative');
+    assert.match(css, new RegExp(`url\\(/css/b.png\\?_origin=${enc}\\)`), 'sibling-relative');
+    assert.match(css, new RegExp(`url\\(/c.png\\?_origin=${enc}\\)`), 'absolute on the CDN');
+    assert.match(css, /url\(data:image\/png;base64,AA==\)/, 'data URI untouched');
+    const redirect = await fetch(`${p.url}/old.png?_origin=${cdn.origin}`, { redirect: 'manual' });
+    assert.equal(redirect.headers.get('location'), `/new.png?_origin=${enc}`);
+  } finally {
+    cdn.server.close();
+    await p.stop();
   }
 });

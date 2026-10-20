@@ -20,6 +20,7 @@ const CHECKS = {
     'page cached': cached(r, 'cache-also.html', 'localhost'),
     'image cached under its own origin': cached(r, 'also-logo.svg', '127.0.0.1'),
     'offline run served from the cache, no miss': replayed(r),
+    'the offline replay answered the image itself': /<circle/.test(readText(r, 'offline-asset.svg') ?? ''),
     'offline.html points the image through the proxy': /also-logo\.svg\?_origin=/.test(readText(r, 'offline.html') ?? ''),
   }),
   'miss-fixture': (r) => ({

@@ -141,3 +141,57 @@ test('sitemaps: a URL on another origin is dropped even without patterns', async
     s.close();
   }
 });
+
+test('http: the start page obeys include/exclude and does not use up the limit', async () => {
+  const s = await site({
+    '/': { body: '<a href="/blog/one">1</a><a href="/blog/two">2</a>' },
+    '/blog/one': { body: 'one' },
+    '/blog/two': { body: 'two' },
+  });
+  try {
+    assert.equal((await crawl(s.origin, { strategy: 'http', exclude: ['*'] })).valid, 0);
+    const r = await crawl(s.origin, { strategy: 'http', include: ['/blog/**'], limit: 1 });
+    assert.deepEqual(
+      r.urls.map((u) => u.url.replace(s.origin, '')),
+      ['/blog/one'],
+    );
+  } finally {
+    s.close();
+  }
+});
+
+test('http: links resolve against the redirected URL, and a redirect off the origin is dropped', async () => {
+  const other = await site({ '/': { body: '<a href="/leak">x</a>' }, '/leak': { body: 'no' } });
+  const server = createServer((req, res) => {
+    const route = {
+      '/': ['200', '<a href="/docs">docs</a><a href="/away">away</a>'],
+      '/docs': ['301', '', '/docs/'],
+      '/docs/': ['200', '<a href="intro.html">intro</a>'],
+      '/docs/intro.html': ['200', 'intro'],
+      '/away': ['302', '', `${other.origin}/`],
+    }[req.url];
+    if (!route) {
+      res.writeHead(404);
+      return res.end();
+    }
+    res.writeHead(Number(route[0]), {
+      'content-type': 'text/html',
+      ...(route[2] ? { location: route[2] } : {}),
+    });
+    return res.end(route[1]);
+  });
+  await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r = await crawl(origin, { strategy: 'http' });
+    assert.deepEqual(r.urls.map((u) => u.url.replace(origin, '')).sort(), [
+      '/',
+      '/docs/',
+      '/docs/intro.html',
+    ]);
+    assert.deepEqual(r.errors, []);
+  } finally {
+    server.close();
+    other.close();
+  }
+});

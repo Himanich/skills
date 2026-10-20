@@ -1,7 +1,22 @@
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, extname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve, sep } from 'node:path';
+
+// A stored response must be the full, unconditional representation of the URL.
+const UNCACHEABLE_REQUEST_HEADERS = [
+  'host',
+  'cookie',
+  'connection',
+  'referer',
+  'accept-encoding',
+  'range',
+  'if-range',
+  'if-match',
+  'if-none-match',
+  'if-modified-since',
+  'if-unmodified-since',
+];
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const isUtf8 = (ct) => {
@@ -19,7 +34,11 @@ function getCookie(header, name) {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-/** Map a URL to `<cacheDir>/<host>_<originHash>/<path>`; `/x` and `/x/` get distinct files. */
+/**
+ * Map a URL to `<cacheDir>/<host>_<originHash>/<path>`; `/x` and `/x/` get distinct files.
+ * The query becomes one percent-encoded path component (hashed when long), and the result
+ * must stay inside `cacheDir`.
+ */
 export function cachePath(cacheDir, url) {
   const u = new URL(url);
   const hash = createHash('sha256').update(u.origin).digest('hex').slice(0, 8);
@@ -28,12 +47,15 @@ export function cachePath(cacheDir, url) {
   else if (!extname(seg)) seg += '/index~.html';
   let p = join(`${u.hostname}_${hash}`, seg);
   if (u.search) {
-    let qs = u.search.substring(1);
+    let qs = encodeURIComponent(u.search.substring(1));
     if (p.length + qs.length > 200) qs = createHash('md5').update(qs).digest('hex');
     const ext = extname(p);
     p = ext ? `${p.slice(0, -ext.length)}!${qs}${ext}` : `${p}!${qs}`;
   }
-  return resolve(cacheDir, p);
+  const root = resolve(cacheDir);
+  const full = resolve(root, p);
+  if (!full.startsWith(`${root}${sep}`)) throw new Error(`cache path escapes ${root}: ${url}`);
+  return full;
 }
 
 function countFiles(dir) {
@@ -66,6 +88,23 @@ export function rewriteOrigin(buf, origin, contentType) {
   return Buffer.from(text, 'utf-8');
 }
 
+const withOrigin = (path, origin) =>
+  `${path}${path.includes('?') ? '&' : '?'}_origin=${encodeURIComponent(origin)}`;
+
+/** Resolve the `url()` references of a stylesheet against its own URL, as a browser would. */
+export function absolutizeCssUrls(buf, cssUrl, contentType) {
+  if (!isUtf8(contentType)) return buf;
+  const text = buf.toString('utf-8').replace(/url\(\s*(['"]?)([^)'"]*?)\1\s*\)/gi, (m, q, ref) => {
+    if (!ref || ref.startsWith('data:') || ref.startsWith('#')) return m;
+    try {
+      return `url(${q}${new URL(ref, cssUrl).href}${q})`;
+    } catch {
+      return m;
+    }
+  });
+  return Buffer.from(text, 'utf-8');
+}
+
 /** Rewrite every absolute URL on an `also` origin to a proxy path carrying `_origin`. */
 export function rewriteAlso(buf, also, contentType) {
   if (!also.size || !isUtf8(contentType)) return buf;
@@ -74,11 +113,7 @@ export function rewriteAlso(buf, also, contentType) {
     // `https://host` and `//host` alike: a page may reference the origin either way.
     const esc = escapeRe(origin.replace(/^https?:/, ''));
     const re = new RegExp(`(?:https?:)?${esc}(/[^\\s"'<>)\\\\]*)?(?![\\w.-])`, 'g');
-    const param = `_origin=${encodeURIComponent(origin)}`;
-    text = text.replace(re, (_, p) => {
-      const path = p || '/';
-      return `${path}${path.includes('?') ? '&' : '?'}${param}`;
-    });
+    text = text.replace(re, (_, p) => withOrigin(p || '/', origin));
   }
   return Buffer.from(text, 'utf-8');
 }
@@ -124,7 +159,7 @@ export async function startCacheProxy({
   async function fetchAndStore(req, origin, originUrl) {
     log(`[fetch] ${originUrl}`);
     const fwd = { ...req.headers };
-    for (const k of ['host', 'cookie', 'connection', 'referer', 'accept-encoding']) delete fwd[k];
+    for (const k of UNCACHEABLE_REQUEST_HEADERS) delete fwd[k];
     const resp = await fetch(originUrl, {
       method: 'GET',
       headers: fwd,
@@ -148,12 +183,19 @@ export async function startCacheProxy({
     if (headers.location) {
       try {
         const loc = new URL(headers.location, originUrl);
-        if (loc.origin === origin) headers.location = loc.pathname + loc.search;
+        if (loc.origin === origin || alsoSet.has(loc.origin)) {
+          headers.location = loc.pathname + loc.search;
+          if (alsoSet.has(loc.origin)) headers.location = withOrigin(headers.location, loc.origin);
+        }
       } catch {
         // keep the original Location
       }
     }
-    if (ct.includes('html') || ct.includes('css')) body = rewriteOrigin(body, origin, ct);
+    if (alsoSet.has(origin)) {
+      if (ct.includes('css')) body = absolutizeCssUrls(body, originUrl, ct);
+    } else if (ct.includes('html') || ct.includes('css')) {
+      body = rewriteOrigin(body, origin, ct);
+    }
     if (isText(ct)) body = rewriteAlso(body, alsoSet, ct);
     try {
       write(originUrl, { body, headers, status: resp.status });

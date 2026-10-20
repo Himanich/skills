@@ -45,7 +45,7 @@ async function fetchBody({ url, timeoutMs, headers }) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   let buf = Buffer.from(await res.arrayBuffer());
   if (buf[0] === 0x1f && buf[1] === 0x8b) buf = gunzipSync(buf);
-  return { text: buf.toString('utf-8'), type: res.headers.get('content-type') ?? '' };
+  return { text: buf.toString('utf-8'), type: res.headers.get('content-type') ?? '', url: res.url };
 }
 
 /**
@@ -78,6 +78,11 @@ export async function crawl(origin, options = {}) {
     }
   };
 
+  const matches = (u) => {
+    const target = u.pathname + u.search;
+    if (exclude.some((re) => re.test(target))) return false;
+    return include.length === 0 || include.some((re) => re.test(target));
+  };
   /** Same origin, new, and allowed by the patterns; marks it seen. */
   const accept = (raw) => {
     let u;
@@ -89,10 +94,7 @@ export async function crawl(origin, options = {}) {
     u.hash = '';
     if (u.origin !== base.origin || seen.has(u.href)) return null;
     seen.add(u.href);
-    const target = u.pathname + u.search;
-    if (exclude.some((re) => re.test(target))) return null;
-    if (include.length && !include.some((re) => re.test(target))) return null;
-    return u;
+    return matches(u) ? u : null;
   };
   const keep = (raw) => {
     const u = accept(raw);
@@ -119,6 +121,8 @@ export async function crawl(origin, options = {}) {
     }
   }
 
+  // The start page is always fetched to discover links, but reported only if the patterns
+  // allow it; of the links found, only those the patterns allow are followed.
   async function followLinks() {
     const queue = [base.href];
     seen.add(base.href);
@@ -126,9 +130,15 @@ export async function crawl(origin, options = {}) {
       const url = queue.shift();
       await attempt(url, async () => {
         const doc = await get(url);
-        if (!doc.type.includes('html')) return;
-        urls.push({ url, lang: langOf(new URL(url).pathname) });
-        for (const link of extractLinks(doc.text, url)) {
+        const final = new URL(doc.url || url);
+        final.hash = '';
+        if (final.origin !== base.origin || !doc.type.includes('html')) return;
+        if (final.href !== url) {
+          if (seen.has(final.href)) return;
+          seen.add(final.href);
+        }
+        if (matches(final)) urls.push({ url: final.href, lang: langOf(final.pathname) });
+        for (const link of extractLinks(doc.text, final.href)) {
           const u = accept(link);
           if (u) queue.push(u.href);
         }
