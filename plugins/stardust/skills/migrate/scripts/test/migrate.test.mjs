@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { foldPath } from '../migrate.mjs';
+import { fixWidgetMounts, foldPath, widgetHref, widgetsIn } from '../migrate.mjs';
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), '..', 'migrate.mjs');
 const tmp = mkdtempSync(join(tmpdir(), 'migrate-test-'));
@@ -355,6 +355,16 @@ check('--help in an empty cwd: exit 0, usage on stdout, nothing written', () => 
   const r = run(['--help'], empty); assert.equal(r.status, 0); assert.match(r.out, /usage/i); assert.match(r.out, /Writes:/);
   assert.deepEqual(readdirSync(empty), []);
   rmSync(empty, { recursive: true, force: true });
+});
+
+// ---- widget mounts (pure) ---------------------------------------------------------------------
+check('a data-widget mount without href gets /widgets/<path>/<name>.html in the HTML and never emits href:null', () => {
+  const warned = [];
+  const fixed = fixWidgetMounts('<p><a data-widget="search/site-search">Search</a></p><p><a data-widget="x/y" href="/widgets/x/y.html?a=1">Y</a></p><p><a href="/about">about</a></p>', (m) => warned.push(m));
+  assert.equal(fixed, '<p><a data-widget="search/site-search" href="/widgets/search/site-search.html">Search</a></p><p><a data-widget="x/y" href="/widgets/x/y.html?a=1">Y</a></p><p><a href="/about">about</a></p>');
+  assert.equal(warned.length, 1); assert.match(warned[0], /site-search.*no href/);
+  assert.equal(widgetHref('/widgets/search/site-search.html'), '/widgets/search/site-search.html', 'idempotent on a full path');
+  assert.deepEqual(widgetsIn('<p><a data-widget="search/site-search">S</a></p>'), [{ id: 'site-search', href: '/widgets/search/site-search.html' }]);
 });
 
 // ---- done -----------------------------------------------------------------------------------

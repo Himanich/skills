@@ -33,7 +33,8 @@ block names; a widget's file stem obeys the same `-wrapper`/`-container` guard.
 - **dynamics:** triage gains a fifth column, **target** (`block · widget · runtime · content · embed`);
   `dynamics-plan.mjs` emits it — widget for client-compute tools, the site-search box, form-less control groups,
   locators and kept chrome search/cart/account. A form with authored intro or success copy stays a block.
-- **spec:** `kind` gains `widget` on both sides (`spec-knowledge.mjs` collapses three hardcoded lists into one);
+- **spec:** `kind` gains `widget` on both sides; one `CODED` set in `lib.mjs` replaces the kind lists in `spec-knowledge`,
+  `spec-variants` and `spec-pick`, so a widget is counted, variant-signed and capture-picked like any coded block;
   `search` is the starter widget (`verdict: new`); `search`, `map`, `location-selector`, `chart` and copy-free `form`
   families default to widget.
 - **direct --prep / migrate / replica:** a fourth prep action "mark as widget"; a widget instance renders as the
@@ -44,8 +45,8 @@ block names; a widget's file stem obeys the same `-wrapper`/`-container` guard.
   `/widgets/…html` from `html-extension` and adds P1 `unknown-widget` (code file missing) and `widget-name`
   (reserved stem).
 - **qa:** a `/widgets/` link counts as a block named by its file stem for `missing-template-blocks` and
-  `unblocked-page`; new `unknown-widget` (HEAD on the code path ≠ 200); `data-block-name="widget"` is always
-  editability-exempt. Tests: `deploy/block-roundtrip`, `qa/widgets` (new), `dynamics-plan`, `migrate`,
+  `unblocked-page`; new `unknown-widget` (HEAD on the code path ≠ 200); the shared editability probe keys the authored mount
+  (`<p>` holding only the `/widgets/` link) as `widget` and exempts it for both the deploy and qa callers. Tests: `deploy/block-roundtrip`, `qa/widgets` (new), `dynamics-plan`, `migrate`,
   `spec-knowledge`, `rules`, `inventory`, `delivery-lint` extended.
 
 ## 0.33.0 — martech: the source's Web SDK is read and offered as an `aem-martech` switch, off

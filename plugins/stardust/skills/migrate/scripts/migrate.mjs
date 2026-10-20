@@ -213,11 +213,22 @@ export function tagSections(main, template) {
 }
 export const modulesIn = (main) => [...new Set([...main.matchAll(/(?<![\w-])data-module\s*=\s*(["'])(.*?)\1/gs)].map((x) => x[2].trim()).filter(Boolean))];
 // widgets[]: one {id, href} per a[data-widget] mount; id = file stem of the href path (falls back to the data-widget value), deduped per page
+/** The mount href a `data-widget="<path>/<name>"` value implies: /widgets/<path>/<name>.html. Pure. */
+export const widgetHref = (dataWidget) => `/widgets/${String(dataWidget).trim().replace(/^\/?(?:widgets\/)?/, '').replace(/\.html?$/i, '')}.html`;
+/** A `data-widget` mount that forgot its href gets it (the live auto-block keys on the href, never on data-widget); `warn` is told. Pure. */
+export function fixWidgetMounts(html, warn = () => {}) {
+  return html.replace(/<a\b([^>]*)>/gi, (tag, attrs) => {
+    const w = attrs.match(/(?<![\w-])data-widget\s*=\s*(["'])(.*?)\1/s);
+    if (!w || /(?<![\w-])href\s*=/.test(attrs)) return tag;
+    warn(`widget mount data-widget="${w[2]}" had no href — set to ${widgetHref(w[2])}`);
+    return `<a${attrs} href="${widgetHref(w[2])}">`;
+  });
+}
 export function widgetsIn(main) {
   const out = new Map();
   for (const [, attrs] of main.matchAll(/<a\b([^>]*)>/gi)) {
     const w = attrs.match(/(?<![\w-])data-widget\s*=\s*(["'])(.*?)\1/s); if (!w) continue;
-    const h = attrs.match(/(?<![\w-])href\s*=\s*(["'])(.*?)\1/s); const href = h ? h[2].replace(/&amp;/g, '&').trim() : null;
+    const h = attrs.match(/(?<![\w-])href\s*=\s*(["'])(.*?)\1/s); const href = h ? h[2].replace(/&amp;/g, '&').trim() : widgetHref(w[2]);
     const stem = posix.basename((href || w[2].trim()).split(/[?#]/)[0]).replace(/\.html?$/i, '');
     if (stem && !out.has(stem)) out.set(stem, { id: stem, href });
   }
@@ -438,6 +449,7 @@ export function renderPage(run, page, entry) {
   if (mi < 0 || mj < mi) throw new Refusal(slug, 2, 'no <main> element', 'wrap the page content in <main>');
   const template = branch === 'A' ? slug : branch === "A'" ? archetype.slug : (page.type || 'unique');
   const tagged = tagSections(sourceHtml.slice(mi, mj + 7), template);
+  tagged.html = fixWidgetMounts(tagged.html, (msg) => console.warn(`${slug}: ${msg}`));
   let html = sourceHtml.slice(0, mi) + tagged.html + sourceHtml.slice(mj + 7);
   const modules = modulesIn(tagged.html); const modulesOut = modules.length ? modules : (old?.modules?.length ? old.modules : []);
   const depth = depthOf(outputPath); const prefix = relPrefix(depth);

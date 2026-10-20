@@ -45,6 +45,10 @@ check('widgetLinks: the same href twice lists once; empty input lists nothing', 
   assert.deepEqual(widgetLinks(''), []);
   assert.deepEqual(widgetLinks(undefined), []);
 });
+check('widgetLinks: a /widgets/ link sharing its <p> with another link is NOT a mount (the stock auto-block keeps it a plain link)', () => {
+  assert.deepEqual(widgetLinks('<div><p><a href="/widgets/a/x.html">X</a> <a href="/b">B</a></p></div>'), []);
+  assert.deepEqual(widgetLinks('<div><p><a href="/b">B</a> <a href="/widgets/a/x.html">X</a></p></div>'), []);
+});
 check('splitWidgets: --blocks may name a widget; it leaves the block list', () => {
   const widgets = [{ name: 'site-search', href: '/widgets/search/site-search.html' }];
   assert.deepEqual(splitWidgets(['hero', 'site-search', 'cards'], widgets), { blocks: ['hero', 'cards'], widgets: ['site-search'] });

@@ -54,7 +54,6 @@ export async function run(ctx) {
       const { rows } = probe;
       const names = [...new Set(rows.map((r) => r.block))];
       const exemptions = readBlockExemptions(blocksDir, names, cliExempt);
-      exemptions.widget ??= { all: true, reasons: ['widget: rendered by code, nothing authored'], categories: ['all'], source: 'widget' };
       const { blocks, totals } = aggregate(rows, { exemptions });
       for (const b of blocks) {
         if (b.dead) {

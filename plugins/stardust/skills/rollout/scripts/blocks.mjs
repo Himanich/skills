@@ -68,7 +68,7 @@ const blocks = [...agg.entries()].map(([id, a]) => {
   const p = prior.get(id);
   const delivery = (p && p.delivery) || {
     status: 'pending',
-    edsBlockName: kind === 'chrome' ? null : edsName(id),
+    edsBlockName: kind === 'chrome' ? null : kind === 'widget' ? id : edsName(id), // a widget's class is its file stem verbatim (reservedStem is the lint's job)
     blockPath: codePath,
     convertedAt: null,
   };

@@ -29,6 +29,12 @@ check('absolute and relative mounts of one widget dedupe to one code path; plain
   assert.deepEqual(widgetLinks(MIXED), [{ name: 'tour-finder', href: 'https://main--site--org.aem.page/widgets/tours/tour-finder.html', path: '/widgets/tours/tour-finder.html' }]);
   assert.deepEqual([...blockNames(parseSections(MIXED))], ['hero']);
 });
+check('with the site under test known, a widget on another origin is skipped; the same host (any case) is kept', () => {
+  const base = 'https://main--site--org.aem.page';
+  assert.deepEqual(widgetLinks(MIXED, base).map((w) => w.name), ['tour-finder']);
+  assert.deepEqual(widgetLinks('<div><p><a href="https://partner.example/widgets/map/finder.html">Map</a></p></div>', base), []);
+  assert.equal(widgetLinks('<div><p><a href="HTTPS://MAIN--SITE--ORG.AEM.PAGE/widgets/map/finder.html">Map</a></p></div>', base).length, 1);
+});
 check('no widget links: an empty list', () => assert.deepEqual(widgetLinks('<div><p><a href="/about">x</a></p></div>'), []));
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed');

@@ -14,7 +14,7 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { join } from 'node:path';
-import { arg, helpAndExit, loadConfig, loadSibling, log, readJSON, readJSONL, templateOf, urlKey, writeJSON, writeText } from './lib.mjs';
+import { CODED, arg, helpAndExit, loadConfig, loadSibling, log, readJSON, readJSONL, templateOf, urlKey, writeJSON, writeText } from './lib.mjs';
 import { evalRule, fillText, selectUrls, tokens } from './rules.mjs';
 
 helpAndExit(import.meta.url);
@@ -90,7 +90,6 @@ export function archetypes(urls, variants, cut = 0.8) {
 }
 
 /** Block kinds that ship code (a widget is code only: one `/widgets/<path>/<name>.html` link, no authored rows). */
-const CODED = new Set(['block', 'dynamic', 'widget']);
 
 /** A reach rule from implementation.json: the rule format only; SQL and the retired kinds fail loudly. Pure. */
 export function reachRule(rule) {

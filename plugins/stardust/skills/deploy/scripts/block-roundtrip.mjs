@@ -98,7 +98,7 @@ export function widgetStem(href) {
 export function widgetLinks(mainHtml) {
   const out = [];
   const seen = new Set();
-  const re = /<p\b[^>]*>\s*(<a\b[^>]*>)[\s\S]*?<\/a>\s*<\/p>/gi;
+  const re = /<p\b[^>]*>\s*(<a\b[^>]*>)(?:(?!<a\b)[\s\S])*?<\/a>\s*<\/p>/gi; // one <a>, alone in its <p> — same rule as dropWidgets and the stock auto-block
   let m;
   while ((m = re.exec(mainHtml || '')) !== null) {
     const a = m[1];

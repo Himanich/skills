@@ -54,11 +54,14 @@ export function blockNames(sections) {
  * a block named by the file stem (`div.<name>[data-block-name="widget"]`), so a widget-only page is a blocked page.
  * Returns [{ name, href, path }] with `path` the code file to HEAD (/widgets/<path>/<name>.html). Pure.
  */
-export function widgetLinks(html) {
+export function widgetLinks(html, base = null) {
   const out = []; const seen = new Set();
+  const host = base ? new URL(base).host.toLowerCase() : null;
   for (const m of String(html).matchAll(/<a\b[^>]*\shref="([^"]*\/widgets\/[^"]+)"/gi)) {
     const href = m[1].replace(/&amp;/g, '&');
-    const path = href.replace(/^https?:\/\/[^/]+/, '').replace(/[?#].*/, '');
+    const origin = href.match(/^https?:\/\/([^/]+)/i);
+    if (origin && host && origin[1].toLowerCase() !== host) continue; // another origin's widget is not this site's block
+    const path = href.replace(/^https?:\/\/[^/]+/i, '').replace(/[?#].*/, '');
     if (!/^\/widgets\/.+\.html$/i.test(path) || seen.has(path)) continue;
     seen.add(path);
     out.push({ name: path.replace(/^.*\//, '').replace(/\.html$/i, ''), href, path });
@@ -351,7 +354,7 @@ export async function run(ctx) {
     // --- blocks used -------------------------------------------------------
     const blocks = blockNames(sections);
     for (const b of blocks) fleetBlocks.add(b);
-    const widgets = widgetLinks(html);
+    const widgets = widgetLinks(html, base);
     for (const w of widgets) { blocks.add(w.name); fleetWidgets.set(w.path, w.name); }
     pageBlocks.set(p.path, [...blocks]);
 

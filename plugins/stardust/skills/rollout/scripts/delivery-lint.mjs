@@ -25,6 +25,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { reservedStem } from './lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -117,7 +118,7 @@ for (const m of html.matchAll(/href="(\/[^"]*)"/gi)) {
   if (bare === '/') continue;
   if (/^\/widgets\/.+\.html$/i.test(bare)) {
     const stem = bare.replace(/^.*\//, '').replace(/\.html$/i, '');
-    if (/^(section|block|wrap|button|widget)$/.test(stem) || /-(wrapper|container)$/.test(stem)) add('P1', 'widget-name', `widget name "${stem}" collides with a reserved block class or a derived -wrapper/-container class: ${href}`);
+    if (reservedStem(stem)) add('P1', 'widget-name', `widget name "${stem}" collides with a reserved block class or a derived -wrapper/-container class: ${href}`);
     else if (WIDGETS_DIR && existsSync(WIDGETS_DIR) && !existsSync(join(WIDGETS_DIR, bare.slice('/widgets/'.length)))) add('P1', 'unknown-widget', `widget link names no file under widgets/ (${bare.slice(1)} missing): ${href}`);
     continue;
   }

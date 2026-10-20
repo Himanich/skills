@@ -38,7 +38,7 @@ export async function run(ctx) {
       for (const m of res.body.matchAll(/<div class="([a-z][a-z0-9-]*)(?: [^"]*)?">/g)) {
         if (m[1] !== 'metadata' && m[1] !== 'section-metadata') names.add(m[1]);
       }
-      for (const w of widgetLinks(res.body)) names.add(w.name); // a widget link is a block named by its file stem
+      for (const w of widgetLinks(res.body, base)) names.add(w.name); // a widget link is a block named by its file stem
       pageBlocks[p.path] = [...names];
     }, 8);
   }

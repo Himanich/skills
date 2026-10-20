@@ -100,9 +100,11 @@ const TARGET_BY_PATTERN = {
 };
 const LOCATOR = /locator|store finder|dealer finder|branch finder|find a (store|branch|dealer|location)/i;
 export function targetFor(pattern, f) {
+  const base = TARGET_BY_PATTERN[pattern] ?? null;
+  if (pattern === 'decided-out' || (base && base !== 'block')) return base; // settled by the pattern: nothing to build, or not a block
   if (LOCATOR.test(f.feature || '')) return 'widget';
   if (pattern === 'forms' && /form-less control group/.test(f.feature || '')) return 'widget'; // definition-driven, no authored copy
-  return TARGET_BY_PATTERN[pattern] ?? null;
+  return base;
 }
 
 /* ---------------------------------------------------- target-host probe -- */

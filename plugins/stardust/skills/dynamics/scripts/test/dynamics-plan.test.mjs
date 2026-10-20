@@ -90,11 +90,12 @@ check('target: widget for client-compute, site search, form-less control groups 
       f('L1', 'L', 'listing candidate .news (8 cards)'),
       f('M1', 'M', 'modal trigger .js-modal → /contact'),
       f('X1', 'X', 'sign-in / account links'),
+      f('X2', 'X', 'session-bound dealer-locator shortlist'),
     ] }));
     const r = spawnSync(process.execPath, [SCRIPT, '--in', 'in.json', '--out', 'plan'], { cwd: dir, encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
     const rows = JSON.parse(readFileSync(join(dir, 'plan', 'dynamic-features.generated-plan.json'), 'utf8')).rows;
-    assert.deepEqual(rows.map((x) => [x.id, x.target]), [['F1', 'widget'], ['S1', 'widget'], ['F2', 'widget'], ['A1', 'widget'], ['F3', 'block'], ['L1', 'block'], ['M1', 'runtime'], ['X1', null]]);
+    assert.deepEqual(rows.map((x) => [x.id, x.target]), [['F1', 'widget'], ['S1', 'widget'], ['F2', 'widget'], ['A1', 'widget'], ['F3', 'block'], ['L1', 'block'], ['M1', 'runtime'], ['X1', null], ['X2', null]], 'a locator that is decided-out stays decided-out');
     const md = readFileSync(join(dir, 'plan', 'dynamic-features.generated-plan.md'), 'utf8');
     assert.match(md, /\| disposition \| target \| reproducibility \|/); assert.match(md, /\| X1 \| X \| [^|]+\| 1\/1 \| decided-out \| — \|/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
