@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "node --test 'src/**/*.test.mjs'",
-    "test:smoke": "node --test test/smoke.test.mjs",
+    "test:smoke": "node --test 'test/*.test.mjs'",
     "build": "node build.mjs",
     "check:dist": "node build.mjs --check",
     "lint": "oxlint src bin build.mjs && oxfmt --check src bin build.mjs test",

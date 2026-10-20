@@ -23,14 +23,19 @@ window.__visualTree = (() => {
   __export(visual_tree_exports, {
     assignPositionalIds: () => assignPositionalIds,
     captureVisualTree: () => captureVisualTree,
+    clippedAway: () => clippedAway,
     collapseSingleChildren: () => collapseSingleChildren,
     deltaE: () => deltaE,
     detectRootBackground: () => detectRootBackground,
     enrichOverlayMetadata: () => enrichOverlayMetadata,
     formatTreeAsText: () => formatTreeAsText,
+    hiddenStyle: () => hiddenStyle,
+    overflowClip: () => overflowClip,
     isContainedIn: () => isContainedIn,
     isDefaultBackground: () => isDefaultBackground,
+    layoutChildren: () => layoutChildren,
     parseRgb: () => parseRgb,
+    processTree: () => processTree,
     promoteEscapedNodes: () => promoteEscapedNodes,
     pruneZeroHeightLeaves: () => pruneZeroHeightLeaves,
     resolvePageBackground: () => resolvePageBackground,
@@ -230,14 +235,17 @@ window.__visualTree = (() => {
     }
     return void 0;
   }
-  function captureVisualTree(minWidth = 900) {
-    const root = buildVisualNode(document.body, minWidth);
+  function processTree(root) {
     collapseSingleChildren(root);
     pruneZeroHeightLeaves(root);
     const promotedToRoot = promoteEscapedNodes(root);
     const nodeMap = {};
     assignPositionalIds(root, "r", nodeMap);
     enrichOverlayMetadata(root, nodeMap, promotedToRoot);
+    return { root, nodeMap, promotedToRoot };
+  }
+  function captureVisualTree(minWidth = 900) {
+    const { root, nodeMap } = processTree(buildVisualNode(document.body, minWidth));
     const bodyBg = window.getComputedStyle(document.body).backgroundColor;
     const htmlBg = window.getComputedStyle(document.documentElement).backgroundColor;
     const rootBackground = bodyBg && bodyBg !== "rgba(0, 0, 0, 0)" && bodyBg !== "transparent" ? bodyBg : htmlBg && htmlBg !== "rgba(0, 0, 0, 0)" && htmlBg !== "transparent" ? htmlBg : "rgb(255, 255, 255)";
@@ -293,6 +301,78 @@ window.__visualTree = (() => {
       (lab1[0] - lab2[0]) ** 2 + (lab1[1] - lab2[1]) ** 2 + (lab1[2] - lab2[2]) ** 2
     );
   }
+  // checkVisibility() does not read clip-paths: a closed menu clipped to nothing still
+  // has its box and its background.
+  function clippedAway(style, rect) {
+    const clip = style.clipPath;
+    if (!clip || clip === "none") return false;
+    if (/^circle\(0(px|%)?[\s)]/.test(clip)) return true;
+    const inset = clip.match(/^inset\(([^)]*)\)/);
+    if (!inset) return false;
+    const parts = inset[1].split(/\sround\s/)[0].trim().split(/\s+/);
+    // Only plain lengths are read; calc() and the like count as not clipped.
+    if (parts.length > 4 || !parts.every((v) => /^-?[\d.]+(px|%)$|^0$/.test(v))) return false;
+    const [t, r = t, b = t, l = r] = parts;
+    const px = (v, size) => v.endsWith("%") ? size * parseFloat(v) / 100 : parseFloat(v);
+    return rect.width - px(l, rect.width) - px(r, rect.width) <= 0 || rect.height - px(t, rect.height) - px(b, rect.height) <= 0;
+  }
+  function hiddenStyle(style, rect) {
+    return style.display === "none" || style.visibility === "hidden" || style.opacity === "0" || clippedAway(style, rect);
+  }
+  function containsFixed(s) {
+    return s.transform !== "none" || s.perspective !== "none" || s.filter !== "none" || !!s.backdropFilter && s.backdropFilter !== "none" || /paint|layout|strict|content/.test(s.contain || "") || /transform|perspective|filter/.test(s.willChange || "") || !!s.containerType && s.containerType !== "normal";
+  }
+  // The region, in page coordinates, that overflow-clipping ancestors leave visible. An
+  // ancestor clips an element only from the element's containing block outwards: an absolute
+  // menu escapes a static `overflow: hidden` trigger, a fixed banner escapes all but transforms.
+  function overflowClip(element, getStyle = (el) => window.getComputedStyle(el)) {
+    const clip = {};
+    let position = getStyle(element).position;
+    for (let a = element.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+      const s = getStyle(a);
+      if (s.display === "contents") continue;
+      const isBlock = position === "fixed" ? containsFixed(s) : position === "absolute" ? s.position !== "static" || containsFixed(s) : true;
+      if (!isBlock) continue;
+      position = s.position;
+      if (s.display === "inline") continue;
+      const r = a.getBoundingClientRect();
+      const left = r.left + a.clientLeft + window.scrollX;
+      const top = r.top + a.clientTop + window.scrollY;
+      if (s.overflowX !== "visible") narrow(clip, "x", "width", left, a.clientWidth);
+      if (s.overflowY !== "visible") narrow(clip, "y", "height", top, a.clientHeight);
+    }
+    return "x" in clip || "y" in clip ? clip : void 0;
+  }
+  function narrow(clip, pos, size, start, length) {
+    const lo = Math.max(clip[pos] ?? -Infinity, start);
+    const hi = Math.min(clip[pos] === void 0 ? Infinity : clip[pos] + clip[size], start + length);
+    clip[pos] = Math.round(lo);
+    clip[size] = Math.max(0, Math.round(hi - lo));
+  }
+  // The part of a box its clip leaves visible; null when nothing is.
+  function visiblePart(bounds, clip) {
+    if (!clip) return bounds;
+    const out = { ...bounds };
+    for (const [pos, size] of [["x", "width"], ["y", "height"]]) {
+      if (clip[pos] === void 0) continue;
+      const lo = Math.max(bounds[pos], clip[pos]);
+      const hi = Math.min(bounds[pos] + bounds[size], clip[pos] + clip[size]);
+      if (hi <= lo) return null;
+      out[pos] = lo;
+      out[size] = hi - lo;
+    }
+    return out;
+  }
+  // An element with `display: contents` has no box of its own: its children are laid
+  // out as its parent's. For the tree it is transparent, its children walked in its place.
+  function layoutChildren(element, getStyle = (el) => window.getComputedStyle(el)) {
+    const out = [];
+    for (const child of element.children) {
+      if (getStyle(child).display === "contents") out.push(...layoutChildren(child, getStyle));
+      else out.push(child);
+    }
+    return out;
+  }
   function buildVisualNode(element, minWidth) {
     if (element.id?.startsWith("vibe-blueprint-")) {
       return {
@@ -306,7 +386,7 @@ window.__visualTree = (() => {
     const scrollY = window.scrollY;
     const scrollX = window.scrollX;
     const style = window.getComputedStyle(element);
-    if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
+    if (hiddenStyle(style, rect)) {
       return {
         tag: element.tagName,
         selector: element.tagName.toLowerCase(),
@@ -330,7 +410,23 @@ window.__visualTree = (() => {
       node.id = element.id;
     }
     if (element.classList.length > 0) {
-      node.className = element.classList[0];
+      node.className = [...element.classList].join(" ");
+    }
+    if (style.position === "fixed") {
+      node.fixed = true;
+    }
+    const clip = overflowClip(element);
+    const seen = visiblePart(node.bounds, clip);
+    if (!seen) {
+      return {
+        tag: element.tagName,
+        selector: element.tagName.toLowerCase(),
+        bounds: { x: 0, y: 0, width: 0, height: 0 },
+        children: []
+      };
+    }
+    if (seen !== node.bounds && !isContainedIn(node.bounds, seen)) {
+      node.clip = clip;
     }
     const role = element.getAttribute("role");
     if (role) {
@@ -389,7 +485,8 @@ window.__visualTree = (() => {
         }
       }
     }
-    for (const child of element.children) {
+    const laidOut = layoutChildren(element);
+    for (const child of laidOut) {
       const childRect = child.getBoundingClientRect();
       const passesWidth = childRect.width >= minWidth;
       const isFixed = !passesWidth && window.getComputedStyle(child).position === "fixed";
@@ -402,12 +499,11 @@ window.__visualTree = (() => {
       }
     }
     const allChildBoxes = [];
-    for (const child of element.children) {
+    for (const child of laidOut) {
       if (child.id?.startsWith("vibe-blueprint-")) continue;
       const childStyle = window.getComputedStyle(child);
-      const hidden = childStyle.display === "none" || childStyle.visibility === "hidden" || childStyle.opacity === "0";
-      if (hidden) continue;
       const childRect = child.getBoundingClientRect();
+      if (hiddenStyle(childStyle, childRect)) continue;
       if (childRect.width > 0 && childRect.height > 0) {
         allChildBoxes.push({
           x: Math.round(childRect.left + scrollX),
@@ -427,7 +523,10 @@ window.__visualTree = (() => {
         node.text = fullText.slice(0, 30);
       }
     }
-    if ((node.bounds.width === 0 || node.bounds.height === 0) && node.children.length === 0) {
+    // Skip links and other visually hidden content sit wholly above or left of the page.
+    // Leaves only: a box at or off the edge can hold descendants positioned on the page.
+    const offPage = rect.bottom + scrollY <= 0 || rect.right + scrollX <= 0;
+    if ((node.bounds.width === 0 || node.bounds.height === 0 || offPage) && node.children.length === 0) {
       return {
         tag: element.tagName,
         selector: element.tagName.toLowerCase(),
@@ -443,6 +542,11 @@ window.__visualTree = (() => {
     }
     while (node.children.length === 1) {
       const child = node.children[0];
+      // Stop when the child escapes: a dropdown or an overlay is a node of its own.
+      const parentHasArea = node.bounds.width > 0 && node.bounds.height > 0;
+      if (child.fixed || parentHasArea && !staysIn(child, node)) break;
+      node.collapsed = node.collapsed || [identityOf(node)];
+      node.collapsed.push(...child.collapsed || [identityOf(child)]);
       if (!node.text && child.text) {
         node.text = child.text;
       }
@@ -452,8 +556,26 @@ window.__visualTree = (() => {
       if (!node.background && child.background) {
         node.background = child.background;
       }
+      if (!parentHasArea) {
+        node.bounds = child.bounds;
+        if (child.clip) node.clip = child.clip;
+        else delete node.clip;
+        node.tag = child.tag;
+        node.selector = child.selector;
+        if (child.id) node.id = child.id;
+        else delete node.id;
+        if (child.className) node.className = child.className;
+        else delete node.className;
+        if (child.role) node.role = child.role;
+      }
       node.children = child.children;
     }
+  }
+  function identityOf(node) {
+    const id = { tag: node.tag, selector: node.selector };
+    if (node.id) id.id = node.id;
+    if (node.className) id.className = node.className;
+    return id;
   }
   function pruneZeroHeightLeaves(node) {
     for (const child of node.children) {
@@ -466,9 +588,25 @@ window.__visualTree = (() => {
     });
   }
   var CONTAINMENT_TOLERANCE = 2;
+  var CONTAINED_SHARE = 0.9;
+  // Exactly inside, or mostly inside: a grid row overhangs its container by a gutter.
   function isContainedIn(child, parent) {
     const t = CONTAINMENT_TOLERANCE;
-    return child.x >= parent.x - t && child.y >= parent.y - t && child.x + child.width <= parent.x + parent.width + t && child.y + child.height <= parent.y + parent.height + t;
+    if (child.x >= parent.x - t && child.y >= parent.y - t && child.x + child.width <= parent.x + parent.width + t && child.y + child.height <= parent.y + parent.height + t) {
+      return true;
+    }
+    const area = child.width * child.height;
+    if (area === 0) return false;
+    const w = Math.min(child.x + child.width, parent.x + parent.width) - Math.max(child.x, parent.x);
+    const h = Math.min(child.y + child.height, parent.y + parent.height) - Math.max(child.y, parent.y);
+    if (w <= 0 || h <= 0) return false;
+    return w * h / area >= CONTAINED_SHARE;
+  }
+  // Only the visible part of a clipped child can escape: carousels, marquees, scrollers.
+  function staysIn(child, parent) {
+    if (isContainedIn(child.bounds, parent.bounds)) return true;
+    const seen = visiblePart(child.bounds, child.clip);
+    return !seen || isContainedIn(seen, parent.bounds);
   }
   function promoteEscapedNodes(root) {
     const promotedToRoot = /* @__PURE__ */ new Set();
@@ -476,7 +614,7 @@ window.__visualTree = (() => {
       const stayed = [];
       const escaped = [];
       for (const child of node.children) {
-        if (isContainedIn(child.bounds, node.bounds)) {
+        if (!child.fixed && staysIn(child, node)) {
           stayed.push(child);
         } else {
           escaped.push(child);
@@ -484,21 +622,19 @@ window.__visualTree = (() => {
       }
       node.children = stayed;
       for (const child of escaped) {
-        let placed = false;
-        for (let i = ancestors.length - 1; i >= 0; i--) {
-          if (isContainedIn(child.bounds, ancestors[i].bounds)) {
-            ancestors[i].children.push(child);
-            placed = true;
-            if (ancestors[i] === root) {
-              promotedToRoot.add(child);
-            }
+        let depth = 0;
+        for (let i = ancestors.length - 1; i > 0 && !child.fixed; i--) {
+          if (staysIn(child, ancestors[i])) {
+            depth = i;
             break;
           }
         }
-        if (!placed) {
-          root.children.push(child);
+        ancestors[depth].children.push(child);
+        if (depth === 0) {
           promotedToRoot.add(child);
         }
+        // Its new parent's loop has already started: walk the moved subtree from its new place.
+        walk(child, ancestors.slice(0, depth + 1));
       }
       for (const child of [...node.children]) {
         walk(child, [...ancestors, node]);

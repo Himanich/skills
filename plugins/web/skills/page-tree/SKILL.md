@@ -54,8 +54,9 @@ $WEB page tree --session "$S"              # reuse an open browser
 | `--min-width <n>` | 900 | Minimum element width in px. Narrower elements are excluded; `position: fixed` elements always pass. Lower for more detail (e.g. 300 for mobile). |
 | `--settle-ms <n>` | 2000 | Wait after scrolling for lazy content. |
 
-The CLI scrolls for lazy content and unpins fixed/sticky elements before
-capturing. With a `<url>` and no `--session` it opens and closes its own browser.
+The CLI scrolls for lazy content before capturing. Fixed elements stay fixed:
+each becomes its own root node. With a `<url>` and no `--session` it opens and
+closes its own browser.
 
 ## Reading the JSON
 
@@ -80,11 +81,19 @@ Format: `ID [role] [CxR] [bg:type] @x,y wxh "text..."`
 
 **`nodeMap`**: node ID → `{ selector, background?: { type, value, raw, source },
 overlay?: { occluding: [sibling IDs] } }`. An `overlay` entry means the node was
-promoted to root level because it rendered outside its parent's bounds (cookie
-banners, fixed navs, modals). Its `selector` is usable for dismissal.
+promoted to root level because it is `position: fixed` or rendered outside its
+parent's bounds (cookie banners, fixed navs, modals, open dropdowns). Its
+`selector` is usable for dismissal. Content clipped by an `overflow: hidden`
+ancestor (carousels, marquees) is not promoted; content clipped to nothing is
+not in the tree.
 
 **`tree`**: the full structured tree (tag, selector, bounds, text, role, layout,
-background, children). Show it only if the caller asks; otherwise mention it exists.
+background, children; `id` and `className` with every class when present; `fixed`
+for `position: fixed`; `clip`, when overflow-clipping ancestors cut the node's box, the
+visible region as `{ x, width }`, `{ y, height }` or both;
+`collapsed`, the single-child chain a node absorbed, outermost first, as
+`{ tag, selector, id?, className? }`). Show it only if the caller asks; otherwise
+mention it exists.
 
 ## Chaining
 
