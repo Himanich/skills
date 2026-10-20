@@ -29,6 +29,7 @@ window.__visualTree = (() => {
     detectRootBackground: () => detectRootBackground,
     enrichOverlayMetadata: () => enrichOverlayMetadata,
     formatTreeAsText: () => formatTreeAsText,
+    hiddenStyle: () => hiddenStyle,
     isContainedIn: () => isContainedIn,
     isDefaultBackground: () => isDefaultBackground,
     layoutChildren: () => layoutChildren,
@@ -312,8 +313,16 @@ window.__visualTree = (() => {
     const px = (v, size) => v.endsWith("%") ? size * parseFloat(v) / 100 : parseFloat(v) || 0;
     return rect.width - px(l, rect.width) - px(r, rect.width) <= 0 || rect.height - px(t, rect.height) - px(b, rect.height) <= 0;
   }
+  // shortcut: ignores descendants that escape the clip (fixed, or absolute with a containing
+  // block outside it); upgrade if a collapsed `overflow: hidden` wrapper hides real content.
+  function clippedByOverflow(style, rect) {
+    return rect.width === 0 && style.overflowX !== "visible" || rect.height === 0 && style.overflowY !== "visible";
+  }
   function hiddenStyle(style, rect) {
-    return style.display === "none" || style.visibility === "hidden" || style.opacity === "0" || clippedAway(style, rect);
+    return style.display === "none" || style.visibility === "hidden" || style.opacity === "0" || clippedAway(style, rect) || clippedByOverflow(style, rect);
+  }
+  function clipAxes(style) {
+    return (style.overflowX !== "visible" ? "x" : "") + (style.overflowY !== "visible" ? "y" : "");
   }
   // An element with `display: contents` has no box of its own: its children are laid
   // out as its parent's. For the tree it is transparent, its children walked in its place.
@@ -366,6 +375,10 @@ window.__visualTree = (() => {
     }
     if (style.position === "fixed") {
       node.fixed = true;
+    }
+    const clips = clipAxes(style);
+    if (clips) {
+      node.clips = clips;
     }
     const role = element.getAttribute("role");
     if (role) {
@@ -488,6 +501,8 @@ window.__visualTree = (() => {
       if (!node.background && child.background) {
         node.background = child.background;
       }
+      const clips = ["x", "y"].filter((a) => node.clips?.includes(a) || child.clips?.includes(a)).join("");
+      if (clips) node.clips = clips;
       node.children = child.children;
     }
   }
@@ -516,13 +531,24 @@ window.__visualTree = (() => {
     if (w <= 0 || h <= 0) return false;
     return w * h / area >= CONTAINED_SHARE;
   }
+  // A child cannot escape along an axis its parent clips: carousels, marquees, scrollers.
+  function staysIn(child, parent) {
+    if (isContainedIn(child.bounds, parent.bounds)) return true;
+    if (!parent.clips) return false;
+    const t = CONTAINMENT_TOLERANCE;
+    const c = child.bounds;
+    const p = parent.bounds;
+    const insideX = c.x >= p.x - t && c.x + c.width <= p.x + p.width + t;
+    const insideY = c.y >= p.y - t && c.y + c.height <= p.y + p.height + t;
+    return (insideX || parent.clips.includes("x")) && (insideY || parent.clips.includes("y"));
+  }
   function promoteEscapedNodes(root) {
     const promotedToRoot = /* @__PURE__ */ new Set();
     function walk(node, ancestors) {
       const stayed = [];
       const escaped = [];
       for (const child of node.children) {
-        if (!child.fixed && isContainedIn(child.bounds, node.bounds)) {
+        if (!child.fixed && staysIn(child, node)) {
           stayed.push(child);
         } else {
           escaped.push(child);
@@ -532,7 +558,7 @@ window.__visualTree = (() => {
       for (const child of escaped) {
         let placed = false;
         for (let i = ancestors.length - 1; i >= 0 && !child.fixed; i--) {
-          if (isContainedIn(child.bounds, ancestors[i].bounds)) {
+          if (staysIn(child, ancestors[i])) {
             ancestors[i].children.push(child);
             placed = true;
             if (ancestors[i] === root) {

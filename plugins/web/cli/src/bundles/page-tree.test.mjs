@@ -182,3 +182,53 @@ test('isContainedIn: no overlap, or a zero-area child outside, is not contained'
   assert.equal(isContainedIn(box(0, 500, 1000, 0), parent), false);
   assert.equal(isContainedIn(box(1, 1, 998, 98), parent), true);
 });
+
+test('processTree: content overflowing a parent that clips it does not escape', () => {
+  // A logo marquee: the track is 6000 px wide inside a 1280 px strip with overflow hidden.
+  const track = node('UL', 'ul.track', box(-500, 200, 6000, 72), [], { className: 'track' });
+  const title = node('H2', 'h2', box(0, 133, 1280, 60));
+  const strip = node('DIV', 'div.strip', box(0, 133, 1280, 140), [title, track], {
+    className: 'strip',
+    clips: 'xy',
+  });
+  const { root, promotedToRoot } = processTree(page([utility(), strip, footer(4000)]));
+  assert.equal(promotedToRoot.size, 0);
+  assert.deepEqual(
+    plain(root.children[1].children).map((c) => c.selector),
+    ['h2', 'ul.track'],
+  );
+});
+
+test('processTree: clipping one axis does not hold a child escaping along the other', () => {
+  const menu = node('DIV', 'div.menu', box(0, 133, 1280, 400), [], { className: 'menu' });
+  const bar = node('DIV', 'div.bar', box(0, 53, 1280, 80), [], { className: 'bar' });
+  const nav = node('NAV', 'nav', box(0, 53, 1280, 80), [bar, menu], { clips: 'x' });
+  const { promotedToRoot } = processTree(page([utility(), nav, content(133, 3000)]));
+  assert.deepEqual(
+    [...promotedToRoot].map((n) => n.selector),
+    ['div.menu'],
+  );
+});
+
+test('processTree: a collapse keeps the clip of the element it absorbs', () => {
+  const slide = (x) => node('DIV', `div.s${x}`, box(x, 200, 1246, 256), [], { className: 's' });
+  const track = node('DIV', 'div.track', box(17, 200, 1246, 256), [slide(17), slide(1263)], {
+    className: 'track',
+    clips: 'xy',
+  });
+  const wrap = node('DIV', 'div.wrap', box(17, 200, 1246, 256), [track], { className: 'wrap' });
+  const { root, promotedToRoot } = processTree(page([utility(), wrap, footer(4000)]));
+  assert.equal(promotedToRoot.size, 0, 'the off-screen slide is clipped, not an overlay');
+  assert.equal(root.children[1].clips, 'xy');
+  assert.equal(root.children[1].children.length, 2);
+});
+
+test('hiddenStyle: zero size on an axis that clips hides the element and its subtree', () => {
+  const { hiddenStyle } = window.__visualTree;
+  const style = (overflowX, overflowY) => ({ overflowX, overflowY });
+  const flat = { width: 1280, height: 0 };
+  assert.equal(hiddenStyle(style('hidden', 'hidden'), flat), true, 'a closed accordion');
+  assert.equal(hiddenStyle(style('clip', 'visible'), flat), false, 'only x clips');
+  assert.equal(hiddenStyle(style('visible', 'visible'), flat), false, 'a transparent header');
+  assert.equal(hiddenStyle(style('hidden', 'hidden'), { width: 1280, height: 80 }), false);
+});
