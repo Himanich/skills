@@ -1,3 +1,21 @@
+## [1.0.2](https://github.com/adobe/skills/compare/web-cli-v1.0.1...web-cli-v1.0.2) (2026-10-20)
+
+
+### Bug Fixes
+
+* **web-cli:** page tree clips along each containing-block chain ([a511708](https://github.com/adobe/skills/commit/a51170857c6ddc8e5dcc5ed50ef1ec8a397cf0ba))
+* **web-cli:** page tree collapse keeps escaping and wrapped content ([284a252](https://github.com/adobe/skills/commit/284a252643e5c956168f374234ddd428bf6223e6))
+* **web-cli:** page tree drops elements wholly above or left of the page ([4e00f12](https://github.com/adobe/skills/commit/4e00f12b209a3db284a5be7ca2c841b40e4bfcc7))
+* **web-cli:** page tree drops only off-page leaves, not their wrappers ([867d86c](https://github.com/adobe/skills/commit/867d86c1f956e2d6445fe131274dec24d68b14c2))
+* **web-cli:** page tree hides elements a clip-path clips to nothing ([f76ae30](https://github.com/adobe/skills/commit/f76ae303f6c4f1b208783add63932e5e75176f91))
+* **web-cli:** page tree keeps a row that overhangs its container ([8dee5c3](https://github.com/adobe/skills/commit/8dee5c354c9cc3fe66a8eada8163f25b2b588857))
+* **web-cli:** page tree keeps fixed elements as their own root node ([28418a3](https://github.com/adobe/skills/commit/28418a384d9588b2699d8aae0e20308524d354e4))
+* **web-cli:** page tree reads inset() corner radii as radii, not offsets ([b9800f5](https://github.com/adobe/skills/commit/b9800f591b7a3457e42e87f4d4db92529067dabd))
+* **web-cli:** page tree records every class of a node, not the first ([9695189](https://github.com/adobe/skills/commit/969518923fc22e9f6e27cb2ee47c9b32225f0d9c))
+* **web-cli:** page tree treats content clipped by overflow as contained ([dea0e27](https://github.com/adobe/skills/commit/dea0e2739e4fd2bc876d1a43be362459444368f1))
+* **web-cli:** page tree walks subtrees it moves during promotion ([d1c213e](https://github.com/adobe/skills/commit/d1c213eca227d09e4e28c7018ed64f4ef926dce4))
+* **web-cli:** page tree walks through display: contents elements ([eaf0193](https://github.com/adobe/skills/commit/eaf019351e9bd3b5d848d9d933ef7adae753b156))
+
 ## [1.0.1](https://github.com/adobe/skills/compare/web-cli-v1.0.0...web-cli-v1.0.1) (2026-10-19)
 
 
