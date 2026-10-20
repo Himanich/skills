@@ -144,3 +144,41 @@ test('processTree: a fixed element goes to the root even when an ancestor contai
     ['div.section', 'div.footer', '#chat'],
   );
 });
+
+test('processTree: a row overhanging its container by a gutter stays in it', () => {
+  // Grid rows have negative margins: 878 px inside an 848 px container.
+  const col = (x) => node('DIV', `div.col${x}`, box(x, 150, 439, 400), [], { className: 'col' });
+  const row = node('DIV', 'div.row', box(348, 150, 878, 400), [col(348), col(787)], {
+    className: 'row',
+  });
+  const title = node('H2', 'h2', box(363, 100, 848, 50));
+  const container = node('DIV', 'div.container', box(363, 100, 848, 450), [title, row], {
+    className: 'container',
+  });
+  const { root, promotedToRoot } = processTree(page([utility(), container, footer(4000)]));
+  assert.equal(promotedToRoot.size, 0, 'nothing escaped');
+  assert.deepEqual(
+    plain(root.children[1].children).map((c) => c.selector),
+    ['h2', 'div.row'],
+  );
+});
+
+test('processTree: a child three quarters outside its parent still escapes', () => {
+  const half = node('DIV', 'div.half', box(0, 300, 1280, 400), [], { className: 'half' });
+  const bar = node('DIV', 'div.bar', box(0, 0, 1280, 100), [], { className: 'bar' });
+  const host = node('DIV', 'div.host', box(0, 0, 1280, 400), [bar, half], { className: 'host' });
+  const { promotedToRoot } = processTree(page([host, content(700, 2000)]));
+  assert.deepEqual(
+    [...promotedToRoot].map((n) => n.selector),
+    ['div.half'],
+  );
+});
+
+test('isContainedIn: no overlap, or a zero-area child outside, is not contained', () => {
+  const { isContainedIn } = window.__visualTree;
+  const parent = box(0, 0, 1000, 100);
+  assert.equal(isContainedIn(box(0, 100, 1000, 300), parent), false, 'a dropdown below');
+  assert.equal(isContainedIn(box(1100, 0, 200, 100), parent), false, 'a banner beside it');
+  assert.equal(isContainedIn(box(0, 500, 1000, 0), parent), false);
+  assert.equal(isContainedIn(box(1, 1, 998, 98), parent), true);
+});
