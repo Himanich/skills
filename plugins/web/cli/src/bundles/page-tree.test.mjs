@@ -78,3 +78,17 @@ test('processTree: an escaped child lands on the nearest ancestor that contains 
     ['div.small', 'div.s2', 'div.inner'],
   );
 });
+
+test('layoutChildren walks through display: contents elements to the boxes they hold', () => {
+  const { layoutChildren } = window.__visualTree;
+  const el = (name, display, children = []) => ({ name, display, children });
+  const styles = (e) => ({ display: e.display });
+  const main = el('main', 'contents', [el('article', 'block'), el('aside', 'block')]);
+  const wrapper = el('div', 'block', [el('nav', 'block'), main, el('footer', 'block')]);
+  assert.deepEqual(
+    plain(layoutChildren(wrapper, styles).map((e) => e.name)),
+    ['nav', 'article', 'aside', 'footer'],
+  );
+  const nested = el('div', 'block', [el('a', 'contents', [el('b', 'contents', [el('c', 'block')])])]);
+  assert.deepEqual(plain(layoutChildren(nested, styles).map((e) => e.name)), ['c']);
+});
