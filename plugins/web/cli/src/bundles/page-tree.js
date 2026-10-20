@@ -581,21 +581,19 @@ window.__visualTree = (() => {
       }
       node.children = stayed;
       for (const child of escaped) {
-        let placed = false;
-        for (let i = ancestors.length - 1; i >= 0 && !child.fixed; i--) {
+        let depth = 0;
+        for (let i = ancestors.length - 1; i > 0 && !child.fixed; i--) {
           if (staysIn(child, ancestors[i])) {
-            ancestors[i].children.push(child);
-            placed = true;
-            if (ancestors[i] === root) {
-              promotedToRoot.add(child);
-            }
+            depth = i;
             break;
           }
         }
-        if (!placed) {
-          root.children.push(child);
+        ancestors[depth].children.push(child);
+        if (depth === 0) {
           promotedToRoot.add(child);
         }
+        // Its new parent's loop has already started: walk the moved subtree from its new place.
+        walk(child, ancestors.slice(0, depth + 1));
       }
       for (const child of [...node.children]) {
         walk(child, [...ancestors, node]);

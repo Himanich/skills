@@ -130,7 +130,7 @@ fixtureTest('an open dropdown overflowing its trigger is promoted and occludes',
 
 fixtureTest('fixed elements: the wide banner and the narrow button are root nodes', async () => {
   const { tree, nodeMap } = await capture('fixed-cookie-banner');
-  for (const id of ['cmp', 'chat']) {
+  for (const id of ['cmp', 'chat', 'cmp-close']) {
     const el = tree.children.find((n) => n.id === id);
     assert.ok(el, `#${id} is a root child: ${roots(tree)}`);
     assert.equal(el.fixed, true);

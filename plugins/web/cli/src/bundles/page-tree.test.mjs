@@ -341,3 +341,40 @@ test('processTree: a dropdown overflowing its trigger is promoted and marked as 
   assert.deepEqual(plain(nodeMap.rc5.overlay), { occluding: ['rc3'] });
   assert.equal(nodeMap.rc2.overlay, undefined);
 });
+
+test('processTree: a fixed element inside a promoted fixed element reaches the root too', () => {
+  const chat = node('DIV', '#chat', box(960, 20, 300, 60), [], { id: 'chat', fixed: true });
+  const cmp = node('DIV', '#cmp', box(0, 700, 1280, 200), [chat], { id: 'cmp', fixed: true });
+  const wrap = node('DIV', 'div.wrap', box(0, 53, 1280, 100), [
+    node('DIV', 'div.a', box(0, 53, 1280, 50), [], { className: 'a' }),
+    cmp,
+  ]);
+  const { root, nodeMap } = processTree(page([utility(), wrap, footer(4000)]));
+  assert.deepEqual(
+    Array.from(root.children, (c) => c.selector),
+    ['#utility', 'div.wrap', 'div.footer', '#cmp', '#chat'],
+  );
+  assert.deepEqual(plain(root.children[3].children), []);
+  assert.deepEqual(plain(nodeMap.rc5.overlay), { occluding: ['rc1', 'rc2'] });
+});
+
+test('processTree: a child escaping a promoted node is promoted in turn', () => {
+  const sub = node('DIV', 'div.sub', box(0, 600, 1280, 300), [], { className: 'sub' });
+  const item = node('DIV', 'div.item', box(0, 133, 1280, 40), [], { className: 'item' });
+  const menu = node('DIV', 'div.menu', box(0, 133, 1280, 400), [item, sub], {
+    className: 'menu',
+  });
+  const bar = node('DIV', 'div.bar', box(0, 53, 1280, 80), [], { className: 'bar' });
+  const trigger = node('DIV', 'div.trigger', box(0, 53, 1280, 80), [bar, menu], {
+    className: 'trigger',
+  });
+  const { root, promotedToRoot } = processTree(page([utility(), trigger, content(133, 3000)]));
+  assert.deepEqual(
+    [...promotedToRoot].map((n) => n.selector),
+    ['div.menu', 'div.sub'],
+  );
+  assert.deepEqual(
+    plain(root.children.find((c) => c.selector === 'div.menu').children).map((c) => c.selector),
+    ['div.item'],
+  );
+});
