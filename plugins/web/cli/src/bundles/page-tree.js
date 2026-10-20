@@ -362,7 +362,7 @@ window.__visualTree = (() => {
       node.id = element.id;
     }
     if (element.classList.length > 0) {
-      node.className = element.classList[0];
+      node.className = [...element.classList].join(" ");
     }
     const role = element.getAttribute("role");
     if (role) {
