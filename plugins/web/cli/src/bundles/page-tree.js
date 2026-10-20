@@ -347,7 +347,9 @@ window.__visualTree = (() => {
     const scrollY = window.scrollY;
     const scrollX = window.scrollX;
     const style = window.getComputedStyle(element);
-    if (hiddenStyle(style, rect)) {
+    // Skip links and other visually hidden content sit wholly above or left of the page.
+    const offPage = rect.bottom + scrollY <= 0 || rect.right + scrollX <= 0;
+    if (offPage || hiddenStyle(style, rect)) {
       return {
         tag: element.tagName,
         selector: element.tagName.toLowerCase(),
