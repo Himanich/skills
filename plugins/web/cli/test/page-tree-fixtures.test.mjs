@@ -98,6 +98,13 @@ fixtureTest('transparent header over a hero: the nav is a node with its own box'
   );
 });
 
+fixtureTest('a 0 px header at the page origin keeps its nav and progress bar', async () => {
+  const { tree } = await capture('header-at-origin');
+  const nav = find(tree, (n) => n.id === 'topNav');
+  assert.deepEqual([nav?.bounds.y, nav?.bounds.height], [0, 80], roots(tree));
+  assert.ok(find(tree, (n) => n.className === 'pb' && n.bounds.height === 5));
+});
+
 fixtureTest('sticky nav whose wrapper has area: the wrapper keeps its identity', async () => {
   const { tree } = await capture('sticky-nav');
   const band = find(tree, (n) => n.bounds.y === 53 && n.bounds.height === 80);

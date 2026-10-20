@@ -349,9 +349,7 @@ window.__visualTree = (() => {
     const scrollY = window.scrollY;
     const scrollX = window.scrollX;
     const style = window.getComputedStyle(element);
-    // Skip links and other visually hidden content sit wholly above or left of the page.
-    const offPage = rect.bottom + scrollY <= 0 || rect.right + scrollX <= 0;
-    if (offPage || hiddenStyle(style, rect)) {
+    if (hiddenStyle(style, rect)) {
       return {
         tag: element.tagName,
         selector: element.tagName.toLowerCase(),
@@ -479,7 +477,10 @@ window.__visualTree = (() => {
         node.text = fullText.slice(0, 30);
       }
     }
-    if ((node.bounds.width === 0 || node.bounds.height === 0) && node.children.length === 0) {
+    // Skip links and other visually hidden content sit wholly above or left of the page.
+    // Leaves only: a box at or off the edge can hold descendants positioned on the page.
+    const offPage = rect.bottom + scrollY <= 0 || rect.right + scrollX <= 0;
+    if ((node.bounds.width === 0 || node.bounds.height === 0 || offPage) && node.children.length === 0) {
       return {
         tag: element.tagName,
         selector: element.tagName.toLowerCase(),
