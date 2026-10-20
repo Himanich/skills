@@ -19,7 +19,9 @@
  * `archetype` or renderBranch `A`) whose `template` is null — the migrate spec's form —
  * groups under its OWN slug, which its siblings name in their `template`; `type` is the
  * last resort. A template's representative is its archetype. Sidecars with an empty
- * `modules[]` are counted in the report: Phase B (blocks.mjs) dedups from them.
+ * `modules[]` are counted in the report: Phase B (blocks.mjs) dedups from them. A sidecar's
+ * `widgets[] {id, href}` (code-only units, one /widgets/<path>/<name>.html link each) rides along
+ * as the row's `widgets` and joins the template's block set under its id.
  *
  * Archetypes-only mode (`--state <state.json>`): the migrated tree holds only the
  * template archetypes (one per template); the full page roster lives in state.json.
@@ -44,6 +46,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, statSy
 import { createHash } from 'node:crypto';
 import { join, dirname, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { pageWidgets } from './lib.mjs';
 
 // --help prints this file's usage header, so an agent never reads the source to learn the flags.
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
@@ -181,6 +184,7 @@ for (const relHtml of htmlFiles) {
       sourceUrl: (meta.source && meta.source.url) || meta.sourceUrl || stateUrls.get(slug) || null,
     },
     blocks: Array.isArray(meta.modules) ? meta.modules : [],
+    widgets: pageWidgets(meta),
     delivery,
   });
 }
@@ -221,6 +225,7 @@ if (STATE) {
       representative: rep ? rep.slug : null,
       source: { migratedHtml: null, metaJson: null, sourceHash, currentStatePath: csPath, sourceUrl: sp.url },
       blocks: rep ? rep.blocks.slice() : [],
+      widgets: rep ? rep.widgets.map((w) => ({ ...w })) : [],
       delivery,
     });
     coveredPaths.add(path);
@@ -254,6 +259,7 @@ for (const p of pages) {
   const t = tmap.get(id);
   t.pages.push(p.slug);
   p.blocks.forEach((b) => t.blocks.add(b));
+  (p.widgets || []).forEach((w) => t.blocks.add(w.id));
 }
 const templates = [...tmap.values()].map((t) => {
   const tp = pages.filter((p) => t.pages.includes(p.slug));
@@ -320,6 +326,8 @@ console.log(`Templates   ${templates.length} (${templates.map((t) => `${t.id}:${
 if (kept.length) console.log(`Kept        ${kept.length} row(s) built outside the migrated tree (update-coverage.mjs --new), status untouched: ${kept.join(', ')}`);
 const blockless = pages.filter((p) => p.source.metaJson && !p.blocks.length).length;
 if (blockless) console.log(`Blocks      modules[] empty on ${blockless}/${pages.length} sidecars — Phase B (blocks.mjs) dedups from them: fill each page's block ids (composite sections; title, text, image, button, separator are default content) and re-run the inventory`);
+const widgetIds = new Set(pages.flatMap((p) => (p.widgets || []).map((w) => w.id)));
+if (widgetIds.size) console.log(`Widgets     ${widgetIds.size} distinct (${[...widgetIds].sort().join(', ')}) on ${pages.filter((p) => (p.widgets || []).length).length} pages — code only, one /widgets/ link per page`);
 const todo = pages.filter((p) => ['pending', 'stale', 'failed'].includes(p.delivery.status));
 if (todo.length) console.log(`To deliver  ${todo.length}: ${todo.slice(0, 8).map((p) => p.slug).join(', ')}${todo.length > 8 ? ' …' : ''}`);
 else console.log('To deliver  0 — all pages delivered.');

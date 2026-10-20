@@ -66,7 +66,9 @@ write(`${P}/home-proposed.html`, `<!doctype html>
 <main>
   <section class="hero"><img src="assets/img/hero.jpg" srcset="assets/img/hero.jpg 1x, assets/img/hero@2x.jpg 2x" alt=""><h1>Welcome</h1></section>
   <section class="cards" data-module="cards"><a href="/tours/">Tours</a> <a href="https://example.test/about/history.html?utm_source=x&amp;keep=1#team">History</a></section>
-  <div style="background:url(assets/img/bg.png)"><a href="/contact/">Contact</a> <a href="/nowhere/">Nowhere</a> <a href="mailto:a@example.test">Mail</a> <a href="#top">Top</a> <a href="https://elsewhere.example/x">Else</a></div>
+  <div style="background:url(assets/img/bg.png)"><a href="/contact/">Contact</a> <a href="/nowhere/">Nowhere</a> <a href="mailto:a@example.test">Mail</a> <a href="#top">Top</a> <a href="https://elsewhere.example/x">Else</a>
+    <p><a data-widget="search/site-search" href="/widgets/search/site-search.html?q=docs&amp;scope=all">Search</a></p>
+    <p><a data-widget="search/site-search" href="/widgets/search/site-search.html?q=tours">Search tours</a></p></div>
 </main>
 <footer>© Example</footer>
 </body>
@@ -138,6 +140,13 @@ check('<main> gets data-template and positional data-section 1..3; modules[] fro
   assert.match(home, /<main data-template="home">/);
   for (const n of [1, 2, 3]) assert.match(home, new RegExp(`data-section="${n}"`));
   assert.ok(!/data-section="4"/.test(home)); assert.deepEqual(homeMeta.modules, ['cards']); assert.equal(homeMeta.slotsFilled.length, 3);
+});
+check('widgets[] from a[data-widget] mounts: id = href file stem, deduped, href kept verbatim and never flagged broken', () => {
+  assert.deepEqual(homeMeta.widgets, [{ id: 'site-search', href: '/widgets/search/site-search.html?q=docs&scope=all' }]);
+  assert.match(home, /<a data-widget="search\/site-search" href="\/widgets\/search\/site-search\.html\?q=docs&amp;scope=all">/);
+  assert.match(home, /href="\/widgets\/search\/site-search\.html\?q=tours">/);
+  assert.ok(!homeMeta.brokenInternalLinks.some((b) => /widgets/.test(b.href)));
+  assert.deepEqual(json(`${OUT}/tours/_meta.json`).widgets, []);
 });
 check('internal links: relative with explicit leaf, tracking stripped, broken flagged, others untouched', () => {
   assert.match(home, /href="\.\/tours\/index\.html"/);
