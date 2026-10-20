@@ -491,7 +491,11 @@ window.__visualTree = (() => {
     }
     while (node.children.length === 1) {
       const child = node.children[0];
-      if (child.fixed) break;
+      // Stop when the child escapes: a dropdown or an overlay is a node of its own.
+      const parentHasArea = node.bounds.width > 0 && node.bounds.height > 0;
+      if (child.fixed || parentHasArea && !staysIn(child, node)) break;
+      node.collapsed = node.collapsed || [identityOf(node)];
+      node.collapsed.push(...child.collapsed || [identityOf(child)]);
       if (!node.text && child.text) {
         node.text = child.text;
       }
@@ -503,8 +507,24 @@ window.__visualTree = (() => {
       }
       const clips = ["x", "y"].filter((a) => node.clips?.includes(a) || child.clips?.includes(a)).join("");
       if (clips) node.clips = clips;
+      if (!parentHasArea) {
+        node.bounds = child.bounds;
+        node.tag = child.tag;
+        node.selector = child.selector;
+        if (child.id) node.id = child.id;
+        else delete node.id;
+        if (child.className) node.className = child.className;
+        else delete node.className;
+        if (child.role) node.role = child.role;
+      }
       node.children = child.children;
     }
+  }
+  function identityOf(node) {
+    const id = { tag: node.tag, selector: node.selector };
+    if (node.id) id.id = node.id;
+    if (node.className) id.className = node.className;
+    return id;
   }
   function pruneZeroHeightLeaves(node) {
     for (const child of node.children) {

@@ -8,7 +8,7 @@ import vm from 'node:vm';
 const source = readFileSync(new URL('./page-tree.js', import.meta.url), 'utf8');
 const window = {};
 vm.runInNewContext(source, { window });
-const { processTree } = window.__visualTree;
+const { collapseSingleChildren, processTree } = window.__visualTree;
 
 const node = (tag, selector, bounds, children = [], extra = {}) => ({
   tag,
@@ -231,4 +231,110 @@ test('hiddenStyle: zero size on an axis that clips hides the element and its sub
   assert.equal(hiddenStyle(style('clip', 'visible'), flat), false, 'only x clips');
   assert.equal(hiddenStyle(style('visible', 'visible'), flat), false, 'a transparent header');
   assert.equal(hiddenStyle(style('hidden', 'hidden'), { width: 1280, height: 80 }), false);
+});
+
+test('an empty wrapper collapsing onto its child takes the child\'s box and identity', () => {
+  // A transparent header: the sticky wrapper is 0 px high, the nav inside it 1280x80.
+  const nav = node('DIV', '#topNav', box(0, 53, 1280, 80), [], { id: 'topNav', text: 'Why us' });
+  const wrapper = node('DIV', 'div.sticky-nav', box(0, 53, 1280, 0), [nav], {
+    className: 'experiencefragment sticky-nav',
+  });
+  const body = page([wrapper, node('DIV', 'div.hero', box(0, 53, 1280, 700))]);
+  collapseSingleChildren(body);
+  const [first] = body.children;
+  assert.deepEqual(plain(first.bounds), box(0, 53, 1280, 80));
+  assert.equal(first.selector, '#topNav');
+  assert.equal(first.id, 'topNav');
+  assert.equal(first.className, undefined, 'the wrapper\'s classes go with its box');
+  assert.equal(first.text, 'Why us');
+});
+
+test('a wrapper that contains its single child keeps its own box and identity', () => {
+  const inner = node('DIV', 'div.inner', box(10, 10, 1260, 60), [], { className: 'inner' });
+  const outer = node('DIV', 'div.outer', box(0, 0, 1280, 80), [inner], { className: 'outer' });
+  const body = page([outer, node('DIV', 'x', box(0, 80, 1280, 900))]);
+  collapseSingleChildren(body);
+  const [first] = body.children;
+  assert.deepEqual(plain(first.bounds), box(0, 0, 1280, 80));
+  assert.equal(first.selector, 'div.outer');
+  assert.equal(first.className, 'outer');
+});
+
+test('a collapse onto a child overflowing a parent that clips it goes ahead', () => {
+  const track = node('UL', 'ul.track', box(-500, 150, 6000, 72), [], { className: 'track' });
+  const strip = node('DIV', 'div.strip', box(0, 133, 1280, 100), [track], {
+    className: 'strip',
+    clips: 'xy',
+  });
+  const { root, promotedToRoot } = processTree(page([utility(), strip, footer(4000)]));
+  assert.equal(promotedToRoot.size, 0);
+  assert.equal(root.children[1].selector, 'div.strip');
+  assert.deepEqual(plain(root.children[1].bounds), box(0, 133, 1280, 100));
+});
+
+test('a collapsed node lists every element it absorbed, whichever one owns the box', () => {
+  for (const height of [80, 0]) {
+    const nav = node('DIV', '#topNav', box(0, 53, 1280, 80), [], { id: 'topNav' });
+    const wrapper = node('DIV', 'div.wrap', box(0, 53, 1280, height), [nav], {
+      className: 'wrap',
+    });
+    const body = page([wrapper, node('DIV', 'z', box(0, 133, 1280, 800))]);
+    collapseSingleChildren(body);
+    assert.deepEqual(plain(body.children[0].collapsed), [
+      { tag: 'DIV', selector: 'div.wrap', className: 'wrap' },
+      { tag: 'DIV', selector: '#topNav', id: 'topNav' },
+    ]);
+    assert.equal(body.children[0].selector, height ? 'div.wrap' : '#topNav');
+  }
+});
+
+test('nested collapses keep the whole chain, and the chain does not depend on heights', () => {
+  const build = (h) => {
+    const nav = node('DIV', '#topNav', box(0, 53, 1280, 80), [], { id: 'topNav' });
+    const grid = node('DIV', 'div.grid', box(0, 53, 1280, h), [nav], { className: 'grid' });
+    const cmp = node('DIV', 'div.cmp', box(0, 53, 1280, h), [grid], { className: 'cmp' });
+    const wrap = node('DIV', 'div.wrap', box(0, 53, 1280, h), [cmp], { className: 'wrap' });
+    const body = page([wrap, node('DIV', 'z', box(0, 133, 1280, 800))]);
+    collapseSingleChildren(body);
+    return body.children[0];
+  };
+  const names = (n) => plain(n.collapsed.map((c) => c.selector));
+  assert.deepEqual(names(build(80)), ['div.wrap', 'div.cmp', 'div.grid', '#topNav']);
+  assert.deepEqual(names(build(0)), names(build(80)));
+});
+
+test('processTree: a transparent header over a hero keeps the nav next to the hero', () => {
+  const nav = node('DIV', '#topNav', box(0, 53, 1280, 80), [], { id: 'topNav' });
+  const grid = node('DIV', 'div.grid', box(0, 53, 1280, 0), [nav], { className: 'grid' });
+  const wrapper = node('DIV', 'div.sticky-nav', box(0, 53, 1280, 0), [grid], {
+    className: 'experiencefragment sticky-nav',
+  });
+  const hero = node('DIV', 'div.hero', box(0, 53, 1280, 700), [], { className: 'hero' });
+  const { root, nodeMap } = processTree(page([utility(), wrapper, hero, footer(4000)]));
+  assert.deepEqual(
+    Array.from(root.children, (c) => c.selector),
+    ['#utility', '#topNav', 'div.hero', 'div.footer'],
+  );
+  assert.deepEqual(plain(root.children[1].bounds), box(0, 53, 1280, 80));
+  assert.deepEqual(Object.keys(nodeMap), ['r', 'rc1', 'rc2', 'rc3', 'rc4']);
+});
+
+test('processTree: a dropdown overflowing its trigger is promoted and marked as occluding', () => {
+  const menu = node('DIV', 'div.menu', box(0, 133, 1280, 400), [], { className: 'menu' });
+  const trigger = node('DIV', 'div.trigger', box(0, 53, 1280, 80), [menu], {
+    className: 'trigger',
+  });
+  const { root, nodeMap, promotedToRoot } = processTree(
+    page([utility(), trigger, content(133, 3000), footer(4000)]),
+  );
+  assert.deepEqual(
+    Array.from(root.children, (c) => c.selector),
+    ['#utility', 'div.trigger', 'div.content', 'div.footer', 'div.menu'],
+  );
+  assert.deepEqual(
+    [...promotedToRoot].map((n) => n.selector),
+    ['div.menu'],
+  );
+  assert.deepEqual(plain(nodeMap.rc5.overlay), { occluding: ['rc3'] });
+  assert.equal(nodeMap.rc2.overlay, undefined);
 });
