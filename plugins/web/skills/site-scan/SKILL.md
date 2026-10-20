@@ -55,7 +55,9 @@ character): a URL must match an include (when any) and no exclude.
 
 `lang` comes from a first path segment like `fr`, `fr-fr` (empty otherwise). `total` counts
 every same-origin URL seen, `valid` those that passed the filters. `errors` lists fetches
-that failed; check them even on success, a failed sitemap means missing URLs.
+that failed (a missing robots.txt is not one); check them even on success, a failed sitemap
+means missing URLs. With `--strategy http`, a start page that is not HTML or redirects to
+another origin is reported there too, with the origin to scan instead (e.g. `www.`).
 
 No valid URL → exit 1 `EMPTY_RESULT` with the errors in the message. Retry with
 `--strategy http`, or check the origin. A site that blocks plain HTTP needs

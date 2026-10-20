@@ -1,3 +1,4 @@
+import { parsePositiveIntArg } from '#src/args.mjs';
 import { CliError } from '#src/errors.mjs';
 import { emit } from '#src/output.mjs';
 import { crawl } from '#src/site/crawl.mjs';
@@ -17,14 +18,6 @@ Notes:
 
 const collect = (value, previous) => [...previous, value];
 
-function toLimit(value) {
-  const n = Number(value);
-  if (!Number.isInteger(n) || n < 1) {
-    throw new CliError('USAGE', `--limit must be an integer >= 1, got ${value}`);
-  }
-  return n;
-}
-
 /**
  * Register the `site` group.
  * @param {import('commander').Command} program
@@ -40,8 +33,8 @@ export function registerSite(program, deps = {}) {
     .option('--strategy <name>', 'sitemaps or http', 'sitemaps')
     .option('--include <glob>', 'keep only matching URLs (repeatable)', collect, [])
     .option('--exclude <glob>', 'drop matching URLs (repeatable)', collect, [])
-    .option('--limit <n>', 'stop after n valid URLs', toLimit)
-    .option('--timeout <ms>', 'per-request timeout', Number, 10000)
+    .option('--limit <n>', 'stop after n valid URLs', parsePositiveIntArg)
+    .option('--timeout <ms>', 'per-request timeout', parsePositiveIntArg, 10000)
     .option('--user-agent <ua>', 'User-Agent header')
     .addHelpText('after', HELP)
     .action(async (origin, opts, command) => {

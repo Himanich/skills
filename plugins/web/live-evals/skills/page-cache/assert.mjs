@@ -3,7 +3,7 @@ import { fail, findFile, graded, ok, readJson, readText } from '../../lib/output
 
 const cached = (r, name, hostPrefix) => {
   const path = findFile(r, name);
-  return Boolean(path && path.includes(`/cache/${hostPrefix}_`) && existsSync(`${path}.json`));
+  return Boolean(path && path.includes(`/cache/${hostPrefix}_`) && existsSync(`${path}{meta}.json`));
 };
 const replayed = (r) => {
   const status = readJson(r, 'status-offline.json');

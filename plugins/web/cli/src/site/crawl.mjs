@@ -102,8 +102,13 @@ export async function crawl(origin, options = {}) {
   };
 
   async function walkSitemaps() {
-    const robots = await attempt(`${base.origin}/robots.txt`, () =>
-      get(`${base.origin}/robots.txt`),
+    // A site without robots.txt is normal: a 404 means no Sitemap lines, not a failure.
+    const robotsUrl = `${base.origin}/robots.txt`;
+    const robots = await attempt(robotsUrl, () =>
+      get(robotsUrl).catch((err) => {
+        if (err.message === 'HTTP 404') return null;
+        throw err;
+      }),
     );
     const listed = [...(robots?.text.matchAll(/^sitemap:\s*(\S+)/gim) ?? [])].map((m) => m[1]);
     const queue = listed.length ? listed : [`${base.origin}/sitemap.xml`];
@@ -132,7 +137,15 @@ export async function crawl(origin, options = {}) {
         const doc = await get(url);
         const final = new URL(doc.url || url);
         final.hash = '';
-        if (final.origin !== base.origin || !doc.type.includes('html')) return;
+        // Only the start page explains an empty result; a linked PDF is not worth an error.
+        const why =
+          final.origin !== base.origin
+            ? `redirected to ${final.href}, another origin; scan ${final.origin} instead`
+            : !doc.type.includes('html') && `not HTML (${doc.type || 'no content-type'})`;
+        if (why) {
+          if (url === base.href) errors.push({ url, message: why });
+          return;
+        }
         if (final.href !== url) {
           if (seen.has(final.href)) return;
           seen.add(final.href);

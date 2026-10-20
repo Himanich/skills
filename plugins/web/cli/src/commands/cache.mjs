@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { parseIntArg, parsePositiveIntArg } from '#src/args.mjs';
 import { CliError } from '#src/errors.mjs';
 import { emit } from '#src/output.mjs';
 import { startCacheProxy } from '#src/cache/proxy.mjs';
@@ -15,14 +16,6 @@ Notes:
   Binds 127.0.0.1 only. Open pages as <url>/path?_origin=<origin>; later requests follow the
   origin cookie. GET /__status returns hit/miss counts. A cache miss offline answers 504.
   --also names other origins (an image CDN) whose assets are cached and served like the page's.`;
-
-const toInt = (name, min) => (value) => {
-  const n = Number(value);
-  if (!Number.isInteger(n) || n < min) {
-    throw new CliError('USAGE', `--${name} must be an integer >= ${min}, got ${value}`);
-  }
-  return n;
-};
 
 function waitUntilStopped(proxy) {
   return new Promise((ok) => {
@@ -49,10 +42,10 @@ export function registerCache(program, deps = {}) {
     .description('cache original pages locally for offline replay')
     .command('serve')
     .description('run the caching reverse proxy')
-    .option('--port <n>', 'port to listen on (0 = any free port)', toInt('port', 0), 3001)
+    .option('--port <n>', 'port to listen on (0 = any free port)', parseIntArg, 3001)
     .option('--cache <dir>', 'cache directory', '.page-cache')
     .option('--offline', 'serve from the cache only, never fetch')
-    .option('--timeout <ms>', 'upstream fetch deadline', toInt('timeout', 1), 30000)
+    .option('--timeout <ms>', 'upstream fetch deadline', parsePositiveIntArg, 30000)
     .option('--also <origins>', 'other origins whose assets the pages use, comma-separated')
     .addHelpText('after', HELP)
     .action(async (opts, command) => {

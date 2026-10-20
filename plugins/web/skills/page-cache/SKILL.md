@@ -74,11 +74,12 @@ done
 
 ## Cache format
 
-`<cache>/<host>_<hash8>/<path>` plus `<path>.json`. `/x/` is `x/index.html`, `/x` without an
-extension is `x/index~.html` (so a stored `/x` → `/x/` redirect never answers `/x/`). Queries
-are percent-encoded into one component appended before the extension after `!` (MD5-hashed past
-200 characters); a path can never leave the cache directory. The hash is of
-the full origin, so scheme and port never collide.
+`<cache>/<host>_<hash8>/<path>`, with the headers and status in `<path>{meta}.json`. `/x/` is
+`x/{index}.html`; `/x` without an extension is `x/{bare}.html` (so a stored `/x` → `/x/` redirect
+never answers `/x/`). A query is percent-encoded and inserted before the extension after `{q}`
+(MD5-hashed past 200 characters). A URL path cannot contain braces, so these made-up names never
+collide with a real URL, and no path can leave the cache directory. The hash is of the full
+origin, so scheme and port never collide.
 
 ## What gets cached
 
@@ -94,12 +95,16 @@ the full origin, so scheme and port never collide.
   what is stored is always the full resource; a client's Range request gets the full body.
 - Only GET and HEAD; others answer 405. Redirects are cached with `Location` rewritten.
 - Non-UTF-8 responses are not rewritten.
+- Every status is stored, errors included: a 404 or 503 met while filling is replayed as is,
+  offline too. To retry one, delete its file and its `{meta}.json`, then serve online again.
 
 ## Security
 
 Binds 127.0.0.1. Only origins introduced by a direct `?_origin=` request are proxied online;
 cookie-only requests for others are refused (403), so page JS cannot use the proxy to probe
-internal hosts. `/__stop` rejects cross-origin callers.
+internal hosts. `/__stop` rejects cross-origin callers. Responses carry
+`access-control-allow-origin: *`, so another site open in the same browser can read cached pages;
+keep the proxy for local work.
 
 ## Notes
 

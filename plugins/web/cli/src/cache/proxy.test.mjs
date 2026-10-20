@@ -241,3 +241,39 @@ test('--also: a CDN stylesheet and redirect keep routing to the CDN', async () =
     await p.stop();
   }
 });
+
+test('no two URLs share a file, and no body overwrites a sidecar', () => {
+  const urls = [
+    'http://a.test/x.html',
+    'http://a.test/x.html.json',
+    'http://a.test/x.html{meta}.json',
+    'http://a.test/a.html?b',
+    'http://a.test/a!b.html',
+    'http://a.test/x',
+    'http://a.test/x/',
+    'http://a.test/x/index.html',
+    'http://a.test/x/index~.html',
+  ];
+  const bodies = urls.map((u) => cachePath('/c', u));
+  const files = [...bodies, ...bodies.map((b) => `${b}{meta}.json`)];
+  assert.equal(new Set(files).size, files.length);
+});
+
+test('a .json URL next to its .html sibling leaves both servable', async () => {
+  const site = await listen((req, res) => {
+    res.writeHead(200, { 'content-type': 'text/plain' });
+    res.end(`body of ${req.url}`);
+  });
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'page-cache-sidecar-'));
+  const p = await start({ cacheDir: dir });
+  try {
+    const get = (u) => fetch(`${p.url}${u}?_origin=${site.origin}`).then((r) => r.text());
+    await get('/x.html');
+    await get('/x.html.json');
+    assert.equal(await get('/x.html'), 'body of /x.html');
+    assert.equal(await get('/x.html.json'), 'body of /x.html.json');
+  } finally {
+    site.server.close();
+    await p.stop();
+  }
+});

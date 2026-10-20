@@ -35,22 +35,23 @@ function getCookie(header, name) {
 }
 
 /**
- * Map a URL to `<cacheDir>/<host>_<originHash>/<path>`; `/x` and `/x/` get distinct files.
- * The query becomes one percent-encoded path component (hashed when long), and the result
- * must stay inside `cacheDir`.
+ * Map a URL to `<cacheDir>/<host>_<originHash>/<path>`. The names the cache makes up (`{index}`,
+ * `{bare}`, `{q}`, `{meta}`) carry braces, which a parsed URL path never contains, so no two
+ * URLs, and no URL and a sidecar, share a file. The query is percent-encoded (hashed when long)
+ * and the result must stay inside `cacheDir`.
  */
 export function cachePath(cacheDir, url) {
   const u = new URL(url);
   const hash = createHash('sha256').update(u.origin).digest('hex').slice(0, 8);
   let seg = u.pathname.substring(1);
-  if (seg === '' || seg.endsWith('/')) seg += 'index.html';
-  else if (!extname(seg)) seg += '/index~.html';
+  if (seg === '' || seg.endsWith('/')) seg += '{index}.html';
+  else if (!extname(seg)) seg += '/{bare}.html';
   let p = join(`${u.hostname}_${hash}`, seg);
   if (u.search) {
     let qs = encodeURIComponent(u.search.substring(1));
     if (p.length + qs.length > 200) qs = createHash('md5').update(qs).digest('hex');
     const ext = extname(p);
-    p = ext ? `${p.slice(0, -ext.length)}!${qs}${ext}` : `${p}!${qs}`;
+    p = ext ? `${p.slice(0, -ext.length)}{q}${qs}${ext}` : `${p}{q}${qs}`;
   }
   const root = resolve(cacheDir);
   const full = resolve(root, p);
@@ -58,11 +59,13 @@ export function cachePath(cacheDir, url) {
   return full;
 }
 
+const sidecarPath = (bodyPath) => `${bodyPath}{meta}.json`;
+
 function countFiles(dir) {
   let n = 0;
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (e.isDirectory()) n += countFiles(join(dir, e.name));
-    else if (!e.name.endsWith('.json')) n += 1;
+    else if (!e.name.endsWith('{meta}.json')) n += 1;
   }
   return n;
 }
@@ -120,7 +123,7 @@ export function rewriteAlso(buf, also, contentType) {
 
 /**
  * Start a caching reverse proxy on 127.0.0.1. GET/HEAD only; each response is stored as a
- * body file plus a `.json` sidecar `{ headers, status }`.
+ * body file plus a `{meta}.json` sidecar `{ headers, status }`.
  * @param {{ port?: number, cacheDir: string, offline?: boolean, timeoutMs?: number,
  *   also?: string[], log?: (line: string) => void }} options `port: 0` picks a free port.
  * @returns {Promise<{ port: number, url: string, stats: object, closed: Promise<void>,
@@ -145,15 +148,15 @@ export async function startCacheProxy({
 
   const read = (url) => {
     const fp = cachePath(dir, url);
-    if (!existsSync(fp) || !existsSync(`${fp}.json`)) return null;
-    const { headers, status } = JSON.parse(readFileSync(`${fp}.json`, 'utf-8'));
+    if (!existsSync(fp) || !existsSync(sidecarPath(fp))) return null;
+    const { headers, status } = JSON.parse(readFileSync(sidecarPath(fp), 'utf-8'));
     return { body: readFileSync(fp), headers, status };
   };
   const write = (url, { body, headers, status }) => {
     const fp = cachePath(dir, url);
     mkdirSync(dirname(fp), { recursive: true });
     writeFileSync(fp, body);
-    writeFileSync(`${fp}.json`, JSON.stringify({ headers, status }));
+    writeFileSync(sidecarPath(fp), JSON.stringify({ headers, status }));
   };
 
   async function fetchAndStore(req, origin, originUrl) {

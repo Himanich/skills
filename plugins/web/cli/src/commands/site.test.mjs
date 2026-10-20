@@ -51,6 +51,8 @@ test('site scan rejects a bad strategy, origin and limit with exit 2', async () 
     ['site', 'scan', 'http://x.test', '--strategy', 'dns'],
     ['site', 'scan', 'not a url'],
     ['site', 'scan', 'http://x.test', '--limit', '0'],
+    ['site', 'scan', 'http://x.test', '--timeout', 'abc'],
+    ['site', 'scan', 'http://x.test', '--timeout', '0'],
   ]) {
     const { code, doc } = await run(args);
     assert.equal(code, 2, args.join(' '));

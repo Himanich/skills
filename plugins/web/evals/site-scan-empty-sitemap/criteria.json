@@ -1,12 +1,12 @@
 {
-  "context": "web site scan exited 1 with EMPTY_RESULT because robots.txt and /sitemap.xml both answered 404. The right move is the http strategy with a limit. Judge answer.md.",
+  "context": "web site scan exited 1 with EMPTY_RESULT because the site lists no sitemap (robots.txt is missing, which is not reported as an error) and /sitemap.xml answered 404. The right move is the http strategy with a limit. Judge answer.md.",
   "type": "weighted_checklist",
   "checklist": [
     {
       "name": "cause",
       "max_score": 25,
       "category": "INTENT",
-      "description": "Explains that the site publishes no sitemap (robots.txt and /sitemap.xml both 404), so the sitemaps strategy found no URLs; it is not a crawl bug or a bot block."
+      "description": "Explains that the site publishes no sitemap (no Sitemap line in robots.txt and /sitemap.xml is 404), so the sitemaps strategy found no URLs; it is not a crawl bug or a bot block."
     },
     {
       "name": "http_strategy",

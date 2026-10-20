@@ -195,3 +195,36 @@ test('http: links resolve against the redirected URL, and a redirect off the ori
     other.close();
   }
 });
+
+test('sitemaps: a missing robots.txt is not an error', async () => {
+  const s = await site({ '/sitemap.xml': { body: (o) => urlset(`${o}/p`) } });
+  try {
+    assert.deepEqual((await crawl(s.origin)).errors, []);
+  } finally {
+    s.close();
+  }
+});
+
+test('http: a start page that is not HTML or leaves the origin says why', async () => {
+  const s = await site({ '/': { type: 'application/pdf', body: 'pdf' } });
+  try {
+    const r = await crawl(s.origin, { strategy: 'http' });
+    assert.deepEqual(r.errors, [{ url: `${s.origin}/`, message: 'not HTML (application/pdf)' }]);
+  } finally {
+    s.close();
+  }
+  const target = await site({ '/': { body: 'elsewhere' } });
+  const server = createServer((_req, res) =>
+    res.writeHead(301, { location: `${target.origin}/` }).end(),
+  );
+  await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r = await crawl(origin, { strategy: 'http' });
+    assert.equal(r.valid, 0);
+    assert.match(r.errors[0].message, new RegExp(`another origin; scan ${target.origin} instead`));
+  } finally {
+    server.close();
+    target.close();
+  }
+});
