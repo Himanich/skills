@@ -6,8 +6,9 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const source = readFileSync(new URL('./page-tree.js', import.meta.url), 'utf8');
-const window = {};
-vm.runInNewContext(source, { window });
+const document = { body: { tagName: 'BODY' }, documentElement: { tagName: 'HTML' } };
+const window = { scrollX: 0, scrollY: 0 };
+vm.runInNewContext(source, { window, document });
 const { collapseSingleChildren, processTree } = window.__visualTree;
 
 const node = (tag, selector, bounds, children = [], extra = {}) => ({
@@ -190,9 +191,9 @@ test('processTree: content overflowing a parent that clips it does not escape', 
   // A logo marquee: the track is 6000 px wide inside a 1280 px strip with overflow hidden.
   const track = node('UL', 'ul.track', box(-500, 200, 6000, 72), [], { className: 'track' });
   const title = node('H2', 'h2', box(0, 133, 1280, 60));
+  track.clip = box(0, 133, 1280, 140);
   const strip = node('DIV', 'div.strip', box(0, 133, 1280, 140), [title, track], {
     className: 'strip',
-    clips: 'xy',
   });
   const { root, promotedToRoot } = processTree(page([utility(), strip, footer(4000)]));
   assert.equal(promotedToRoot.size, 0);
@@ -205,7 +206,8 @@ test('processTree: content overflowing a parent that clips it does not escape', 
 test('processTree: clipping one axis does not hold a child escaping along the other', () => {
   const menu = node('DIV', 'div.menu', box(0, 133, 1280, 400), [], { className: 'menu' });
   const bar = node('DIV', 'div.bar', box(0, 53, 1280, 80), [], { className: 'bar' });
-  const nav = node('NAV', 'nav', box(0, 53, 1280, 80), [bar, menu], { clips: 'x' });
+  menu.clip = { x: 0, width: 1280 };
+  const nav = node('NAV', 'nav', box(0, 53, 1280, 80), [bar, menu]);
   const { promotedToRoot } = processTree(page([utility(), nav, content(133, 3000)]));
   assert.deepEqual(
     [...promotedToRoot].map((n) => n.selector),
@@ -213,27 +215,73 @@ test('processTree: clipping one axis does not hold a child escaping along the ot
   );
 });
 
-test('processTree: a collapse keeps the clip of the element it absorbs', () => {
-  const slide = (x) => node('DIV', `div.s${x}`, box(x, 200, 1246, 256), [], { className: 's' });
-  const track = node('DIV', 'div.track', box(17, 200, 1246, 256), [slide(17), slide(1263)], {
-    className: 'track',
-    clips: 'xy',
-  });
+test('processTree: a carousel slide clipped out of view is not an overlay', () => {
+  const clip = box(17, 200, 1246, 256);
+  const slide = (x) => node('DIV', `div.s${x}`, box(x, 200, 1246, 256), [], { className: 's', clip });
+  const track = node('DIV', 'div.track', box(17, 200, 1246, 256), [slide(17), slide(1263)]);
   const wrap = node('DIV', 'div.wrap', box(17, 200, 1246, 256), [track], { className: 'wrap' });
   const { root, promotedToRoot } = processTree(page([utility(), wrap, footer(4000)]));
-  assert.equal(promotedToRoot.size, 0, 'the off-screen slide is clipped, not an overlay');
-  assert.equal(root.children[1].clips, 'xy');
+  assert.equal(promotedToRoot.size, 0);
   assert.equal(root.children[1].children.length, 2);
 });
 
-test('hiddenStyle: zero size on an axis that clips hides the element and its subtree', () => {
-  const { hiddenStyle } = window.__visualTree;
-  const style = (overflowX, overflowY) => ({ overflowX, overflowY });
-  const flat = { width: 1280, height: 0 };
-  assert.equal(hiddenStyle(style('hidden', 'hidden'), flat), true, 'a closed accordion');
-  assert.equal(hiddenStyle(style('clip', 'visible'), flat), false, 'only x clips');
-  assert.equal(hiddenStyle(style('visible', 'visible'), flat), false, 'a transparent header');
-  assert.equal(hiddenStyle(style('hidden', 'hidden'), { width: 1280, height: 80 }), false);
+// A fake DOM chain for overflowClip: el(style, rect, parent).
+const el = (style, rect, parentElement = document.body) => ({
+  parentElement,
+  style: {
+    position: 'static',
+    display: 'block',
+    overflowX: 'visible',
+    overflowY: 'visible',
+    transform: 'none',
+    perspective: 'none',
+    filter: 'none',
+    contain: 'none',
+    ...style,
+  },
+  getBoundingClientRect: () => ({ left: rect.x, top: rect.y }),
+  clientLeft: 0,
+  clientTop: 0,
+  clientWidth: rect.width,
+  clientHeight: rect.height,
+});
+const clipOf = (element) =>
+  plain(window.__visualTree.overflowClip(element, (e) => e.style) ?? null);
+const hidden = { overflowX: 'hidden', overflowY: 'hidden' };
+
+test('overflowClip: an ancestor clips an element in flow', () => {
+  const strip = el(hidden, box(0, 133, 1280, 140));
+  assert.deepEqual(clipOf(el({}, box(-500, 200, 6000, 72), strip)), box(0, 133, 1280, 140));
+  const xOnly = el({ overflowX: 'clip' }, box(0, 0, 1000, 50));
+  assert.deepEqual(clipOf(el({}, box(0, 0, 2000, 50), xOnly)), { x: 0, width: 1000 });
+});
+
+test('overflowClip: an absolute element escapes a clipper below its containing block', () => {
+  const positioned = el({ position: 'relative' }, box(0, 0, 1280, 4000));
+  const trigger = el(hidden, box(0, 53, 1280, 80), positioned);
+  assert.equal(clipOf(el({ position: 'absolute' }, box(0, 133, 1280, 400), trigger)), null);
+  const clippingBlock = el({ ...hidden, position: 'relative' }, box(0, 53, 1280, 80));
+  const menu = el({ position: 'absolute' }, box(0, 133, 1280, 400), clippingBlock);
+  assert.deepEqual(clipOf(menu), box(0, 53, 1280, 80));
+});
+
+test('overflowClip: a fixed element is clipped only under a containing transform', () => {
+  const clipper = el({ ...hidden, position: 'relative' }, box(0, 0, 1280, 100));
+  assert.equal(clipOf(el({ position: 'fixed' }, box(0, 700, 1280, 200), clipper)), null);
+  const transformed = el({ ...hidden, transform: 'matrix(1, 0, 0, 1, 0, 0)' }, box(0, 0, 1280, 100));
+  assert.deepEqual(
+    clipOf(el({ position: 'fixed' }, box(0, 700, 1280, 200), transformed)),
+    box(0, 0, 1280, 100),
+  );
+});
+
+test('overflowClip: display: contents ancestors are skipped; nested clips intersect', () => {
+  const outer = el(hidden, box(0, 0, 1000, 500));
+  const contents = el({ ...hidden, display: 'contents' }, box(0, 0, 0, 0), outer);
+  const inner = el(hidden, box(200, 100, 1000, 100), contents);
+  assert.deepEqual(clipOf(el({}, box(0, 0, 3000, 3000), inner)), box(200, 100, 800, 100));
+  const accordion = el(hidden, box(0, 300, 1280, 0));
+  assert.deepEqual(clipOf(el({}, box(0, 300, 1280, 400), accordion)), box(0, 300, 1280, 0));
 });
 
 test('an empty wrapper collapsing onto its child takes the child\'s box and identity', () => {
@@ -265,9 +313,9 @@ test('a wrapper that contains its single child keeps its own box and identity', 
 
 test('a collapse onto a child overflowing a parent that clips it goes ahead', () => {
   const track = node('UL', 'ul.track', box(-500, 150, 6000, 72), [], { className: 'track' });
+  track.clip = box(0, 133, 1280, 100);
   const strip = node('DIV', 'div.strip', box(0, 133, 1280, 100), [track], {
     className: 'strip',
-    clips: 'xy',
   });
   const { root, promotedToRoot } = processTree(page([utility(), strip, footer(4000)]));
   assert.equal(promotedToRoot.size, 0);

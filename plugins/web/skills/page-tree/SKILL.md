@@ -84,11 +84,13 @@ overlay?: { occluding: [sibling IDs] } }`. An `overlay` entry means the node was
 promoted to root level because it is `position: fixed` or rendered outside its
 parent's bounds (cookie banners, fixed navs, modals, open dropdowns). Its
 `selector` is usable for dismissal. Content clipped by an `overflow: hidden`
-parent (carousels, marquees) is not promoted.
+ancestor (carousels, marquees) is not promoted; content clipped to nothing is
+not in the tree.
 
 **`tree`**: the full structured tree (tag, selector, bounds, text, role, layout,
 background, children; `id` and `className` with every class when present; `fixed`
-for `position: fixed`; `clips` with the axes it clips overflow on, `x`, `y` or `xy`;
+for `position: fixed`; `clip`, when overflow-clipping ancestors cut the node's box, the
+visible region as `{ x, width }`, `{ y, height }` or both;
 `collapsed`, the single-child chain a node absorbed, outermost first, as
 `{ tag, selector, id?, className? }`). Show it only if the caller asks; otherwise
 mention it exists.

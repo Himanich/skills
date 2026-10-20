@@ -164,6 +164,16 @@ fixtureTest('clipped overflow: a marquee stays put, a closed accordion is hidden
   assert.doesNotMatch(text, /Hidden answer/);
 });
 
+fixtureTest('an absolute menu escapes a static clipper, not a positioned one', async () => {
+  const { tree, nodeMap } = await capture('absolute-escapes-clip');
+  const menu = tree.children.find((n) => n.className === 'menu');
+  assert.ok(menu, `the free menu is a root child: ${roots(tree)}`);
+  assert.equal(menu.bounds.y, 133);
+  assert.ok(nodeMap[idOf(nodeMap, menu)].overlay?.occluding?.length >= 1);
+  const menus = all(tree).filter((n) => n.className === 'menu');
+  assert.equal(menus.length, 1, 'the menu clipped by its positioned trigger is not a node');
+});
+
 fixtureTest('skip links above the page are dropped; a box partly on it stays', async () => {
   const { tree } = await capture('skip-links');
   assert.equal(

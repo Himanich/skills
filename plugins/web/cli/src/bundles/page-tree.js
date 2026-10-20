@@ -30,6 +30,7 @@ window.__visualTree = (() => {
     enrichOverlayMetadata: () => enrichOverlayMetadata,
     formatTreeAsText: () => formatTreeAsText,
     hiddenStyle: () => hiddenStyle,
+    overflowClip: () => overflowClip,
     isContainedIn: () => isContainedIn,
     isDefaultBackground: () => isDefaultBackground,
     layoutChildren: () => layoutChildren,
@@ -315,16 +316,52 @@ window.__visualTree = (() => {
     const px = (v, size) => v.endsWith("%") ? size * parseFloat(v) / 100 : parseFloat(v);
     return rect.width - px(l, rect.width) - px(r, rect.width) <= 0 || rect.height - px(t, rect.height) - px(b, rect.height) <= 0;
   }
-  // shortcut: ignores descendants that escape the clip (fixed, or absolute with a containing
-  // block outside it); upgrade if a collapsed `overflow: hidden` wrapper hides real content.
-  function clippedByOverflow(style, rect) {
-    return rect.width === 0 && style.overflowX !== "visible" || rect.height === 0 && style.overflowY !== "visible";
-  }
   function hiddenStyle(style, rect) {
-    return style.display === "none" || style.visibility === "hidden" || style.opacity === "0" || clippedAway(style, rect) || clippedByOverflow(style, rect);
+    return style.display === "none" || style.visibility === "hidden" || style.opacity === "0" || clippedAway(style, rect);
   }
-  function clipAxes(style) {
-    return (style.overflowX !== "visible" ? "x" : "") + (style.overflowY !== "visible" ? "y" : "");
+  function containsFixed(s) {
+    return s.transform !== "none" || s.perspective !== "none" || s.filter !== "none" || !!s.backdropFilter && s.backdropFilter !== "none" || /paint|layout|strict|content/.test(s.contain || "") || /transform|perspective|filter/.test(s.willChange || "") || !!s.containerType && s.containerType !== "normal";
+  }
+  // The region, in page coordinates, that overflow-clipping ancestors leave visible. An
+  // ancestor clips an element only from the element's containing block outwards: an absolute
+  // menu escapes a static `overflow: hidden` trigger, a fixed banner escapes all but transforms.
+  function overflowClip(element, getStyle = (el) => window.getComputedStyle(el)) {
+    const clip = {};
+    let position = getStyle(element).position;
+    for (let a = element.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+      const s = getStyle(a);
+      if (s.display === "contents") continue;
+      const isBlock = position === "fixed" ? containsFixed(s) : position === "absolute" ? s.position !== "static" || containsFixed(s) : true;
+      if (!isBlock) continue;
+      position = s.position;
+      if (s.display === "inline") continue;
+      const r = a.getBoundingClientRect();
+      const left = r.left + a.clientLeft + window.scrollX;
+      const top = r.top + a.clientTop + window.scrollY;
+      if (s.overflowX !== "visible") narrow(clip, "x", "width", left, a.clientWidth);
+      if (s.overflowY !== "visible") narrow(clip, "y", "height", top, a.clientHeight);
+    }
+    return "x" in clip || "y" in clip ? clip : void 0;
+  }
+  function narrow(clip, pos, size, start, length) {
+    const lo = Math.max(clip[pos] ?? -Infinity, start);
+    const hi = Math.min(clip[pos] === void 0 ? Infinity : clip[pos] + clip[size], start + length);
+    clip[pos] = Math.round(lo);
+    clip[size] = Math.max(0, Math.round(hi - lo));
+  }
+  // The part of a box its clip leaves visible; null when nothing is.
+  function visiblePart(bounds, clip) {
+    if (!clip) return bounds;
+    const out = { ...bounds };
+    for (const [pos, size] of [["x", "width"], ["y", "height"]]) {
+      if (clip[pos] === void 0) continue;
+      const lo = Math.max(bounds[pos], clip[pos]);
+      const hi = Math.min(bounds[pos] + bounds[size], clip[pos] + clip[size]);
+      if (hi <= lo) return null;
+      out[pos] = lo;
+      out[size] = hi - lo;
+    }
+    return out;
   }
   // An element with `display: contents` has no box of its own: its children are laid
   // out as its parent's. For the tree it is transparent, its children walked in its place.
@@ -378,9 +415,18 @@ window.__visualTree = (() => {
     if (style.position === "fixed") {
       node.fixed = true;
     }
-    const clips = clipAxes(style);
-    if (clips) {
-      node.clips = clips;
+    const clip = overflowClip(element);
+    const seen = visiblePart(node.bounds, clip);
+    if (!seen) {
+      return {
+        tag: element.tagName,
+        selector: element.tagName.toLowerCase(),
+        bounds: { x: 0, y: 0, width: 0, height: 0 },
+        children: []
+      };
+    }
+    if (seen !== node.bounds && !isContainedIn(node.bounds, seen)) {
+      node.clip = clip;
     }
     const role = element.getAttribute("role");
     if (role) {
@@ -510,10 +556,10 @@ window.__visualTree = (() => {
       if (!node.background && child.background) {
         node.background = child.background;
       }
-      const clips = ["x", "y"].filter((a) => node.clips?.includes(a) || child.clips?.includes(a)).join("");
-      if (clips) node.clips = clips;
       if (!parentHasArea) {
         node.bounds = child.bounds;
+        if (child.clip) node.clip = child.clip;
+        else delete node.clip;
         node.tag = child.tag;
         node.selector = child.selector;
         if (child.id) node.id = child.id;
@@ -556,16 +602,11 @@ window.__visualTree = (() => {
     if (w <= 0 || h <= 0) return false;
     return w * h / area >= CONTAINED_SHARE;
   }
-  // A child cannot escape along an axis its parent clips: carousels, marquees, scrollers.
+  // Only the visible part of a clipped child can escape: carousels, marquees, scrollers.
   function staysIn(child, parent) {
     if (isContainedIn(child.bounds, parent.bounds)) return true;
-    if (!parent.clips) return false;
-    const t = CONTAINMENT_TOLERANCE;
-    const c = child.bounds;
-    const p = parent.bounds;
-    const insideX = c.x >= p.x - t && c.x + c.width <= p.x + p.width + t;
-    const insideY = c.y >= p.y - t && c.y + c.height <= p.y + p.height + t;
-    return (insideX || parent.clips.includes("x")) && (insideY || parent.clips.includes("y"));
+    const seen = visiblePart(child.bounds, child.clip);
+    return !seen || isContainedIn(seen, parent.bounds);
   }
   function promoteEscapedNodes(root) {
     const promotedToRoot = /* @__PURE__ */ new Set();
