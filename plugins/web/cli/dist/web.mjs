@@ -5188,7 +5188,8 @@ function siblings(tree, range) {
       continue;
     }
     const big = kids.filter((k) => k.bounds.height >= 0.95 * (range.bottom - range.top));
-    if (big.length === 1 && kids.length <= 3 && !kids.some((k) => beside(k, big[0]))) {
+    const kept = (k) => beside(k, big[0]) || stacked(k, big[0]);
+    if (big.length === 1 && kids.length <= 3 && !kids.some(kept)) {
       [node] = big;
       continue;
     }
@@ -5200,6 +5201,11 @@ function beside(k, big) {
   const a = k.bounds;
   const b = big.bounds;
   return k !== big && a.width * a.height >= 0.05 * b.width * b.height && (a.x >= b.x + b.width - 8 || a.x + a.width <= b.x + 8);
+}
+function stacked(k, big) {
+  const a = k.bounds;
+  const b = big.bounds;
+  return k !== big && (a.y + a.height <= b.y + 8 || a.y >= b.y + b.height - 8);
 }
 var dedupeX = (parts) => parts.sort((p, q) => p.x - q.x).filter((p, j, all) => !all.slice(0, j).some((q) => Math.abs(q.x - p.x) < 40));
 var partOf = (n) => ({ x: n.bounds.x, w: n.bounds.width, selector: n.selector });
@@ -5233,7 +5239,7 @@ function stack(nodes, range) {
     nodes: b.nodes
   }));
 }
-var isText = (c) => c.nodes.every((n) => TEXT_TAGS.has(n.tag));
+var isText = (c) => c.nodes.every((n) => TEXT_TAGS.has(n.tag)) && !sideBySide(c);
 function runs(slices) {
   const out = [];
   for (const c of slices) {
@@ -5367,7 +5373,8 @@ Output:
   bands[]: { id, top, bottom, left, right, side, text, selectors, children? }
   fixed[]: { selector, top, bottom, left, right }
 Notes:
-  Slices the page top to bottom along its visual tree, so no cut passes through an element.
+  Slices the page top to bottom along its visual tree: a cut passes between elements, through
+  at most the 8 px where two neighbours overlap.
   Elements sharing a vertical range are one band with parts side by side (side: true); a run of
   text elements (paragraphs, headings, images) is one band (text: true). The header and footer
   are bands like any other, unless fixed: fixed elements float over the page and are listed
