@@ -5155,13 +5155,253 @@ function registerTree(group, deps) {
   );
 }
 
+// src/page/bands.mjs
+var MIN_PART_WIDTH = 120;
+var SIDE_OVERLAP = 0.25;
+var MAX_DEPTH = 12;
+var TEXT_TAGS = /* @__PURE__ */ new Set([
+  "P",
+  "H1",
+  "H2",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "PRE",
+  "BLOCKQUOTE",
+  "PICTURE",
+  "IMG",
+  "HR",
+  "EM",
+  "STRONG",
+  "CODE",
+  "FIGURE"
+]);
+function siblings(tree, range) {
+  const inside = (n) => n.bounds.y + n.bounds.height > range.top + 2 && n.bounds.y < range.bottom - 2;
+  let node = tree;
+  for (let i = 0; i < MAX_DEPTH; i += 1) {
+    const kids = (node.children ?? []).filter((k) => k.bounds.height > 0 && inside(k));
+    if (kids.length === 0) return [node];
+    if (kids.length === 1) {
+      [node] = kids;
+      continue;
+    }
+    const big = kids.filter((k) => k.bounds.height >= 0.95 * (range.bottom - range.top));
+    if (big.length === 1 && kids.length <= 3 && !kids.some((k) => beside(k, big[0]))) {
+      [node] = big;
+      continue;
+    }
+    return kids;
+  }
+  return [node];
+}
+function beside(k, big) {
+  const a = k.bounds;
+  const b = big.bounds;
+  return k !== big && a.width * a.height >= 0.05 * b.width * b.height && (a.x >= b.x + b.width - 8 || a.x + a.width <= b.x + 8);
+}
+var dedupeX = (parts) => parts.sort((p, q) => p.x - q.x).filter((p, j, all) => !all.slice(0, j).some((q) => Math.abs(q.x - p.x) < 40));
+var partOf = (n) => ({ x: n.bounds.x, w: n.bounds.width, selector: n.selector });
+var extentOf = (nodes) => ({
+  left: Math.min(...nodes.map((n) => n.bounds.x)),
+  right: Math.max(...nodes.map((n) => n.bounds.x + n.bounds.width))
+});
+function stack(nodes, range) {
+  const sorted = [...nodes].sort((a, b) => a.bounds.y - b.bounds.y);
+  const out = [];
+  for (const n of sorted) {
+    const y0 = Math.max(range.top, n.bounds.y);
+    const y1 = Math.min(range.bottom, n.bounds.y + n.bounds.height);
+    if (y1 - y0 < 4) continue;
+    const last = out.at(-1);
+    if (last && y0 < last.bottom - 8) {
+      last.bottom = Math.max(last.bottom, y1);
+      last.nodes.push(n);
+    } else out.push({ top: y0, bottom: y1, nodes: [n] });
+  }
+  for (let i = 1; i < out.length; i += 1) out[i - 1].bottom = out[i].top;
+  if (out.length) {
+    out[0].top = range.top;
+    out.at(-1).bottom = range.bottom;
+  }
+  return out.map((b) => ({
+    top: b.top,
+    bottom: b.bottom,
+    ...extentOf(b.nodes),
+    parts: dedupeX(b.nodes.map(partOf)),
+    nodes: b.nodes
+  }));
+}
+var isText = (c) => c.nodes.every((n) => TEXT_TAGS.has(n.tag));
+function runs(slices) {
+  const out = [];
+  for (const c of slices) {
+    const last = out.at(-1);
+    if (last && isText(last) && isText(c)) {
+      last.bottom = c.bottom;
+      last.nodes.push(...c.nodes);
+      Object.assign(last, extentOf(last.nodes));
+      last.parts = dedupeX([...last.parts, ...c.parts]);
+    } else out.push({ ...c, nodes: [...c.nodes], parts: [...c.parts] });
+  }
+  return out.map((c) => isText(c) ? { ...c, text: true } : c);
+}
+var sideBySide = (c) => {
+  const wide = c.parts.filter((p) => p.w >= MIN_PART_WIDTH);
+  return wide.some(
+    (p, i) => wide.slice(i + 1).some(
+      (q) => Math.min(p.x + p.w, q.x + q.w) - Math.max(p.x, q.x) <= SIDE_OVERLAP * Math.min(p.w, q.w)
+    )
+  );
+};
+function columns(c) {
+  const cols = [];
+  for (const n of [...c.nodes].sort((a, b) => a.bounds.x - b.bounds.x)) {
+    const col = cols.find((k) => Math.abs(k[0].bounds.x - n.bounds.x) < 40);
+    if (col) col.push(n);
+    else cols.push([n]);
+  }
+  return cols.map((nodes) => ({
+    top: Math.max(c.top, Math.min(...nodes.map((n) => n.bounds.y))),
+    bottom: Math.min(c.bottom, Math.max(...nodes.map((n) => n.bounds.y + n.bounds.height))),
+    ...extentOf(nodes),
+    parts: dedupeX(nodes.map(partOf)),
+    nodes
+  }));
+}
+var weight = (n) => 1 + (n.children ?? []).reduce((s, k) => s + weight(k), 0);
+function cut(c) {
+  if (sideBySide(c)) return { side: true, kids: columns(c) };
+  let level = c.nodes.length > 1 ? c.nodes : null;
+  let [node] = c.nodes;
+  let carry = [];
+  for (let depth = 0; depth < MAX_DEPTH; depth += 1) {
+    if (!level) {
+      const below = siblings(node, c);
+      const leaf = below.length === 1 && !(below[0].children ?? []).length;
+      if (leaf && !carry.length) return { side: false, kids: [] };
+      level = [...carry, ...leaf ? [] : below];
+    }
+    let inner = stack(level, c);
+    if (inner.length === 1 && carry.length) {
+      level = level.filter((n) => !carry.includes(n));
+      inner = stack(level, c);
+    }
+    carry = [];
+    if (inner.length !== 1) return { side: false, kids: runs(inner) };
+    const [only] = inner;
+    if (sideBySide(only)) return { side: true, kids: columns(only) };
+    const next = only.nodes.reduce((a, n) => weight(n) > weight(a) ? n : a);
+    if (next === node && level.length === 1) return { side: false, kids: [] };
+    carry = only.nodes.filter((n) => n !== next);
+    node = next;
+    level = null;
+  }
+  return { side: false, kids: [] };
+}
+var selectorsOf = (c) => (c.text ? [...new Set(c.nodes.map((n) => n.selector))] : c.parts.map((p) => p.selector)).filter(
+  Boolean
+);
+function toBand(c, id, { all, level }) {
+  const inner = c.text ? { side: false, kids: [] } : cut(c);
+  const band = {
+    id,
+    top: c.top,
+    bottom: c.bottom,
+    left: c.left,
+    right: c.right,
+    side: inner.side,
+    text: Boolean(c.text),
+    selectors: selectorsOf(c)
+  };
+  if (all && inner.kids.length && level < MAX_DEPTH) {
+    band.children = inner.kids.map(
+      (k, i) => toBand(k, `${id}.${i + 1}`, { all, level: level + 1 })
+    );
+  }
+  return band;
+}
+function pageRange(tree) {
+  const bottoms = [tree, ...tree.children ?? []].map((n) => n.bounds.y + n.bounds.height);
+  return { top: tree.bounds.y, bottom: Math.max(...bottoms) };
+}
+function bands(tree, { range = pageRange(tree), depth = 1 } = {}) {
+  const width = { left: tree.bounds.x, right: tree.bounds.x + tree.bounds.width };
+  const all = depth === "all";
+  const flow = { ...tree, children: (tree.children ?? []).filter((k) => !k.fixed) };
+  return runs(stack(siblings(flow, range), range)).map(
+    (c, i) => toBand({ ...c, ...width }, `B${i + 1}`, { all, level: 1 })
+  );
+}
+function fixedLayers(tree) {
+  return (tree.children ?? []).filter((k) => k.fixed).map(({ selector, bounds: b }) => ({
+    selector,
+    top: b.y,
+    bottom: b.y + b.height,
+    left: b.x,
+    right: b.x + b.width
+  }));
+}
+var MAX_SELECTORS = 2;
+function bandsText(list, indent = "") {
+  return list.flatMap((b) => {
+    const more = b.selectors.length > MAX_SELECTORS ? ", \u2026" : "";
+    const flags = [b.side && "side", b.text && "text"].filter(Boolean);
+    const line = [
+      `${indent}${b.id}`,
+      `${b.top}-${b.bottom}`,
+      ...flags,
+      b.selectors.slice(0, MAX_SELECTORS).join(", ") + more
+    ].join("  ");
+    return [line, ...b.children ? [bandsText(b.children, `${indent}  `)] : []];
+  }).join("\n");
+}
+
+// src/commands/page/bands.mjs
+var HELP5 = `
+Example:
+  web page bands https://example.com --depth all --format text
+Output:
+  { depth, bands, fixed, text, url, session, durationMs }
+  bands[]: { id, top, bottom, left, right, side, text, selectors, children? }
+  fixed[]: { selector, top, bottom, left, right }
+Notes:
+  Slices the page top to bottom along its visual tree, so no cut passes through an element.
+  Elements sharing a vertical range are one band with parts side by side (side: true); a run of
+  text elements (paragraphs, headings, images) is one band (text: true). The header and footer
+  are bands like any other, unless fixed: fixed elements float over the page and are listed
+  in fixed, where they sit at the top of the page. --depth all slices every band again until nothing is left to cut;
+  ids nest: B2, B2.1, B2.1.3. Positions are page px at the browser's width (1280 by default).
+  Bands say where things are, not what they are.
+Exit codes:
+  3 when the page is blocked by bot protection.
+`;
+function registerBands(group, deps) {
+  group.command("bands [url]").description("slice a page into bands, level 1 or all levels").addHelpText("after", HELP5).addOption(new Option("--depth <depth>", "levels to slice").choices(["1", "all"]).default("1")).option("--min-width <n>", "tree minimum element width in px", parseIntArg, 250).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).action(
+    (url, _opts, command) => runPageCommand(command, deps, {
+      url,
+      fn: (driver, session, opts) => {
+        const { tree } = captureTree(driver, session, opts);
+        const list = bands(tree, { depth: opts.depth });
+        return {
+          depth: opts.depth,
+          bands: list,
+          fixed: fixedLayers(tree),
+          text: bandsText(list)
+        };
+      }
+    })
+  );
+}
+
 // src/commands/page/reduce.mjs
 var DETECT = "window.xp.detectSections(document.body, window, { autoDetect: true, highlightBoxes: false, highlightSections: false }).then(() => JSON.stringify(window.__reduceForSkill(document.body, window)))";
 function detect(driver, session) {
   const raw = driver.evaluate(session, DETECT);
   return typeof raw === "string" ? JSON.parse(raw) : raw;
 }
-var HELP5 = `
+var HELP6 = `
 Example:
   web page reduce https://example.com --retries 3
 Output:
@@ -5188,7 +5428,7 @@ function reducePage(driver, session, { retries = 2, settleMs } = {}) {
   return phase1;
 }
 function registerReduce(group, deps) {
-  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP5).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", parseIntArg, 2).action(
+  group.command("reduce [url]").description("detect page sections (phase 1 of page reduction)").addHelpText("after", HELP6).option("--settle-ms <n>", "wait after scrolling for lazy content", parseIntArg, 2e3).option("--retries <n>", "rescroll attempts when no sections are found", parseIntArg, 2).action(
     (url, _opts, command) => runPageCommand(command, deps, {
       url,
       fn: (driver, session, opts) => reducePage(driver, session, {
@@ -5388,7 +5628,7 @@ function takeScreenshot(driver, session, path3, stderr) {
     return void 0;
   }
 }
-var HELP6 = `
+var HELP7 = `
 Example:
   web page collect metadata https://example.com
 Output:
@@ -5428,7 +5668,7 @@ function collectPage(driver, session, { what, outputDir, stderr = process.stderr
   return { ...collection, files };
 }
 function registerCollect(group, deps) {
-  group.command("collect <what> [url]").description(`collect page resources: ${COLLECTORS.join(", ")}`).addHelpText("after", HELP6).action((what, url, _opts, command) => {
+  group.command("collect <what> [url]").description(`collect page resources: ${COLLECTORS.join(", ")}`).addHelpText("after", HELP7).action((what, url, _opts, command) => {
     if (!COLLECTORS.includes(what)) {
       throw new CliError("USAGE", `unknown collector ${what}`, {
         hint: `one of: ${COLLECTORS.join(", ")}`
@@ -5555,7 +5795,7 @@ async function loadDetector(importer = (m) => import(m)) {
 }
 
 // src/commands/page/langs.mjs
-var HELP7 = `
+var HELP8 = `
 Example:
   web page langs https://example.com
 Output:
@@ -5566,7 +5806,7 @@ Notes:
   the document matches references/output-schema.md.
 `;
 function registerLangs(group, deps) {
-  group.command("langs [url]").description("detect page languages (CLD3) and compare with declared lang signals").addHelpText("after", HELP7).action(async (url, _opts, command) => {
+  group.command("langs [url]").description("detect page languages (CLD3) and compare with declared lang signals").addHelpText("after", HELP8).action(async (url, _opts, command) => {
     const detector = await (deps.loadDetector ?? loadDetector)();
     return runPageCommand(command, deps, {
       url,
@@ -5867,7 +6107,7 @@ function residualBlockers(driver, session) {
   const code = `async page => page.evaluate(${JSON.stringify(RESIDUAL_EXPRESSION)})`;
   return parseMaybe(driver.run(session, { code }));
 }
-var HELP8 = `
+var HELP9 = `
 Example:
   web page overlays --session "$S" --dismiss --mode thorough
 Output:
@@ -5880,7 +6120,7 @@ Notes:
   Site headers/navs may appear with role set; filter them rather than hiding every entry.
 `;
 function registerOverlays(group, deps) {
-  group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").addHelpText("after", HELP8).option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "thorough").option("--refresh-db", "refresh the overlay pattern database first").action((url, opts, command) => {
+  group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").addHelpText("after", HELP9).option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "thorough").option("--refresh-db", "refresh the overlay pattern database first").action((url, opts, command) => {
     if (!MODES.includes(opts.mode)) {
       throw new CliError("USAGE", `unknown mode ${opts.mode}`, {
         hint: `one of: ${MODES.join(", ")}`
@@ -5916,11 +6156,12 @@ var GROUP_HELP3 = `
 Use to analyze a page. Pass a <url> for a one-shot run in an ephemeral browser that is closed
 afterwards, or --session <name> to reuse an open browser; with a <url> it is opened under that name if
 needed. The session browser is left open. Each command prints one
-JSON document with url, session and durationMs added; --format text is supported on tree.
+JSON document with url, session and durationMs added; --format text is supported on tree and bands.
 `;
 function registerPage(program2, deps) {
-  const group = program2.command("page").description("analyze a page: tree, reduce, collect, langs, overlays").addHelpText("after", GROUP_HELP3);
+  const group = program2.command("page").description("analyze a page: tree, bands, reduce, collect, langs, overlays").addHelpText("after", GROUP_HELP3);
   registerTree(group, deps);
+  registerBands(group, deps);
   registerReduce(group, deps);
   registerCollect(group, deps);
   registerLangs(group, deps);
@@ -5935,7 +6176,7 @@ var listDocs = () => Object.keys(FILES2).map((f) => f.replace(/\.md$/, ""));
 var loadDoc = (topic) => FILES2[`${topic}.md`] ?? null;
 
 // src/commands/doc.mjs
-var HELP9 = `
+var HELP10 = `
 Prints Markdown, like --help does; --format has no effect here.
 Topics:
   web doc              list the topics
@@ -5943,7 +6184,7 @@ Topics:
 `;
 function registerDoc(program2, deps) {
   const out = deps.stdout ?? process.stdout;
-  program2.command("doc [topic]").description("read the long-form docs shipped with the CLI (text)").addHelpText("after", HELP9).action((topic) => {
+  program2.command("doc [topic]").description("read the long-form docs shipped with the CLI (text)").addHelpText("after", HELP10).action((topic) => {
     if (!topic) {
       out.write(
         `${listDocs().map((t) => `web doc ${t}`).join("\n")}
