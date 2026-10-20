@@ -92,3 +92,19 @@ test('layoutChildren walks through display: contents elements to the boxes they 
   const nested = el('div', 'block', [el('a', 'contents', [el('b', 'contents', [el('c', 'block')])])]);
   assert.deepEqual(plain(layoutChildren(nested, styles).map((e) => e.name)), ['c']);
 });
+
+test('clippedAway: a clip-path that leaves no width or no height hides the element', () => {
+  const { clippedAway } = window.__visualTree;
+  const rect = { width: 1280, height: 370 };
+  const hidden = (clipPath) => clippedAway({ clipPath }, rect);
+  assert.equal(hidden('inset(0px 0px 100%)'), true, 'a closed mega menu');
+  assert.equal(hidden('inset(50%)'), true, 'one value for all four sides');
+  assert.equal(hidden('inset(0px 640px 0px 640px)'), true, 'no width left');
+  assert.equal(hidden('circle(0px at 50% 50%)'), true);
+  assert.equal(hidden('inset(10px)'), false, 'a small inset leaves a box');
+  assert.equal(hidden('inset(0px 0px 50%)'), false);
+  assert.equal(hidden('circle(50% at 50% 50%)'), false);
+  assert.equal(hidden('polygon(0px 0px, 100% 0px, 100% 100%)'), false);
+  assert.equal(hidden('none'), false);
+  assert.equal(clippedAway({}, rect), false, 'no clip-path at all');
+});
