@@ -10,7 +10,7 @@ Output:
   { text, tree, nodeMap, rootBackground, url, session, durationMs }
 Notes:
   text is the indented spatial tree; --format text prints only that. nodeMap maps node ids
-  to elements. Scrolls for lazy content and unpins fixed/sticky elements first.
+  to elements. Scrolls for lazy content first; fixed elements stay fixed and become root nodes.
 Exit codes:
   3 when the page is blocked by bot protection.
 `;
