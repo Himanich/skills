@@ -8,6 +8,8 @@ description: >-
   writes a browser recipe that other web commands load with `--recipe`. Use when a
   page is blocked, empty, or shows a 403, "access denied", or captcha page in
   headless Chrome, or before automating a site known to block bots.
+metadata:
+  version: "1.0.0"
 ---
 
 # Browser Probe
