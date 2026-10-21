@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { findJson } from '../../lib/outputs.mjs';
 
@@ -9,6 +10,12 @@ import { findJson } from '../../lib/outputs.mjs';
 // sit anywhere an agent could find it, which matters for the no-skill arm.
 const ERROR_TITLE_PATTERN = /error|denied|blocked|not satisfied|403|captcha|challenge|attention required|just a moment/i;
 const MIN_BODY_LENGTH = 100;
+
+// The script the CLI injects for `stealth: true`.
+const STEALTH_SCRIPT = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../cli/src/bundles/stealth-init.js',
+);
 
 function checkHealth(health) {
   if (health.url?.startsWith('chrome-error://')) return 'blocked';
@@ -49,18 +56,17 @@ const pw = (session, ...args) =>
 /** Reads the agent's files from the `out` dir of the run that produced `providerResponse`. */
 export const readOutputs = (providerResponse) => ({
   report: findJson(providerResponse, 'probe-report.json'),
-  recipe: findJson(providerResponse, 'browser-recipe.json'),
+  recipe: findJson(providerResponse, 'recipe.json')?.probe?.[0],
 });
 
 /** Expected recipe shape for each probe step, from the SKILL.md mapping table. */
 export function recipeProblems(recipe, firstSuccess) {
-  const opts = recipe.cliConfig?.browser?.launchOptions ?? {};
-  const scripts = recipe.cliConfig?.browser?.initScript ?? [];
+  const opts = recipe.config?.launchOptions ?? {};
   const wantStealth = firstSuccess !== 'default';
   const wantUa = ['stealth-ua', 'chrome', 'persistent'].includes(firstSuccess);
   const wantChrome = ['chrome', 'persistent'].includes(firstSuccess);
   const checks = {
-    'stealth script': (scripts.length > 0 && scripts.every((p) => existsSync(p))) === wantStealth,
+    'stealth flag': Boolean(recipe.stealth) === wantStealth,
     'user-agent arg': (opts.args ?? []).some((a) => a.startsWith('--user-agent=')) === wantUa,
     'chrome channel': (opts.channel === 'chrome') === wantChrome,
     'persistent flag': Boolean(recipe.persistent) === (firstSuccess === 'persistent'),
@@ -74,9 +80,14 @@ export function loadWithRecipe(recipe, url) {
   const session = `verify-${id}`;
   const dir = join(tmpdir(), `bp-${session}`);
   mkdirSync(dir, { recursive: true });
-  const config = structuredClone(recipe.cliConfig);
+  const initScript = [];
+  if (recipe.stealth) {
+    const stealthPath = join(dir, 'stealth-init.js');
+    copyFileSync(STEALTH_SCRIPT, stealthPath);
+    initScript.push(stealthPath);
+  }
   const configPath = join(dir, 'config.json');
-  writeFileSync(configPath, JSON.stringify(config));
+  writeFileSync(configPath, JSON.stringify({ browser: { ...recipe.config, initScript } }));
   const args = ['open', url, `--config=${configPath}`];
   if (recipe.persistent) args.push('--persistent');
   try {

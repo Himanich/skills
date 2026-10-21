@@ -8,7 +8,7 @@ export const reportAndRecipeConsistent = graded(function reportAndRecipeConsiste
   if (report.firstSuccess === null) {
     return recipe ? fail('recipe written although every config failed') : ok('no recipe, all configs failed');
   }
-  if (!recipe) return fail(`browser-recipe.json missing (firstSuccess=${report.firstSuccess})`);
+  if (!recipe) return fail(`recipe.json has no probe entry (firstSuccess=${report.firstSuccess})`);
   if (recipe.url !== vars.url) return fail(`recipe url ${recipe.url} != ${vars.url}`);
   const problems = recipeProblems(recipe, report.firstSuccess);
   return problems.length
