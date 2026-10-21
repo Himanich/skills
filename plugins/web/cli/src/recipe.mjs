@@ -6,7 +6,20 @@ import { loadBundle } from '#src/bundles/index.mjs';
 /** Where `--save-recipe` writes, and what is loaded when it exists and `--recipe` is not given. */
 export const DEFAULT_RECIPE = 'recipe.json';
 
-const TYPES = ['probe', 'overlays'];
+const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isBoolean = (v) => typeof v === 'boolean';
+const isStrings = (v) => Array.isArray(v) && v.every((s) => typeof s === 'string');
+
+// Each type's known entry fields and what they must be; other fields are left alone.
+const SCHEMA = {
+  probe: {
+    config: [isObject, 'an object'],
+    persistent: [isBoolean, 'a boolean'],
+    stealth: [isBoolean, 'a boolean'],
+  },
+  overlays: { rules: [isStrings, 'an array of strings'] },
+};
+const TYPES = Object.keys(SCHEMA);
 const HINT = 'produce one with: web probe <url> --save-recipe, or web page overlays --save-recipe';
 
 /**
@@ -22,7 +35,7 @@ export function readRecipe(path) {
   } catch (err) {
     throw new CliError('USAGE', `cannot read recipe ${path}: ${err.message}`, { hint: HINT });
   }
-  if (recipe === null || typeof recipe !== 'object' || Array.isArray(recipe)) {
+  if (!isObject(recipe)) {
     throw new CliError('USAGE', `recipe ${path} must be a JSON object`, { hint: HINT });
   }
   const unknown = Object.keys(recipe).filter((key) => !TYPES.includes(key));
@@ -31,7 +44,20 @@ export function readRecipe(path) {
       hint: `a recipe holds one array per type (${TYPES.join(', ')}); ${HINT}`,
     });
   }
+  for (const [type, entries] of Object.entries(recipe)) checkEntries(path, type, entries);
   return recipe;
+}
+
+function checkEntries(path, type, entries) {
+  const invalid = (where, expected) =>
+    new CliError('USAGE', `recipe ${path}: ${where} must be ${expected}`, { hint: HINT });
+  if (!Array.isArray(entries)) throw invalid(type, 'an array');
+  entries.forEach((entry, i) => {
+    if (!isObject(entry)) throw invalid(`${type}[${i}]`, 'an object');
+    for (const [field, [valid, expected]] of Object.entries(SCHEMA[type])) {
+      if (field in entry && !valid(entry[field])) throw invalid(`${type}[${i}].${field}`, expected);
+    }
+  });
 }
 
 /**
@@ -54,6 +80,7 @@ function hideScript(rules) {
     const root = document.head || document.documentElement;
     if (!root) return false;
     const style = document.createElement('style');
+    style.setAttribute('data-web-recipe', 'overlays');
     style.textContent = css;
     root.appendChild(style);
     return true;
@@ -65,13 +92,18 @@ function hideScript(rules) {
 `;
 }
 
+const withoutTypes = (recipe, skip) =>
+  Object.fromEntries(Object.entries(recipe).filter(([type]) => !skip.includes(type)));
+
 /**
- * Turn a recipe into browser launch options.
+ * Turn a recipe into browser launch options. Types in `skip` are ignored: recording a type
+ * must not replay it.
  * @param {string} path
+ * @param {{ skip?: string[] }} [options]
  * @returns {{ config: object | undefined, persistent: boolean, initSources: string[] }}
  */
-export function loadRecipe(path) {
-  const { probe = [], overlays = [] } = readRecipe(path);
+export function loadRecipe(path, { skip = [] } = {}) {
+  const { probe = [], overlays = [] } = withoutTypes(readRecipe(path), skip);
   const initSources = [];
   if (probe[0]?.stealth) initSources.push(loadBundle('stealth-init.js'));
   const rules = overlays.flatMap((entry) => entry.rules ?? []);
@@ -84,8 +116,9 @@ export function loadRecipe(path) {
  * not undefined.
  * @param {string | undefined} recipePath
  * @param {object} explicit
+ * @param {{ skip?: string[] }} [options] recipe types to leave out
  */
-export function resolveLaunch(recipePath, explicit = {}) {
+export function resolveLaunch(recipePath, explicit = {}, options = {}) {
   const set = Object.fromEntries(Object.entries(explicit).filter(([, v]) => v !== undefined));
-  return { ...(recipePath ? loadRecipe(recipePath) : {}), ...set };
+  return { ...(recipePath ? loadRecipe(recipePath, options) : {}), ...set };
 }

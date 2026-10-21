@@ -19,6 +19,7 @@
   // Set realistic languages (headless may report empty)
   Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
 
-  // Add chrome runtime object (missing in headless)
-  window.chrome = { runtime: {} };
+  // Add chrome runtime object (missing in headless); keep the real one on extension pages
+  window.chrome = window.chrome || {};
+  window.chrome.runtime = window.chrome.runtime || {};
 })();

@@ -47,7 +47,14 @@ const REPORT = {
 
 async function run(
   extra,
-  { runFails = false, dismissResult = { clicked: 1, skipped: 0 }, visible = false, report } = {},
+  {
+    runFails = false,
+    dismissResult = { clicked: 1, skipped: 0 },
+    visible = false,
+    report,
+    recipeStyle = false,
+    sessions = [],
+  } = {},
 ) {
   const calls = [];
   const fetchUrls = [];
@@ -56,7 +63,7 @@ async function run(
     ensureAvailable: () => {},
     open: (a) => opened.push(a),
     close: () => {},
-    list: () => [],
+    list: () => sessions,
     goto: () => {},
     inject: () => {},
     pageHealth: () => OK,
@@ -69,6 +76,7 @@ async function run(
     },
     evaluate: (s, expr) => {
       calls.push(['evaluate', expr]);
+      if (expr.includes('data-web-recipe')) return recipeStyle;
       if (expr.includes('appendChild')) return 'ok';
       return expr.includes('overflow') ? true : !visible;
     },
@@ -290,11 +298,33 @@ test('--save-recipe replaces the overlays entries and keeps other recipe types',
   });
 });
 
-test('--save-recipe records on a browser without the recipe; otherwise it is applied', async () => {
+test('--save-recipe records with the probe entries but without the overlay rules', async () => {
   const file = recipeIn();
-  writeFileSync(file, JSON.stringify({ overlays: [{ rules: ['old'] }] }));
+  const config = { browserName: 'chromium', launchOptions: { channel: 'chrome' } };
+  const probe = [{ config, persistent: true, stealth: true }];
+  writeFileSync(file, JSON.stringify({ probe, overlays: [{ rules: ['old'] }] }));
   const saving = await run(['http://x', '--save-recipe', '--recipe', file]);
-  assert.equal(saving.opened[0].initSources, undefined);
+  assert.deepEqual(saving.opened[0].config, config);
+  assert.equal(saving.opened[0].persistent, true);
+  assert.equal(saving.opened[0].initSources.length, 1);
   const replaying = await run(['http://x', '--recipe', file]);
-  assert.equal(replaying.opened[0].initSources.length, 1);
+  assert.equal(replaying.opened[0].initSources.length, 2);
+});
+
+test('--save-recipe in a session launched with overlay rules fails and keeps the recipe', async () => {
+  const file = recipeIn();
+  const before = JSON.stringify({ overlays: [{ rules: ['kept'] }] });
+  writeFileSync(file, before);
+  const sessions = [{ name: 's', status: 'open' }];
+  const { code, doc } = await run(['--session', 's', '--save-recipe', '--recipe', file], {
+    sessions,
+    recipeStyle: true,
+    report: { overlays: [] },
+  });
+  assert.equal(code, 2);
+  assert.equal(doc.error.code, 'USAGE');
+  assert.match(doc.error.message, /already hidden/);
+  assert.equal(readFileSync(file, 'utf8'), before);
+  const clean = await run(['--session', 's', '--save-recipe', '--recipe', file], { sessions });
+  assert.equal(clean.code, 0);
 });

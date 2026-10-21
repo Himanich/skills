@@ -123,6 +123,20 @@ function residualBlockers(driver, session) {
   return parseMaybe(driver.run(session, { code }));
 }
 
+function recordOverlays(driver, session, report, recipe) {
+  const styled = `!!document.querySelector('style[data-web-recipe="overlays"]')`;
+  if (isTrue(driver.evaluate(session, styled))) {
+    throw new CliError(
+      'USAGE',
+      'this browser was launched with an overlays recipe: they are already hidden',
+      {
+        hint: 'record in a fresh browser: omit --session, or open one without that recipe',
+      },
+    );
+  }
+  return saveRecipe(recipe ?? DEFAULT_RECIPE, 'overlays', [{ rules: hideRules(report) }]);
+}
+
 const HELP = `
 Example:
   web page overlays --session "$S" --dismiss --mode thorough
@@ -158,6 +172,7 @@ export function registerOverlays(group, deps) {
       }
       return runPageCommand(command, deps, {
         url,
+        records: 'overlays',
         fn: async (driver, session, all) => {
           const patterns = await loadPatterns({
             refresh: opts.refreshDb,
@@ -171,10 +186,7 @@ export function registerOverlays(group, deps) {
             scrollLocked: report.scroll_locked,
             scrollFix: report.scroll_fix ?? null,
           };
-          if (opts.saveRecipe) {
-            const entry = { rules: hideRules(report) };
-            result.recipe = saveRecipe(all.recipe ?? DEFAULT_RECIPE, 'overlays', [entry]);
-          }
+          if (opts.saveRecipe) result.recipe = recordOverlays(driver, session, report, all.recipe);
           if (!opts.dismiss) return result;
           result.applied = dismissOverlays(driver, session, report, { mode: opts.mode });
           if (report.scroll_locked) result.scrollUnlocked = scrollUnlocked(driver, session);

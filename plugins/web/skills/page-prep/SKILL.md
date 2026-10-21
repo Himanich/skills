@@ -74,8 +74,11 @@ S=$($WEB browser open "$URL" | jq -r .session)   # starts with the overlays hidd
 `overlays` entries and keeping the other types (`probe`). Later browsers launched by any
 `web` command load that file from `--recipe`, `$WEB_RECIPE` or `./recipe.json`, and inject
 the rules as CSS before the page renders. A recipe holds one site: use one file per site.
-Saving always detects in a browser launched without the recipe. The rules cover whatever
-was detected on that page, heuristic matches included, so record on a representative page.
+Saving launches its browser with the recipe's `probe` entries but not its `overlays`, so
+it still reaches a protected site and still sees the overlays. It refuses a `--session` that
+was launched with overlay rules (they are hidden, so nothing would be detected): record in a
+fresh browser. The rules cover whatever was detected on that page, heuristic matches
+included, so record on a representative page.
 
 ## Mode
 

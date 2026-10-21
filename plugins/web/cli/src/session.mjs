@@ -25,17 +25,18 @@ export function requireOpenSession(driver, name) {
 /**
  * Run `fn` against a given session (opened on demand when a url is given), or against an ephemeral one closed afterwards.
  * Explicit `config`, `persistent`, `initScripts` win over values loaded from `recipePath`.
- * A recipe cannot change a browser that is already open: with `recipeExplicit` that warns.
+ * `recipeSkip` lists recipe types not to apply. A recipe cannot change a browser that is already open: with `recipeExplicit` that warns.
  * @param {object} driver
  * @param {object} opts session, url, headed, recipePath, config, persistent, initScripts
  * @param {(session: string) => unknown} fn
  */
 export async function withSession(driver, opts, fn) {
-  const { session, url, headed, recipePath, recipeExplicit, ...launch } = opts;
+  const { session, url, headed, recipePath, recipeExplicit, recipeSkip, ...launch } = opts;
+  const resolve = () => resolveLaunch(recipePath, launch, { skip: recipeSkip });
   if (session) {
     const isOpen = driver.list().some((s) => s.name === session && s.status === 'open');
     if (!isOpen && url) {
-      driver.open({ session, url, headed, ...resolveLaunch(recipePath, launch) });
+      driver.open({ session, url, headed, ...resolve() });
     } else {
       requireOpenSession(driver, session);
       if (recipePath && recipeExplicit) {
@@ -53,7 +54,7 @@ export async function withSession(driver, opts, fn) {
   let owned = true;
   try {
     try {
-      driver.open({ session: name, url, headed, ...resolveLaunch(recipePath, launch) });
+      driver.open({ session: name, url, headed, ...resolve() });
     } catch (err) {
       owned = err?.code !== 'SESSION_EXISTS';
       throw err;

@@ -67,7 +67,7 @@ test('the overlay init script waits for a root element, then adds the style once
   const doc = {
     head: null,
     documentElement: null,
-    createElement: () => ({}),
+    createElement: () => ({ setAttribute() {} }),
   };
   let notify;
   class Observer {
@@ -83,7 +83,8 @@ test('the overlay init script waits for a root element, then adds the style once
   assert.equal(added.length, 0);
   doc.documentElement = { appendChild: (el) => added.push(el) };
   notify();
-  assert.deepEqual(added, [{ textContent: '#a { display:none!important }' }]);
+  assert.equal(added.length, 1);
+  assert.equal(added[0].textContent, '#a { display:none!important }');
   assert.equal(notify, null);
 });
 
@@ -92,4 +93,29 @@ test('a recipe with unknown keys, such as the old flat format, is rejected', () 
   writeFileSync(file, JSON.stringify({ url: 'http://x', cliConfig: { browser: {} } }));
   assert.throws(() => loadRecipe(file), { code: 'USAGE', message: /unknown keys: url, cliConfig/ });
   assert.throws(() => saveRecipe(file, 'probe', []), { code: 'USAGE' });
+});
+
+const bad = (recipe) => {
+  const file = tmp();
+  writeFileSync(file, JSON.stringify(recipe));
+  return file;
+};
+
+test('a recipe with the wrong shape is a USAGE error naming the property', () => {
+  const cases = [
+    [{ overlays: null }, /overlays must be an array/],
+    [{ probe: { stealth: true } }, /probe must be an array/],
+    [{ overlays: [null] }, /overlays\[0\] must be an object/],
+    [{ probe: [[]] }, /probe\[0\] must be an object/],
+    [{ probe: [{ stealth: 'yes' }] }, /probe\[0\]\.stealth must be a boolean/],
+    [{ probe: [{ persistent: 1 }] }, /probe\[0\]\.persistent must be a boolean/],
+    [{ probe: [{ config: [] }] }, /probe\[0\]\.config must be an object/],
+    [{ overlays: [{ rules: 'a' }] }, /overlays\[0\]\.rules must be an array of strings/],
+    [{ overlays: [{ rules: [1] }] }, /overlays\[0\]\.rules must be an array of strings/],
+  ];
+  for (const [recipe, message] of cases) {
+    const file = bad(recipe);
+    assert.throws(() => loadRecipe(file), { code: 'USAGE', message });
+    assert.throws(() => saveRecipe(file, 'probe', []), { code: 'USAGE', message });
+  }
 });
