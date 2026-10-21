@@ -1,7 +1,13 @@
 import { CliError } from '#src/errors.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
-import { buildBundle, buildHideExpression, loadPatterns } from '#src/page/overlay-db.mjs';
+import {
+  buildBundle,
+  buildHideExpression,
+  hideRules,
+  loadPatterns,
+} from '#src/page/overlay-db.mjs';
+import { DEFAULT_RECIPE, saveRecipe } from '#src/recipe.mjs';
 
 const MODES = ['quick', 'thorough'];
 
@@ -117,6 +123,20 @@ function residualBlockers(driver, session) {
   return parseMaybe(driver.run(session, { code }));
 }
 
+function recordOverlays(driver, session, report, recipe) {
+  const styled = `!!document.querySelector('style[data-web-recipe="overlays"]')`;
+  if (isTrue(driver.evaluate(session, styled))) {
+    throw new CliError(
+      'USAGE',
+      'this browser was launched with an overlays recipe: they are already hidden',
+      {
+        hint: 'record in a fresh browser: omit --session, or open one without that recipe',
+      },
+    );
+  }
+  return saveRecipe(recipe ?? DEFAULT_RECIPE, 'overlays', [{ rules: hideRules(report) }]);
+}
+
 const HELP = `
 Example:
   web page overlays --session "$S" --dismiss --mode thorough
@@ -143,6 +163,7 @@ export function registerOverlays(group, deps) {
     .option('--dismiss', 'dismiss or hide the detected overlays')
     .option('--mode <mode>', `dismissal mode: ${MODES.join(', ')}`, 'thorough')
     .option('--refresh-db', 'refresh the overlay pattern database first')
+    .option('--save-recipe', 'save the hide rules to the recipe (--recipe, default recipe.json)')
     .action((url, opts, command) => {
       if (!MODES.includes(opts.mode)) {
         throw new CliError('USAGE', `unknown mode ${opts.mode}`, {
@@ -151,7 +172,8 @@ export function registerOverlays(group, deps) {
       }
       return runPageCommand(command, deps, {
         url,
-        fn: async (driver, session) => {
+        records: 'overlays',
+        fn: async (driver, session, all) => {
           const patterns = await loadPatterns({
             refresh: opts.refreshDb,
             fetch: deps.fetch,
@@ -164,6 +186,7 @@ export function registerOverlays(group, deps) {
             scrollLocked: report.scroll_locked,
             scrollFix: report.scroll_fix ?? null,
           };
+          if (opts.saveRecipe) result.recipe = recordOverlays(driver, session, report, all.recipe);
           if (!opts.dismiss) return result;
           result.applied = dismissOverlays(driver, session, report, { mode: opts.mode });
           if (report.scroll_locked) result.scrollUnlocked = scrollUnlocked(driver, session);

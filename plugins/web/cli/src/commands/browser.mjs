@@ -2,12 +2,8 @@ import { parseIntArg } from '#src/args.mjs';
 import { existsSync } from 'node:fs';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
-import {
-  artifactPath,
-  generateSessionName,
-  loadRecipe,
-  requireOpenSession,
-} from '#src/session.mjs';
+import { resolveLaunch } from '#src/recipe.mjs';
+import { artifactPath, generateSessionName, requireOpenSession } from '#src/session.mjs';
 
 const HELP = {
   OPEN: `
@@ -140,17 +136,15 @@ export function registerBrowser(program, deps) {
       .addHelpText('after', HELP.OPEN)
       .option('--cdp-port <n>', 'remote debugging port', parseIntArg)
       .option('--persistent', 'use a persistent profile'),
-    ({ opts, driver, print }, url) => {
+    ({ opts, driver, print, recipe }, url) => {
       const session = opts.session ?? generateSessionName();
-      const recipe = opts.recipe ? loadRecipe(opts.recipe) : {};
       const cdpPort = opts.cdpPort;
       driver.open({
         session,
         url,
         headed: opts.headed,
         cdpPort,
-        persistent: opts.persistent || recipe.persistent,
-        config: recipe.config,
+        ...resolveLaunch(recipe, { persistent: opts.persistent }),
       });
       print({ session, url, headed: Boolean(opts.headed), ...(cdpPort && { cdpPort }) });
     },

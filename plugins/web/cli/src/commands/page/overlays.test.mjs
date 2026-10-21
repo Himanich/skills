@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
@@ -47,15 +47,23 @@ const REPORT = {
 
 async function run(
   extra,
-  { runFails = false, dismissResult = { clicked: 1, skipped: 0 }, visible = false, report } = {},
+  {
+    runFails = false,
+    dismissResult = { clicked: 1, skipped: 0 },
+    visible = false,
+    report,
+    recipeStyle = false,
+    sessions = [],
+  } = {},
 ) {
   const calls = [];
   const fetchUrls = [];
+  const opened = [];
   const driver = {
     ensureAvailable: () => {},
-    open: () => {},
+    open: (a) => opened.push(a),
     close: () => {},
-    list: () => [],
+    list: () => sessions,
     goto: () => {},
     inject: () => {},
     pageHealth: () => OK,
@@ -68,6 +76,7 @@ async function run(
     },
     evaluate: (s, expr) => {
       calls.push(['evaluate', expr]);
+      if (expr.includes('data-web-recipe')) return recipeStyle;
       if (expr.includes('appendChild')) return 'ok';
       return expr.includes('overflow') ? true : !visible;
     },
@@ -84,7 +93,7 @@ async function run(
   const deps = { stdout, stderr, env: {}, driverFactory: () => driver, fetch, cacheDir };
   const out = mkdtempSync(join(tmpdir(), 'ovo-'));
   const code = await runCli(['node', 'web', 'page', 'overlays', ...extra, '--output', out], deps);
-  return { code, calls, fetchUrls, doc: stdout.buf ? JSON.parse(stdout.buf) : null };
+  return { code, calls, opened, fetchUrls, doc: stdout.buf ? JSON.parse(stdout.buf) : null };
 }
 
 const hides = (calls) => calls.filter((c) => c[0] === 'evaluate' && c[1].includes('appendChild'));
@@ -255,4 +264,67 @@ test('residual does not crash on a fixed SVG whose className is not a string', (
 test('residual tags header elements with a landmark role', () => {
   const [hit] = residualFor([fixedEl({ props: { tagName: 'HEADER' }, style: { zIndex: '9999' } })]);
   assert.equal(hit.role, 'landmark');
+});
+
+const recipeIn = () => join(mkdtempSync(join(tmpdir(), 'ovr-')), 'recipe.json');
+
+test('--save-recipe stores every detected hide rule and the scroll fix as overlays', async () => {
+  const file = recipeIn();
+  const { doc } = await run(['http://x', '--save-recipe', '--recipe', file]);
+  assert.equal(doc.recipe, file);
+  assert.deepEqual(JSON.parse(readFileSync(file, 'utf8')), {
+    overlays: [
+      {
+        rules: [
+          '#acme-hide { display:none!important }',
+          '.modal-hide { display:none!important }',
+          'html { overflow:auto!important }',
+        ],
+      },
+    ],
+  });
+});
+
+test('--save-recipe replaces the overlays entries and keeps other recipe types', async () => {
+  const file = recipeIn();
+  writeFileSync(
+    file,
+    JSON.stringify({ probe: [{ stealth: true }], overlays: [{ rules: ['old'] }] }),
+  );
+  await run(['http://x', '--save-recipe', '--recipe', file], { report: { overlays: [] } });
+  assert.deepEqual(JSON.parse(readFileSync(file, 'utf8')), {
+    probe: [{ stealth: true }],
+    overlays: [{ rules: [] }],
+  });
+});
+
+test('--save-recipe records with the probe entries but without the overlay rules', async () => {
+  const file = recipeIn();
+  const config = { browserName: 'chromium', launchOptions: { channel: 'chrome' } };
+  const probe = [{ config, persistent: true, stealth: true }];
+  writeFileSync(file, JSON.stringify({ probe, overlays: [{ rules: ['old'] }] }));
+  const saving = await run(['http://x', '--save-recipe', '--recipe', file]);
+  assert.deepEqual(saving.opened[0].config, config);
+  assert.equal(saving.opened[0].persistent, true);
+  assert.equal(saving.opened[0].initSources.length, 1);
+  const replaying = await run(['http://x', '--recipe', file]);
+  assert.equal(replaying.opened[0].initSources.length, 2);
+});
+
+test('--save-recipe in a session launched with overlay rules fails and keeps the recipe', async () => {
+  const file = recipeIn();
+  const before = JSON.stringify({ overlays: [{ rules: ['kept'] }] });
+  writeFileSync(file, before);
+  const sessions = [{ name: 's', status: 'open' }];
+  const { code, doc } = await run(['--session', 's', '--save-recipe', '--recipe', file], {
+    sessions,
+    recipeStyle: true,
+    report: { overlays: [] },
+  });
+  assert.equal(code, 2);
+  assert.equal(doc.error.code, 'USAGE');
+  assert.match(doc.error.message, /already hidden/);
+  assert.equal(readFileSync(file, 'utf8'), before);
+  const clean = await run(['--session', 's', '--save-recipe', '--recipe', file], { sessions });
+  assert.equal(clean.code, 0);
 });

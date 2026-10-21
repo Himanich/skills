@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
@@ -16,7 +16,7 @@ const sink = () => ({
   },
 });
 
-function run(args, { sessions = [], evalThrows = false } = {}) {
+function run(args, { sessions = [], evalThrows = false, env = {} } = {}) {
   const calls = [];
   const rec =
     (n, ret) =>
@@ -39,7 +39,7 @@ function run(args, { sessions = [], evalThrows = false } = {}) {
   };
   const stdout = sink();
   const stderr = sink();
-  const deps = { stdout, stderr, env: {}, driverFactory: () => driver };
+  const deps = { stdout, stderr, env, driverFactory: () => driver };
   return runCli(['node', 'web', ...args], deps).then((code) => ({ code, calls, stdout }));
 }
 
@@ -154,13 +154,56 @@ test('browser open: --cdp-port is a number, no --session generates a name', asyn
   assert.strictEqual(call(calls, 'open')[1].cdpPort, 9222);
 });
 
-test('browser open --recipe passes config and persistent', async () => {
-  const rf = join(mkdtempSync(join(tmpdir(), 'rec-')), 'r.json');
-  writeFileSync(rf, JSON.stringify({ cliConfig: { browser: { a: 1 } }, persistent: true }));
-  const { calls } = await run(['browser', 'open', 'http://x', '--session', 's', '--recipe', rf]);
+const recipeFile = () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'rec-')), 'r.json');
+  const probe = [{ config: { a: 1 }, persistent: true, stealth: true }];
+  const overlays = [{ rules: ['#b { display:none!important }'] }];
+  writeFileSync(file, JSON.stringify({ probe, overlays }));
+  return file;
+};
+
+function assertRecipeApplied(calls) {
   const o = call(calls, 'open')[1];
   assert.deepEqual(o.config, { a: 1 });
   assert.equal(o.persistent, true);
+  assert.equal(o.initSources.length, 2);
+}
+
+test('browser open --recipe passes config, persistent and init scripts', async () => {
+  const { calls } = await run([
+    'browser',
+    'open',
+    'http://x',
+    '--session',
+    's',
+    '--recipe',
+    recipeFile(),
+  ]);
+  assertRecipeApplied(calls);
+});
+
+test('WEB_RECIPE is the default for --recipe', async () => {
+  const env = { WEB_RECIPE: recipeFile() };
+  const { calls } = await run(['browser', 'open', 'http://x', '--session', 's'], { env });
+  assertRecipeApplied(calls);
+});
+
+test('./recipe.json is used when it exists and --recipe is not given', async () => {
+  const cwd = process.cwd();
+  const dir = mkdtempSync(join(tmpdir(), 'rec-cwd-'));
+  writeFileSync(join(dir, 'recipe.json'), readFileSync(recipeFile()));
+  process.chdir(dir);
+  try {
+    const { calls } = await run(['browser', 'open', 'http://x', '--session', 's']);
+    assertRecipeApplied(calls);
+  } finally {
+    process.chdir(cwd);
+  }
+});
+
+test('a missing --recipe file exits 2 USAGE', async () => {
+  const { code } = await run(['browser', 'open', 'http://x', '--recipe', '/no/such.json']);
+  assert.equal(code, 2);
 });
 
 test('browser list gives url null when evaluate throws', async () => {

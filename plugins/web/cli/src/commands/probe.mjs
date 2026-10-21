@@ -1,10 +1,11 @@
 import { randomBytes } from 'node:crypto';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { rmSync, writeFileSync } from 'node:fs';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
 import { artifactDir, withSession } from '#src/session.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
+import { DEFAULT_RECIPE, saveRecipe } from '#src/recipe.mjs';
 import { checkHealth, detectSignals, findDocumentChain } from '#src/driver/blocked.mjs';
 
 const REALISTIC_UA =
@@ -138,15 +139,17 @@ Example:
   web probe https://example.com
 Output:
   { report: { url, timestamp, steps, firstSuccess, detectedSignals }, recipePath }
-  recipe file: { url, cliConfig, persistent }
+  recipe file: { probe: [{ url, config, persistent, stealth }] }
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
-  <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
-  them); pass recipePath to other commands with --recipe. Progress goes to stderr.
+  <output>/probe-<id>/probe-report.json and browser-recipe.json; pass recipePath to other
+  commands with --recipe. With --save-recipe the recipe goes to --recipe (default
+  recipe.json) instead, replacing its probe entries and keeping its other types, and later
+  commands pick it up from $WEB_RECIPE or ./recipe.json. Progress goes to stderr.
   Each playwright-cli call is capped at 30 s per step.
-  Always opens its own browsers (it compares configurations): an explicit --session or
-  --recipe is rejected, an exported WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored;
-  --headed is honoured.
+  Always opens its own browsers (it compares configurations): an explicit --session is
+  rejected, so is --recipe without --save-recipe, an exported
+  WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored; --headed is honoured.
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
 `;
@@ -155,7 +158,7 @@ Exit codes:
  * Try each probe step until a page loads unblocked.
  * @returns {{ report: object, recipePath: string|null }}
  */
-export async function runProbe(driver, { url, outputDir, headed, log = () => {} }) {
+export async function runProbe(driver, { url, outputDir, headed, recipeFile, log = () => {} }) {
   const dir = artifactDir(outputDir, 'probe', randomBytes(2).toString('hex'));
   const steps = [];
   const networkLines = [];
@@ -186,19 +189,13 @@ export async function runProbe(driver, { url, outputDir, headed, log = () => {} 
   };
   writeFileSync(join(dir, 'probe-report.json'), JSON.stringify(report, null, 2));
   if (!success) return { report, recipePath: null };
-  const recipePath = join(dir, 'browser-recipe.json');
-  const browser = { ...success.browserConfig };
-  if (success.stepDef.stealth) {
-    const stealthPath = join(dir, 'stealth-init.js');
-    writeFileSync(stealthPath, loadBundle('stealth-init.js'));
-    browser.initScript = [resolve(stealthPath)];
-  }
-  const recipe = {
+  const entry = {
     url,
-    cliConfig: { browser },
+    config: success.browserConfig,
     persistent: success.stepDef.persistent,
+    stealth: success.stepDef.stealth,
   };
-  writeFileSync(recipePath, JSON.stringify(recipe, null, 2));
+  const recipePath = saveRecipe(recipeFile ?? join(dir, 'browser-recipe.json'), 'probe', [entry]);
   return { report, recipePath };
 }
 
@@ -212,13 +209,14 @@ export function registerProbe(program, deps) {
     .command('probe <url>')
     .description('detect bot/CDN protection and produce a browser recipe')
     .addHelpText('after', HELP)
+    .option('--save-recipe', 'save the recipe to --recipe (default recipe.json), not the artifacts')
     .action(async (url, _opts, command) => {
       const { opts, driver, print } = createContext(command, deps, { timeoutMs: 30_000 });
       const explicit = (name) => command.getOptionValueSourceWithGlobals(name) === 'cli';
-      if (explicit('session') || explicit('recipe')) {
+      if (explicit('session') || (explicit('recipe') && !opts.saveRecipe)) {
         throw new CliError(
           'USAGE',
-          'probe launches its own browsers; --session and --recipe are not supported',
+          'probe launches its own browsers; --session is not supported, and --recipe only with --save-recipe',
           { hint: 'run: web probe <url> [--headed] [--output <dir>]' },
         );
       }
@@ -228,6 +226,7 @@ export function registerProbe(program, deps) {
         url,
         outputDir: opts.output,
         headed: opts.headed,
+        recipeFile: opts.saveRecipe ? (opts.recipe ?? DEFAULT_RECIPE) : undefined,
         log,
       });
       if (report.firstSuccess === null) {

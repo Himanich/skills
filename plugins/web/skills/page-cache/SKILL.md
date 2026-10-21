@@ -63,8 +63,8 @@ done
    origin cookie, so later navigations in the same browser need only the path; pass a new
    `?_origin=` to switch origins. With a browser (JS, lazy loading, a normal fingerprint):
    ```bash
-   S=$($WEB browser open "$PROXY/?_origin=https://example.com" | jq -r .session)
-   $WEB page overlays --session "$S" --dismiss     # before caching, or the banner is cached
+   $WEB page overlays "https://example.com" --save-recipe   # once per site: records the banner rules
+   S=$($WEB browser open "$PROXY/?_origin=https://example.com" | jq -r .session)  # starts with them hidden
    ```
    Scroll to the bottom and back to trigger lazy images, then `$WEB browser close --session "$S"`.
 3. **Check.** `curl -s $PROXY/__status` → `{ hits, misses, errors, cached, dir, offline, also }`.

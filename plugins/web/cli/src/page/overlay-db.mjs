@@ -202,7 +202,7 @@ export async function fetchEasyList(fetch = globalThis.fetch) {
 // One `eval` expression that injects the hide rules of the selected overlays
 // (ids, or 'all') plus scroll_fix as a stylesheet. The CSS is JSON-encoded so
 // quotes and backslashes in selectors cannot break the string.
-export function buildHideExpression(report, ids) {
+export function hideRules(report, ids = ['all']) {
   const selected = ids.includes('all')
     ? report.overlays
     : report.overlays.filter((o) => ids.includes(o.id));
@@ -210,7 +210,11 @@ export function buildHideExpression(report, ids) {
     o.hide?.length ? o.hide : [`${o.selector} { display:none!important }`],
   );
   if (report.scroll_locked && report.scroll_fix) rules.push(report.scroll_fix);
-  const css = JSON.stringify(rules.join('\n'));
+  return rules;
+}
+
+export function buildHideExpression(report, ids) {
+  const css = JSON.stringify(hideRules(report, ids).join('\n'));
   const style = `Object.assign(document.createElement('style'), { textContent: ${css} })`;
   return `document.head.appendChild(${style}) && 'ok'`;
 }

@@ -117,7 +117,25 @@ export function createDriver({
     return { browser: { ...config, launchOptions, initScript } };
   }
 
-  function open({ session, url, headed, config, cdpPort, persistent, initScripts = [] }) {
+  /**
+   * `initScripts` are paths; `initSources` are script texts, written to files only while the
+   * browser launches (playwright-cli reads them at launch) and removed after.
+   */
+  function open({ initScripts = [], initSources = [], ...launchOpts }) {
+    mkdirSync(outputDir, { recursive: true });
+    const sourcePaths = initSources.map((source, i) => {
+      const path = join(outputDir, `${launchOpts.session}-init-${i}.js`);
+      writeFileSync(path, source);
+      return path;
+    });
+    try {
+      return launch({ ...launchOpts, initScripts: [...initScripts, ...sourcePaths] });
+    } finally {
+      for (const path of sourcePaths) rmSync(path, { force: true });
+    }
+  }
+
+  function launch({ session, url, headed, config, cdpPort, persistent, initScripts }) {
     if (list().some((b) => b.name === session && b.status === 'open')) {
       throw new CliError('SESSION_EXISTS', `session '${session}' is already open`, {
         hint: 'choose another --session or run: web browser close --session <name>',

@@ -299,6 +299,23 @@ test('open writes absolute initScript paths even when given relative ones', () =
   assert.deepEqual(body.browser.initScript, [resolve('.web/own.js'), resolve('.web/init.js')]);
 });
 
+test('open writes initSources to files for the launch only, then removes them', () => {
+  let seen;
+  const { driver, outputDir } = setup((args) => {
+    const flag = args.find((a) => a.startsWith('--config='));
+    if (flag) {
+      const body = JSON.parse(readFileSync(flag.slice(9), 'utf8'));
+      const [file] = body.browser.initScript;
+      seen = { file, source: readFileSync(file, 'utf8') };
+    }
+    return '{"browsers":[]}';
+  });
+  driver.open({ session: 'a', initSources: ['window.x = 1;'] });
+  assert.equal(seen.file, join(outputDir, 'a-init-0.js'));
+  assert.equal(seen.source, 'window.x = 1;');
+  assert.equal(existsSync(seen.file), false);
+});
+
 test('exec receives the driver-level timeoutMs on every call', () => {
   const seen = [];
   const exec = (args, opts) => {

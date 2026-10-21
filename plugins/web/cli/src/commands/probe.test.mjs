@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { isAbsolute, join } from 'node:path';
+import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
 
 const OK = { title: 'Home', url: 'http://x/', bodyLength: 500, status: 200, hasMainContent: true };
@@ -15,7 +15,7 @@ const sink = () => ({
   },
 });
 
-function run(healths) {
+function run(healths, extra = []) {
   const out = mkdtempSync(join(tmpdir(), 'probe-test-'));
   const calls = [];
   const opened = [];
@@ -34,14 +34,16 @@ function run(healths) {
   const stdout = sink();
   const stderr = sink();
   const deps = { stdout, stderr, env: {}, driverFactory: () => driver };
-  return runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps).then((code) => ({
-    code,
-    out,
-    opened,
-    closed: calls,
-    stdout,
-    stderr,
-  }));
+  return runCli(['node', 'web', 'probe', 'http://x/', '--output', out, ...extra], deps).then(
+    (code) => ({
+      code,
+      out,
+      opened,
+      closed: calls,
+      stdout,
+      stderr,
+    }),
+  );
 }
 
 test('stops at first successful step and writes recipe for it', async () => {
@@ -51,16 +53,12 @@ test('stops at first successful step and writes recipe for it', async () => {
   assert.equal(report.firstSuccess, 'stealth');
   assert.equal(report.steps.length, 2);
   assert.ok(report.detectedSignals.includes('cloudflare-ray'));
-  const recipe = JSON.parse(readFileSync(recipePath, 'utf-8'));
-  const cfg = r.opened[1].config;
-  const { initScript, ...rest } = recipe.cliConfig.browser;
-  assert.deepEqual(rest, cfg);
-  assert.equal(recipe.url, 'http://x/');
-  assert.equal(Object.keys(recipe)[0], 'url');
-  assert.equal(recipe.persistent, false);
-  assert.equal(cfg.browserName, 'chromium');
-  assert.ok(isAbsolute(initScript[0]));
-  assert.ok(existsSync(initScript[0]));
+  const { probe, ...others } = JSON.parse(readFileSync(recipePath, 'utf-8'));
+  assert.deepEqual(others, {});
+  assert.deepEqual(probe, [
+    { url: 'http://x/', config: r.opened[1].config, persistent: false, stealth: true },
+  ]);
+  assert.equal(r.opened[1].config.browserName, 'chromium');
   assert.match(r.stderr.buf, /Probing with default config/);
 });
 
@@ -183,4 +181,19 @@ test('probe creates its driver with a 30 s per-call timeout', async () => {
   const deps = { stdout: sink(), stderr: sink(), env: {}, driverFactory };
   await runCli(['node', 'web', 'probe', 'http://x/', '--output', out], deps);
   assert.equal(factoryArg.timeoutMs, 30000);
+});
+
+test('--save-recipe writes the probe entry to --recipe and keeps the other types', async () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'probe-rec-')), 'recipe.json');
+  writeFileSync(file, JSON.stringify({ overlays: [{ rules: ['a'] }] }));
+  const r = await run([OK], ['--save-recipe', '--recipe', file]);
+  assert.equal(r.code, 0);
+  assert.equal(JSON.parse(r.stdout.buf).recipePath, file);
+  const recipe = JSON.parse(readFileSync(file, 'utf-8'));
+  assert.deepEqual(recipe.overlays, [{ rules: ['a'] }]);
+  assert.equal(recipe.probe[0].stealth, false);
+  assert.equal(
+    readdirSync(r.out).some((d) => existsSync(join(r.out, d, 'browser-recipe.json'))),
+    false,
+  );
 });
