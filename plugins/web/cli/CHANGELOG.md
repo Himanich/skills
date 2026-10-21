@@ -1,3 +1,22 @@
+# [2.0.0](https://github.com/adobe/skills/compare/web-cli-v1.2.0...web-cli-v2.0.0) (2026-10-21)
+
+
+### Bug Fixes
+
+* **web-cli:** validate recipes, record with probe entries, keep extension chrome APIs ([1654d50](https://github.com/adobe/skills/commit/1654d50c272795f604d843d1ec2413f5b3fa82e0))
+
+
+### Features
+
+* **web-cli:** add recipe file with probe and overlays entries, --save-recipe ([709759e](https://github.com/adobe/skills/commit/709759ef3fb94d3e261c21540eb7f4ba442eed9d))
+
+
+### BREAKING CHANGES
+
+* **web-cli:** the recipe format changes from `{ url, cliConfig, persistent }`
+to `{ probe: [...], overlays: [...] }`. Recipes in the old format are rejected
+with a USAGE error; produce a new one with `web probe <url> --save-recipe`.
+
 # [1.2.0](https://github.com/adobe/skills/compare/web-cli-v1.1.0...web-cli-v1.2.0) (2026-10-20)
 
 
