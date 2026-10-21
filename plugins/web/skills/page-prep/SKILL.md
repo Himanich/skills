@@ -8,6 +8,8 @@ description: >-
   using Consent-O-Matic rules for known consent platforms plus DOM heuristics. Use
   before screenshotting, scraping, or automating a page that shows or may show such
   overlays, or when the user asks to dismiss cookie banners or popups.
+metadata:
+  version: "1.0.0"
 ---
 
 # Page Prep
