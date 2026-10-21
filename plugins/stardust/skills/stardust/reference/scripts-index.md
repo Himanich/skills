@@ -1,25 +1,26 @@
 # Scripts index — `<skill>/<script>` — what — key flags
 
-Run the project copies under `stardust/scripts/<skill>/`. Read this before any `--help`; ask `--help` only for a flag not named here. Full deploy/rollout/migrate invocations: `../../replica/reference/handoff-contract.md` § 4.
+Run the project copies under `stardust/scripts/<skill>/`. Read before any `--help`; ask it only for a flag not named here. Full deploy/rollout/migrate invocations: `../../replica/reference/handoff-contract.md` § 4.
 
-- `deploy/ai-readability.mjs` — AI-readability gate — `--origin <o> [--paths <f>] [--min 98]`
+- `deploy/ai-readability.mjs` — AI-readability — `--origin <o> [--paths <f>] [--min 98]`
 - `deploy/block-roundtrip.mjs` — round-trip + editability — `<protoURL> content/<p>.html [--blocks a,b] --ew`
-- `deploy/build-harness.mjs` — local structural harness — `content/<p>.html <out.html> [--root <dir>]`
+- `deploy/build-harness.mjs` — structural harness — `content/<p>.html <out.html> [--root <dir>]`
 - `deploy/content-inventory.mjs` — library (role classifier), no CLI
-- `deploy/da-media-upload.mjs` — rehost images to DA — `--org --repo --scope <under media/> --dir|--manifest [--token-env|--token-file] [--dry-run]`; exit 3 = token halt
+- `deploy/css-as-text.mjs` — library (CSS-as-content test), no CLI
+- `deploy/da-media-upload.mjs` — rehost images — `--org --repo --scope <under media/> --dir|--manifest [--token-env|--token-file] [--dry-run]`; exit 3 = token halt
 - `deploy/davids-model-lint.mjs` — content-model lint — `content/ | <page>.html [--json]`
-- `deploy/deploy-batch.mjs` — resumable PUT→preview→live — `--org --repo --branch --content content [--no-publish] [--token-env|--token-file]`; exit 1 = failed pages, 3 = token halt
+- `deploy/deploy-batch.mjs` — resumable PUT→preview→live — `--org --repo --branch --content content [--no-publish] [--token-env|--token-file]`; exit 1 = failures, 3 = token halt
 - `deploy/diff-profiles.mjs` — library (eds|generic profiles), no CLI
 - `deploy/file-lock.mjs` — library (lock + atomic ledger merge), no CLI
 - `deploy/eds-path.mjs` — library (path contract), no CLI
 - `deploy/ew-editability-probe.mjs` — rendered editability gate — `--content <p>.html | <url…> [--simulate-editor]`
 - `deploy/localize-links.mjs` — source hrefs → root-relative — `--source-host <h> [--content content] [--check]`
-- `deploy/martech-scaffold.mjs` — contract → `scripts/martech.js` + hooks — `[--contract <json>] [--dry-run] [--force]`; exit 1 = invalid/conflict/no hook
-- `deploy/qa-gate.mjs` — decoration asserts + width cap — `<harnessURL> --schema stardust/eds-schema/<p>.json [--design DESIGN.json]`
-- `deploy/render-harness.mjs` — screenshot local decoration — `content/<p>.html <out.png> [<block>…] [--ew]`
-- `deploy/sanitise.js` — non-ASCII → entities, in place — `content/<p>.html` (one file per call)
+- `deploy/martech-scaffold.mjs` — contract → martech.js + hooks — `[--contract <json>] [--dry-run] [--force]`; exit 1 = invalid/conflict/no hook
+- `deploy/qa-gate.mjs` — decoration asserts + width cap — `<harnessURL> --schema eds-schema/<p>.json [--design DESIGN.json]`
+- `deploy/render-harness.mjs` — screenshot decoration — `content/<p>.html <out.png> [<block>…] [--ew]`
+- `deploy/sanitise.js` — non-ASCII → entities, in place — `content/<p>.html` (one file)
 - `deploy/section-schema.mjs` — section role inventory — `<protoURL> [--out <f>] [--profile eds|generic]`
-- `deploy/style-fingerprint.mjs` — variation groups — `"file:///abs/<proto>.html"`
+- `deploy/style-fingerprint.mjs` — variation groups — `file:///abs/<proto>.html`
 - `diff/chrome-compare.mjs` — header parity vs the contract — `<contract> <build> [--profile replica|functional] [--json f]`; exit 2 = undecided error
 - `diff/chrome-explore.mjs` — the header used: open states, close paths, motion, scroll — `<url> <out.json> [--width 1440,390]`
 - `diff/clip-probe.mjs` — text/controls cut or hidden by an overflow ancestor on a served page — `<url> [--width 1440] [--json [f]] [--advisory]`; exit 2 = clipped > 0
