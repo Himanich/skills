@@ -21,7 +21,13 @@ export async function runPageCommand(command, deps, { url, fn }) {
   let health;
   const { session, result } = await withSession(
     ctx.driver,
-    { session: ctx.opts.session, url, headed: ctx.opts.headed, recipePath: ctx.opts.recipe },
+    {
+      session: ctx.opts.session,
+      url,
+      headed: ctx.opts.headed,
+      recipePath: ctx.opts.saveRecipe ? undefined : ctx.recipe,
+      recipeExplicit: ctx.recipeExplicit,
+    },
     async (name) => {
       health = ctx.driver.pageHealth(name);
       assertNotBlocked(health);

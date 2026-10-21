@@ -61,6 +61,22 @@ $WEB page tree --session "$S"                       # or reduce / collect / lang
 $WEB browser close --session "$S"
 ```
 
+## Saving the hide rules (recipe)
+
+Detecting overlays on every page costs seconds. Record them once, then reuse them:
+
+```bash
+$WEB page overlays "$URL" --save-recipe          # writes the hide rules to ./recipe.json
+S=$($WEB browser open "$URL" | jq -r .session)   # starts with the overlays hidden
+```
+
+`--save-recipe` writes to `--recipe <file>` (default `./recipe.json`), replacing its
+`overlays` entries and keeping the other types (`probe`). Later browsers launched by any
+`web` command load that file from `--recipe`, `$WEB_RECIPE` or `./recipe.json`, and inject
+the rules as CSS before the page renders. A recipe holds one site: use one file per site.
+Saving always detects in a browser launched without the recipe. The rules cover whatever
+was detected on that page, heuristic matches included, so record on a representative page.
+
 ## Mode
 
 | Mode | Dismiss | Use case |

@@ -57,8 +57,9 @@ It tries up to 5 browser configurations and stops at the first success:
 5. **persistent**: system Chrome + stealth + UA override + persistent profile (cookie/session challenges)
 
 Progress goes to stderr. Files under `--output` (default `./.web`):
-`probe-<id>/probe-report.json` and, on success, `probe-<id>/browser-recipe.json` (plus
-`stealth-init.js` when the working step uses stealth). The path is printed as `recipePath`.
+`probe-<id>/probe-report.json` and, on success, `probe-<id>/browser-recipe.json`. The path
+is printed as `recipePath`. With `--save-recipe` the recipe goes to `--recipe` (default
+`./recipe.json`) instead, replacing its `probe` entries and keeping its other types.
 
 ## Reading the JSON
 
@@ -97,17 +98,23 @@ Browser probe complete for <url>.
 
 ## Chaining: use the recipe
 
-Pass the recipe to any command, or to `browser open`:
+Save the recipe once; every browser command (`browser open`, `page *`, `ext launch`) then
+launches with it, from `--recipe <file>`, `$WEB_RECIPE`, or `./recipe.json` when it exists:
 
 ```bash
-RECIPE=$($WEB probe "$URL" | jq -r .recipePath)
-$WEB page tree "$URL" --recipe "$RECIPE"
-S=$($WEB browser open "$URL" --recipe "$RECIPE" | jq -r .session)
+$WEB probe "$URL" --save-recipe                  # writes ./recipe.json
+$WEB page tree "$URL"                            # picks it up
+S=$($WEB browser open "$URL" | jq -r .session)
 ```
 
-The recipe is `{ url, cliConfig: { browser: { browserName, launchOptions, initScript? } }, persistent }`:
-the playwright-cli config with the stealth script path already filled in, and
-`persistent: true` when `firstSuccess` is `persistent`.
+Without `--save-recipe`, pass the printed path: `--recipe "$($WEB probe "$URL" | jq -r .recipePath)"`.
+The recipe applies when a browser is launched; a session that is already open keeps its own.
+
+A recipe is one object with an array of entries per type. `probe` entries are
+`{ url, config: { browserName, launchOptions }, persistent, stealth }` (`stealth: true`
+when `firstSuccess` is stealth or later: the stealth script is injected at launch;
+`persistent: true` when it is `persistent`). `page overlays --save-recipe` adds `overlays`
+entries, see the page-prep skill.
 
 ## Escape hatch
 

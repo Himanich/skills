@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '#src/cli.mjs';
@@ -51,9 +51,10 @@ async function run(
 ) {
   const calls = [];
   const fetchUrls = [];
+  const opened = [];
   const driver = {
     ensureAvailable: () => {},
-    open: () => {},
+    open: (a) => opened.push(a),
     close: () => {},
     list: () => [],
     goto: () => {},
@@ -84,7 +85,7 @@ async function run(
   const deps = { stdout, stderr, env: {}, driverFactory: () => driver, fetch, cacheDir };
   const out = mkdtempSync(join(tmpdir(), 'ovo-'));
   const code = await runCli(['node', 'web', 'page', 'overlays', ...extra, '--output', out], deps);
-  return { code, calls, fetchUrls, doc: stdout.buf ? JSON.parse(stdout.buf) : null };
+  return { code, calls, opened, fetchUrls, doc: stdout.buf ? JSON.parse(stdout.buf) : null };
 }
 
 const hides = (calls) => calls.filter((c) => c[0] === 'evaluate' && c[1].includes('appendChild'));
@@ -255,4 +256,45 @@ test('residual does not crash on a fixed SVG whose className is not a string', (
 test('residual tags header elements with a landmark role', () => {
   const [hit] = residualFor([fixedEl({ props: { tagName: 'HEADER' }, style: { zIndex: '9999' } })]);
   assert.equal(hit.role, 'landmark');
+});
+
+const recipeIn = () => join(mkdtempSync(join(tmpdir(), 'ovr-')), 'recipe.json');
+
+test('--save-recipe stores every detected hide rule and the scroll fix as overlays', async () => {
+  const file = recipeIn();
+  const { doc } = await run(['http://x', '--save-recipe', '--recipe', file]);
+  assert.equal(doc.recipe, file);
+  assert.deepEqual(JSON.parse(readFileSync(file, 'utf8')), {
+    overlays: [
+      {
+        rules: [
+          '#acme-hide { display:none!important }',
+          '.modal-hide { display:none!important }',
+          'html { overflow:auto!important }',
+        ],
+      },
+    ],
+  });
+});
+
+test('--save-recipe replaces the overlays entries and keeps other recipe types', async () => {
+  const file = recipeIn();
+  writeFileSync(
+    file,
+    JSON.stringify({ probe: [{ stealth: true }], overlays: [{ rules: ['old'] }] }),
+  );
+  await run(['http://x', '--save-recipe', '--recipe', file], { report: { overlays: [] } });
+  assert.deepEqual(JSON.parse(readFileSync(file, 'utf8')), {
+    probe: [{ stealth: true }],
+    overlays: [{ rules: [] }],
+  });
+});
+
+test('--save-recipe records on a browser without the recipe; otherwise it is applied', async () => {
+  const file = recipeIn();
+  writeFileSync(file, JSON.stringify({ overlays: [{ rules: ['old'] }] }));
+  const saving = await run(['http://x', '--save-recipe', '--recipe', file]);
+  assert.equal(saving.opened[0].initSources, undefined);
+  const replaying = await run(['http://x', '--recipe', file]);
+  assert.equal(replaying.opened[0].initSources.length, 1);
 });

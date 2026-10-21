@@ -12,6 +12,7 @@ import {
 import { dirname, join, resolve } from 'node:path';
 import { CliError } from '#src/errors.mjs';
 import { createContext } from '#src/context.mjs';
+import { resolveLaunch } from '#src/recipe.mjs';
 import { artifactPath, generateSessionName, requireOpenSession } from '#src/session.mjs';
 
 const HELP = {
@@ -203,7 +204,7 @@ function verifyLoaded(driver, { session, extensionId, name }) {
 }
 
 function launch(ctx, distDir) {
-  const { opts, driver, print } = ctx;
+  const { opts, driver, print, recipe } = ctx;
   const abs = resolve(distDir);
   const manifest = readManifest(abs);
   const surfaces = availableSurfaces(manifest);
@@ -213,15 +214,17 @@ function launch(ctx, distDir) {
     session,
     url: 'about:blank',
     headed: Boolean(opts.headed),
-    persistent: true,
     cdpPort,
-    config: {
-      browserName: 'chromium',
-      launchOptions: {
-        channel: 'chromium',
-        args: [`--load-extension=${abs}`, `--disable-extensions-except=${abs}`],
+    ...resolveLaunch(recipe, {
+      persistent: true,
+      config: {
+        browserName: 'chromium',
+        launchOptions: {
+          channel: 'chromium',
+          args: [`--load-extension=${abs}`, `--disable-extensions-except=${abs}`],
+        },
       },
-    },
+    }),
   });
   const extensionId = extensionIdForPath(realpathSync(abs));
   verifyLoaded(driver, { session, extensionId, name: manifest.name });

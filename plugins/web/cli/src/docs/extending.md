@@ -44,9 +44,11 @@ Everything exported by the library; nothing else is public.
 - `createProgram(deps)`: the commander root alone, when you need to own parsing; thrown
   errors are then yours to print (`fail`).
 - `runPageCommand(command, deps, { url, fn })`: run `fn(driver, session, opts)` on a page.
-  Resolves `<url>` or `--session`, applies `--recipe` and `--headed`, rejects blocked
+  Resolves `<url>` or `--session`, applies the recipe (`--recipe`, `$WEB_RECIPE` or
+  `./recipe.json`) and `--headed`, rejects blocked
   pages, adds `url`, `session` and `durationMs`, prints.
-- `createContext(command, deps)`: `{ opts, driver, print }` for commands that are not
+- `createContext(command, deps)`: `{ opts, driver, print, recipe }` (`recipe` is the path to launch
+  browsers with, if any) for commands that are not
   "one page"; `opts` merges the global and the command options.
 - `withSession(driver, { session, url, headed, recipePath }, fn)`: the session rule on
   its own: opens an ephemeral or named browser, runs `fn(name)`, closes only ephemeral ones.

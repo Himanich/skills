@@ -3425,7 +3425,10 @@ function parsePositiveIntArg(value) {
 }
 
 // src/commands/browser.mjs
-import { existsSync } from "node:fs";
+import { existsSync as existsSync3 } from "node:fs";
+
+// src/context.mjs
+import { existsSync as existsSync2 } from "node:fs";
 
 // src/driver/playwright-cli.mjs
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -3546,7 +3549,20 @@ function createDriver({
     const initScript = [...config.initScript ?? [], ...initScripts].map((p) => resolve(p));
     return { browser: { ...config, launchOptions, initScript } };
   }
-  function open2({ session, url, headed, config, cdpPort, persistent, initScripts = [] }) {
+  function open2({ initScripts = [], initSources = [], ...launchOpts }) {
+    mkdirSync(outputDir, { recursive: true });
+    const sourcePaths = initSources.map((source, i) => {
+      const path3 = join(outputDir, `${launchOpts.session}-init-${i}.js`);
+      writeFileSync(path3, source);
+      return path3;
+    });
+    try {
+      return launch2({ ...launchOpts, initScripts: [...initScripts, ...sourcePaths] });
+    } finally {
+      for (const path3 of sourcePaths) rmSync(path3, { force: true });
+    }
+  }
+  function launch2({ session, url, headed, config, cdpPort, persistent, initScripts }) {
     if (list().some((b) => b.name === session && b.status === "open")) {
       throw new CliError("SESSION_EXISTS", `session '${session}' is already open`, {
         hint: "choose another --session or run: web browser close --session <name>"
@@ -3635,318 +3651,9 @@ function createDriver({
   };
 }
 
-// src/context.mjs
-function createContext(command, deps, { timeoutMs } = {}) {
-  const opts = command.optsWithGlobals();
-  const driver = (deps.driverFactory ?? createDriver)({
-    outputDir: opts.output,
-    ...timeoutMs === void 0 ? {} : { timeoutMs }
-  });
-  driver.ensureAvailable();
-  const print = (result, text) => emit(result, { format: opts.format, text, stdout: deps.stdout ?? process.stdout });
-  return { opts, driver, print };
-}
-
-// src/session.mjs
-import { randomBytes } from "node:crypto";
-import { mkdirSync as mkdirSync2, readFileSync } from "node:fs";
+// src/recipe.mjs
+import { existsSync, readFileSync, writeFileSync as writeFileSync2 } from "node:fs";
 import { resolve as resolve2 } from "node:path";
-function generateSessionName() {
-  return `web-${randomBytes(2).toString("hex")}`;
-}
-function loadRecipe(recipePath) {
-  let recipe;
-  try {
-    recipe = JSON.parse(readFileSync(recipePath, "utf8"));
-  } catch (err) {
-    throw new CliError("USAGE", `cannot read recipe ${recipePath}: ${err.message}`, {
-      hint: "produce one with: web probe <url>"
-    });
-  }
-  return { config: recipe?.cliConfig?.browser, persistent: recipe?.persistent === true };
-}
-function requireOpenSession(driver, name) {
-  const open2 = name && driver.list().some((s) => s.name === name && s.status === "open");
-  if (!open2) {
-    throw new CliError("NO_SESSION", `no open session${name ? ` named ${name}` : ""}`, {
-      hint: "run: web browser open <url> --session <name>"
-    });
-  }
-}
-async function withSession(driver, opts, fn) {
-  const { session, url, headed, recipePath, ...launch2 } = opts;
-  if (session) {
-    const isOpen = driver.list().some((s) => s.name === session && s.status === "open");
-    if (!isOpen && url) {
-      driver.open({ session, url, headed, ...resolveLaunch(recipePath, launch2) });
-    } else {
-      requireOpenSession(driver, session);
-      if (url) driver.goto(session, url);
-    }
-    return fn(session);
-  }
-  const name = generateSessionName();
-  const cleanup = installSignalCleanup(driver, name);
-  let failed = false;
-  let owned = true;
-  try {
-    try {
-      driver.open({ session: name, url, headed, ...resolveLaunch(recipePath, launch2) });
-    } catch (err) {
-      owned = err?.code !== "SESSION_EXISTS";
-      throw err;
-    }
-    return await fn(name);
-  } catch (err) {
-    failed = true;
-    throw err;
-  } finally {
-    cleanup();
-    if (owned) closeQuietlyIf(driver, name, failed);
-  }
-}
-function resolveLaunch(recipePath, launch2) {
-  const explicit = Object.fromEntries(Object.entries(launch2).filter(([, v]) => v !== void 0));
-  return { ...recipePath ? loadRecipe(recipePath) : {}, ...explicit };
-}
-function installSignalCleanup(driver, name) {
-  const handlers = ["SIGINT", "SIGTERM"].map((signal) => {
-    const handler = () => {
-      cleanup();
-      try {
-        driver.close(name);
-      } catch {
-      }
-      process.kill(process.pid, signal);
-    };
-    return [signal, handler];
-  });
-  const cleanup = () => handlers.forEach(([s, h]) => process.removeListener(s, h));
-  handlers.forEach(([s, h]) => process.once(s, h));
-  return cleanup;
-}
-function closeQuietlyIf(driver, name, failed) {
-  try {
-    driver.close(name);
-  } catch (err) {
-    if (!failed) throw err;
-    process.stderr.write(`warning: failed to close session ${name}: ${err.message}
-`);
-  }
-}
-function artifactPath(outputDir, session, command, name) {
-  return resolve2(outputDir, `${session}-${command}-${name}`);
-}
-function artifactDir(outputDir, session, command) {
-  const dir = resolve2(outputDir, `${session}-${command}`);
-  mkdirSync2(dir, { recursive: true });
-  return dir;
-}
-
-// src/commands/browser.mjs
-var HELP = {
-  OPEN: `
-Example:
-  S=$(web browser open https://example.com --headed | jq -r .session)
-Output:
-  { session, url, headed, cdpPort? }
-Notes:
-  Without --session a name web-<4 hex> is generated and returned. An open name exits 2
-  (SESSION_EXISTS). --recipe applies a recipe from \`web probe\`. Leaves the browser open.
-`,
-  ATTACH: `
-Example:
-  S=$(web browser attach http://127.0.0.1:9222 | jq -r .session)
-Output:
-  { session, attached }
-Notes:
-  Joins a running Chrome started with --remote-debugging-port.
-`,
-  LIST: `
-Example:
-  web browser list
-Output:
-  { sessions: [{ name, status, headed, url }] }
-Notes:
-  url is null unless the session is open.
-`,
-  CLOSE: `
-Example:
-  web browser close --session "$S"
-Output:
-  { session, status }
-Exit codes:
-  2 NO_SESSION when the session is not open.
-`,
-  CLOSE_ALL: `
-Example:
-  web browser close-all
-Output:
-  { closed: [name] }
-`,
-  EVAL: `
-Example:
-  web browser eval "document.title" --session "$S"
-Output:
-  { result }
-Notes:
-  One JS expression, evaluated in the page: no \`;\`, no \`return\`. For statements use
-  \`browser run\`. result is the JSON-serializable value.
-`,
-  RUN: `
-Example:
-  web browser run "async page => page.title()" --session "$S"
-Output:
-  { result }
-Notes:
-  Argument is a file path (if the file exists) or inline code \`async page => {\u2026}\`.
-  Statements and \`return\` are allowed. The function receives the Playwright \`page\`.
-`,
-  CDP: `
-Example:
-  web browser cdp Page.getLayoutMetrics --session "$S"
-  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session "$S"
-Output:
-  { result }
-Notes:
-  params-json is an optional JSON object (default {}); invalid JSON exits 2 (USAGE).
-`,
-  SHOT: `
-Example:
-  web browser screenshot --full-page --session "$S"
-Output:
-  { path }
-Notes:
-  Writes <output>/<session>-screenshot-<timestamp>.png. --selector captures one element.
-`
-};
-var GROUP_HELP = `
-Use for session plumbing; analysis lives in \`web page\`. Commands other than open, attach
-and list act on the browser named by --session (or WEB_SESSION) and need it open.
-Sessions stay open until \`browser close\`; \`playwright-cli -s <session> \u2026\` drives the same one.
-`;
-var DESCRIPTION = "session plumbing: open, attach, list, close, eval, run, cdp, screenshot";
-function sessionUrl(driver, { name, status: status2 }) {
-  if (status2 !== "open") return null;
-  try {
-    return driver.evaluate(name, "location.href");
-  } catch {
-    return null;
-  }
-}
-function parseParams(json) {
-  if (json === void 0) return {};
-  try {
-    return JSON.parse(json);
-  } catch (err) {
-    throw new CliError("USAGE", `params-json is not valid JSON: ${err.message}`);
-  }
-}
-function registerBrowser(program2, deps) {
-  const browser = program2.command("browser").description(DESCRIPTION).addHelpText("after", GROUP_HELP);
-  const action = (cmd, fn) => cmd.action(async (...args) => {
-    const command = args.at(-1);
-    const ctx = createContext(command, deps);
-    await fn(ctx, ...args.slice(0, -2));
-  });
-  const openSession = (ctx) => {
-    requireOpenSession(ctx.driver, ctx.opts.session);
-    return ctx.opts.session;
-  };
-  action(
-    browser.command("open [url]").description("open a browser session").addHelpText("after", HELP.OPEN).option("--cdp-port <n>", "remote debugging port", parseIntArg).option("--persistent", "use a persistent profile"),
-    ({ opts, driver, print }, url) => {
-      const session = opts.session ?? generateSessionName();
-      const recipe = opts.recipe ? loadRecipe(opts.recipe) : {};
-      const cdpPort = opts.cdpPort;
-      driver.open({
-        session,
-        url,
-        headed: opts.headed,
-        cdpPort,
-        persistent: opts.persistent || recipe.persistent,
-        config: recipe.config
-      });
-      print({ session, url, headed: Boolean(opts.headed), ...cdpPort && { cdpPort } });
-    }
-  );
-  action(
-    browser.command("attach <cdp-url>").description("attach to a running Chrome").addHelpText("after", HELP.ATTACH),
-    ({ opts, driver, print }, cdpUrl) => {
-      const session = opts.session ?? generateSessionName();
-      driver.attach({ session, cdpUrl });
-      print({ session, attached: true });
-    }
-  );
-  action(
-    browser.command("list").description("list sessions").addHelpText("after", HELP.LIST),
-    ({ driver, print }) => {
-      const sessions = driver.list().map((s) => ({
-        name: s.name,
-        status: s.status,
-        headed: s.headed,
-        url: sessionUrl(driver, s)
-      }));
-      print({ sessions });
-    }
-  );
-  action(
-    browser.command("close").description("close the session").addHelpText("after", HELP.CLOSE),
-    (ctx) => {
-      const session = openSession(ctx);
-      ctx.driver.close(session);
-      ctx.print({ session, status: "closed" });
-    }
-  );
-  action(
-    browser.command("close-all").description("close every session").addHelpText("after", HELP.CLOSE_ALL),
-    (ctx) => {
-      const closed = ctx.driver.list().map((s) => s.name);
-      ctx.driver.closeAll();
-      ctx.print({ closed });
-    }
-  );
-  action(
-    browser.command("eval <expr>").description("evaluate a JS expression").addHelpText("after", HELP.EVAL),
-    (ctx, expr) => {
-      ctx.print({ result: ctx.driver.evaluate(openSession(ctx), expr) });
-    }
-  );
-  action(
-    browser.command("run <file-or-code>").description("run a Playwright script or code").addHelpText("after", HELP.RUN),
-    (ctx, arg) => {
-      const target = existsSync(arg) ? { file: arg } : { code: arg };
-      ctx.print({ result: ctx.driver.run(openSession(ctx), target) });
-    }
-  );
-  action(
-    browser.command("cdp <method> [params-json]").description("send a raw CDP command").addHelpText("after", HELP.CDP),
-    (ctx, method, json) => {
-      const params = parseParams(json);
-      ctx.print({ result: ctx.driver.cdp(openSession(ctx), method, params) });
-    }
-  );
-  action(
-    browser.command("screenshot").description("take a screenshot").addHelpText("after", HELP.SHOT).option("--full-page", "capture the full page").option("--selector <css>", "capture one element"),
-    (ctx) => {
-      const session = openSession(ctx);
-      const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
-      const path3 = artifactPath(ctx.opts.output, session, "screenshot", `${stamp}.png`);
-      ctx.driver.screenshot(session, {
-        path: path3,
-        fullPage: ctx.opts.fullPage,
-        selector: ctx.opts.selector
-      });
-      ctx.print({ path: path3 });
-    }
-  );
-  return browser;
-}
-
-// src/commands/probe.mjs
-import { randomBytes as randomBytes2 } from "node:crypto";
-import { join as join2, resolve as resolve3 } from "node:path";
-import { rmSync as rmSync2, writeFileSync as writeFileSync2 } from "node:fs";
 
 // inline:bundles
 var FILES = { "langs-collect.js": `// playwright-cli run-code script \u2014 extract language signals and visible text.
@@ -4347,6 +4054,369 @@ function loadBundle(name) {
   return FILES[name];
 }
 
+// src/recipe.mjs
+var DEFAULT_RECIPE = "recipe.json";
+var TYPES = ["probe", "overlays"];
+var HINT = "produce one with: web probe <url> --save-recipe, or web page overlays --save-recipe";
+function readRecipe(path3) {
+  let recipe;
+  try {
+    recipe = JSON.parse(readFileSync(path3, "utf8"));
+  } catch (err) {
+    throw new CliError("USAGE", `cannot read recipe ${path3}: ${err.message}`, { hint: HINT });
+  }
+  if (recipe === null || typeof recipe !== "object" || Array.isArray(recipe)) {
+    throw new CliError("USAGE", `recipe ${path3} must be a JSON object`, { hint: HINT });
+  }
+  const unknown = Object.keys(recipe).filter((key) => !TYPES.includes(key));
+  if (unknown.length > 0) {
+    throw new CliError("USAGE", `recipe ${path3} has unknown keys: ${unknown.join(", ")}`, {
+      hint: `a recipe holds one array per type (${TYPES.join(", ")}); ${HINT}`
+    });
+  }
+  return recipe;
+}
+function saveRecipe(path3, type, entries) {
+  const file = resolve2(path3);
+  const recipe = existsSync(file) ? readRecipe(file) : {};
+  writeFileSync2(file, `${JSON.stringify({ ...recipe, [type]: entries }, null, 2)}
+`);
+  return file;
+}
+function hideScript(rules) {
+  return `(() => {
+  const css = ${JSON.stringify(rules.join("\n"))};
+  const add = () => {
+    const root = document.head || document.documentElement;
+    if (!root) return false;
+    const style = document.createElement('style');
+    style.textContent = css;
+    root.appendChild(style);
+    return true;
+  };
+  if (add()) return;
+  const observer = new MutationObserver(() => add() && observer.disconnect());
+  observer.observe(document, { childList: true });
+})();
+`;
+}
+function loadRecipe(path3) {
+  const { probe = [], overlays = [] } = readRecipe(path3);
+  const initSources = [];
+  if (probe[0]?.stealth) initSources.push(loadBundle("stealth-init.js"));
+  const rules = overlays.flatMap((entry) => entry.rules ?? []);
+  if (rules.length > 0) initSources.push(hideScript(rules));
+  return { config: probe[0]?.config, persistent: probe[0]?.persistent === true, initSources };
+}
+function resolveLaunch(recipePath, explicit = {}) {
+  const set = Object.fromEntries(Object.entries(explicit).filter(([, v]) => v !== void 0));
+  return { ...recipePath ? loadRecipe(recipePath) : {}, ...set };
+}
+
+// src/context.mjs
+function createContext(command, deps, { timeoutMs } = {}) {
+  const opts = command.optsWithGlobals();
+  const driver = (deps.driverFactory ?? createDriver)({
+    outputDir: opts.output,
+    ...timeoutMs === void 0 ? {} : { timeoutMs }
+  });
+  driver.ensureAvailable();
+  const print = (result, text) => emit(result, { format: opts.format, text, stdout: deps.stdout ?? process.stdout });
+  const recipe = opts.recipe ?? (existsSync2(DEFAULT_RECIPE) ? DEFAULT_RECIPE : void 0);
+  const recipeExplicit = command.getOptionValueSourceWithGlobals("recipe") === "cli";
+  return { opts, driver, print, recipe, recipeExplicit };
+}
+
+// src/session.mjs
+import { randomBytes } from "node:crypto";
+import { mkdirSync as mkdirSync2 } from "node:fs";
+import { resolve as resolve3 } from "node:path";
+function generateSessionName() {
+  return `web-${randomBytes(2).toString("hex")}`;
+}
+function requireOpenSession(driver, name) {
+  const open2 = name && driver.list().some((s) => s.name === name && s.status === "open");
+  if (!open2) {
+    throw new CliError("NO_SESSION", `no open session${name ? ` named ${name}` : ""}`, {
+      hint: "run: web browser open <url> --session <name>"
+    });
+  }
+}
+async function withSession(driver, opts, fn) {
+  const { session, url, headed, recipePath, recipeExplicit, ...launch2 } = opts;
+  if (session) {
+    const isOpen = driver.list().some((s) => s.name === session && s.status === "open");
+    if (!isOpen && url) {
+      driver.open({ session, url, headed, ...resolveLaunch(recipePath, launch2) });
+    } else {
+      requireOpenSession(driver, session);
+      if (recipePath && recipeExplicit) {
+        process.stderr.write(
+          `warning: --recipe ignored, session ${session} is already open (a recipe applies when a browser launches)
+`
+        );
+      }
+      if (url) driver.goto(session, url);
+    }
+    return fn(session);
+  }
+  const name = generateSessionName();
+  const cleanup = installSignalCleanup(driver, name);
+  let failed = false;
+  let owned = true;
+  try {
+    try {
+      driver.open({ session: name, url, headed, ...resolveLaunch(recipePath, launch2) });
+    } catch (err) {
+      owned = err?.code !== "SESSION_EXISTS";
+      throw err;
+    }
+    return await fn(name);
+  } catch (err) {
+    failed = true;
+    throw err;
+  } finally {
+    cleanup();
+    if (owned) closeQuietlyIf(driver, name, failed);
+  }
+}
+function installSignalCleanup(driver, name) {
+  const handlers = ["SIGINT", "SIGTERM"].map((signal) => {
+    const handler = () => {
+      cleanup();
+      try {
+        driver.close(name);
+      } catch {
+      }
+      process.kill(process.pid, signal);
+    };
+    return [signal, handler];
+  });
+  const cleanup = () => handlers.forEach(([s, h]) => process.removeListener(s, h));
+  handlers.forEach(([s, h]) => process.once(s, h));
+  return cleanup;
+}
+function closeQuietlyIf(driver, name, failed) {
+  try {
+    driver.close(name);
+  } catch (err) {
+    if (!failed) throw err;
+    process.stderr.write(`warning: failed to close session ${name}: ${err.message}
+`);
+  }
+}
+function artifactPath(outputDir, session, command, name) {
+  return resolve3(outputDir, `${session}-${command}-${name}`);
+}
+function artifactDir(outputDir, session, command) {
+  const dir = resolve3(outputDir, `${session}-${command}`);
+  mkdirSync2(dir, { recursive: true });
+  return dir;
+}
+
+// src/commands/browser.mjs
+var HELP = {
+  OPEN: `
+Example:
+  S=$(web browser open https://example.com --headed | jq -r .session)
+Output:
+  { session, url, headed, cdpPort? }
+Notes:
+  Without --session a name web-<4 hex> is generated and returned. An open name exits 2
+  (SESSION_EXISTS). --recipe applies a recipe from \`web probe\`. Leaves the browser open.
+`,
+  ATTACH: `
+Example:
+  S=$(web browser attach http://127.0.0.1:9222 | jq -r .session)
+Output:
+  { session, attached }
+Notes:
+  Joins a running Chrome started with --remote-debugging-port.
+`,
+  LIST: `
+Example:
+  web browser list
+Output:
+  { sessions: [{ name, status, headed, url }] }
+Notes:
+  url is null unless the session is open.
+`,
+  CLOSE: `
+Example:
+  web browser close --session "$S"
+Output:
+  { session, status }
+Exit codes:
+  2 NO_SESSION when the session is not open.
+`,
+  CLOSE_ALL: `
+Example:
+  web browser close-all
+Output:
+  { closed: [name] }
+`,
+  EVAL: `
+Example:
+  web browser eval "document.title" --session "$S"
+Output:
+  { result }
+Notes:
+  One JS expression, evaluated in the page: no \`;\`, no \`return\`. For statements use
+  \`browser run\`. result is the JSON-serializable value.
+`,
+  RUN: `
+Example:
+  web browser run "async page => page.title()" --session "$S"
+Output:
+  { result }
+Notes:
+  Argument is a file path (if the file exists) or inline code \`async page => {\u2026}\`.
+  Statements and \`return\` are allowed. The function receives the Playwright \`page\`.
+`,
+  CDP: `
+Example:
+  web browser cdp Page.getLayoutMetrics --session "$S"
+  web browser cdp Emulation.setDeviceMetricsOverride '{"width":390,"height":844}' --session "$S"
+Output:
+  { result }
+Notes:
+  params-json is an optional JSON object (default {}); invalid JSON exits 2 (USAGE).
+`,
+  SHOT: `
+Example:
+  web browser screenshot --full-page --session "$S"
+Output:
+  { path }
+Notes:
+  Writes <output>/<session>-screenshot-<timestamp>.png. --selector captures one element.
+`
+};
+var GROUP_HELP = `
+Use for session plumbing; analysis lives in \`web page\`. Commands other than open, attach
+and list act on the browser named by --session (or WEB_SESSION) and need it open.
+Sessions stay open until \`browser close\`; \`playwright-cli -s <session> \u2026\` drives the same one.
+`;
+var DESCRIPTION = "session plumbing: open, attach, list, close, eval, run, cdp, screenshot";
+function sessionUrl(driver, { name, status: status2 }) {
+  if (status2 !== "open") return null;
+  try {
+    return driver.evaluate(name, "location.href");
+  } catch {
+    return null;
+  }
+}
+function parseParams(json) {
+  if (json === void 0) return {};
+  try {
+    return JSON.parse(json);
+  } catch (err) {
+    throw new CliError("USAGE", `params-json is not valid JSON: ${err.message}`);
+  }
+}
+function registerBrowser(program2, deps) {
+  const browser = program2.command("browser").description(DESCRIPTION).addHelpText("after", GROUP_HELP);
+  const action = (cmd, fn) => cmd.action(async (...args) => {
+    const command = args.at(-1);
+    const ctx = createContext(command, deps);
+    await fn(ctx, ...args.slice(0, -2));
+  });
+  const openSession = (ctx) => {
+    requireOpenSession(ctx.driver, ctx.opts.session);
+    return ctx.opts.session;
+  };
+  action(
+    browser.command("open [url]").description("open a browser session").addHelpText("after", HELP.OPEN).option("--cdp-port <n>", "remote debugging port", parseIntArg).option("--persistent", "use a persistent profile"),
+    ({ opts, driver, print, recipe }, url) => {
+      const session = opts.session ?? generateSessionName();
+      const cdpPort = opts.cdpPort;
+      driver.open({
+        session,
+        url,
+        headed: opts.headed,
+        cdpPort,
+        ...resolveLaunch(recipe, { persistent: opts.persistent })
+      });
+      print({ session, url, headed: Boolean(opts.headed), ...cdpPort && { cdpPort } });
+    }
+  );
+  action(
+    browser.command("attach <cdp-url>").description("attach to a running Chrome").addHelpText("after", HELP.ATTACH),
+    ({ opts, driver, print }, cdpUrl) => {
+      const session = opts.session ?? generateSessionName();
+      driver.attach({ session, cdpUrl });
+      print({ session, attached: true });
+    }
+  );
+  action(
+    browser.command("list").description("list sessions").addHelpText("after", HELP.LIST),
+    ({ driver, print }) => {
+      const sessions = driver.list().map((s) => ({
+        name: s.name,
+        status: s.status,
+        headed: s.headed,
+        url: sessionUrl(driver, s)
+      }));
+      print({ sessions });
+    }
+  );
+  action(
+    browser.command("close").description("close the session").addHelpText("after", HELP.CLOSE),
+    (ctx) => {
+      const session = openSession(ctx);
+      ctx.driver.close(session);
+      ctx.print({ session, status: "closed" });
+    }
+  );
+  action(
+    browser.command("close-all").description("close every session").addHelpText("after", HELP.CLOSE_ALL),
+    (ctx) => {
+      const closed = ctx.driver.list().map((s) => s.name);
+      ctx.driver.closeAll();
+      ctx.print({ closed });
+    }
+  );
+  action(
+    browser.command("eval <expr>").description("evaluate a JS expression").addHelpText("after", HELP.EVAL),
+    (ctx, expr) => {
+      ctx.print({ result: ctx.driver.evaluate(openSession(ctx), expr) });
+    }
+  );
+  action(
+    browser.command("run <file-or-code>").description("run a Playwright script or code").addHelpText("after", HELP.RUN),
+    (ctx, arg) => {
+      const target = existsSync3(arg) ? { file: arg } : { code: arg };
+      ctx.print({ result: ctx.driver.run(openSession(ctx), target) });
+    }
+  );
+  action(
+    browser.command("cdp <method> [params-json]").description("send a raw CDP command").addHelpText("after", HELP.CDP),
+    (ctx, method, json) => {
+      const params = parseParams(json);
+      ctx.print({ result: ctx.driver.cdp(openSession(ctx), method, params) });
+    }
+  );
+  action(
+    browser.command("screenshot").description("take a screenshot").addHelpText("after", HELP.SHOT).option("--full-page", "capture the full page").option("--selector <css>", "capture one element"),
+    (ctx) => {
+      const session = openSession(ctx);
+      const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
+      const path3 = artifactPath(ctx.opts.output, session, "screenshot", `${stamp}.png`);
+      ctx.driver.screenshot(session, {
+        path: path3,
+        fullPage: ctx.opts.fullPage,
+        selector: ctx.opts.selector
+      });
+      ctx.print({ path: path3 });
+    }
+  );
+  return browser;
+}
+
+// src/commands/probe.mjs
+import { randomBytes as randomBytes2 } from "node:crypto";
+import { join as join2 } from "node:path";
+import { rmSync as rmSync2, writeFileSync as writeFileSync3 } from "node:fs";
+
 // src/driver/blocked.mjs
 var ERROR_TITLE_PATTERN = /error|denied|blocked|not satisfied|403|captcha|challenge|attention required|just a moment/i;
 var MIN_BODY_LENGTH = 100;
@@ -4504,7 +4574,7 @@ async function runStep(driver, { url, dir, stepDef, headed, log }) {
   const initScripts = [];
   try {
     if (stepDef.stealth) {
-      writeFileSync2(stealthPath, loadBundle("stealth-init.js"));
+      writeFileSync3(stealthPath, loadBundle("stealth-init.js"));
       initScripts.push(stealthPath);
     }
     const launch2 = {
@@ -4549,19 +4619,21 @@ Example:
   web probe https://example.com
 Output:
   { report: { url, timestamp, steps, firstSuccess, detectedSignals }, recipePath }
-  recipe file: { url, cliConfig, persistent }
+  recipe file: { probe: [{ url, config, persistent, stealth }] }
 Notes:
   Tries default, stealth, stealth-ua, chrome, persistent until a page loads. Writes
-  <output>/probe-<id>/probe-report.json and browser-recipe.json (stealth-init.js beside
-  them); pass recipePath to other commands with --recipe. Progress goes to stderr.
+  <output>/probe-<id>/probe-report.json and browser-recipe.json; pass recipePath to other
+  commands with --recipe. With --save-recipe the recipe goes to --recipe (default
+  recipe.json) instead, replacing its probe entries and keeping its other types, and later
+  commands pick it up from $WEB_RECIPE or ./recipe.json. Progress goes to stderr.
   Each playwright-cli call is capped at 30 s per step.
-  Always opens its own browsers (it compares configurations): an explicit --session or
-  --recipe is rejected, an exported WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored;
-  --headed is honoured.
+  Always opens its own browsers (it compares configurations): an explicit --session is
+  rejected, so is --recipe without --save-recipe, an exported
+  WEB_SESSION/PLAYWRIGHT_CLI_SESSION is ignored; --headed is honoured.
 Exit codes:
   3 BLOCKED when all steps are blocked (no recipe is written).
 `;
-async function runProbe(driver, { url, outputDir, headed, log = () => {
+async function runProbe(driver, { url, outputDir, headed, recipeFile, log = () => {
 } }) {
   const dir = artifactDir(outputDir, "probe", randomBytes2(2).toString("hex"));
   const steps = [];
@@ -4590,31 +4662,25 @@ async function runProbe(driver, { url, outputDir, headed, log = () => {
       steps.map((s) => s.health)
     )
   };
-  writeFileSync2(join2(dir, "probe-report.json"), JSON.stringify(report, null, 2));
+  writeFileSync3(join2(dir, "probe-report.json"), JSON.stringify(report, null, 2));
   if (!success) return { report, recipePath: null };
-  const recipePath = join2(dir, "browser-recipe.json");
-  const browser = { ...success.browserConfig };
-  if (success.stepDef.stealth) {
-    const stealthPath = join2(dir, "stealth-init.js");
-    writeFileSync2(stealthPath, loadBundle("stealth-init.js"));
-    browser.initScript = [resolve3(stealthPath)];
-  }
-  const recipe = {
+  const entry = {
     url,
-    cliConfig: { browser },
-    persistent: success.stepDef.persistent
+    config: success.browserConfig,
+    persistent: success.stepDef.persistent,
+    stealth: success.stepDef.stealth
   };
-  writeFileSync2(recipePath, JSON.stringify(recipe, null, 2));
+  const recipePath = saveRecipe(recipeFile ?? join2(dir, "browser-recipe.json"), "probe", [entry]);
   return { report, recipePath };
 }
 function registerProbe(program2, deps) {
-  program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).action(async (url, _opts, command) => {
+  program2.command("probe <url>").description("detect bot/CDN protection and produce a browser recipe").addHelpText("after", HELP2).option("--save-recipe", "save the recipe to --recipe (default recipe.json), not the artifacts").action(async (url, _opts, command) => {
     const { opts, driver, print } = createContext(command, deps, { timeoutMs: 3e4 });
     const explicit = (name) => command.getOptionValueSourceWithGlobals(name) === "cli";
-    if (explicit("session") || explicit("recipe")) {
+    if (explicit("session") || explicit("recipe") && !opts.saveRecipe) {
       throw new CliError(
         "USAGE",
-        "probe launches its own browsers; --session and --recipe are not supported",
+        "probe launches its own browsers; --session is not supported, and --recipe only with --save-recipe",
         { hint: "run: web probe <url> [--headed] [--output <dir>]" }
       );
     }
@@ -4625,6 +4691,7 @@ function registerProbe(program2, deps) {
       url,
       outputDir: opts.output,
       headed: opts.headed,
+      recipeFile: opts.saveRecipe ? opts.recipe ?? DEFAULT_RECIPE : void 0,
       log
     });
     if (report.firstSuccess === null) {
@@ -4639,13 +4706,13 @@ function registerProbe(program2, deps) {
 // src/commands/ext.mjs
 import { createHash } from "node:crypto";
 import {
-  existsSync as existsSync2,
+  existsSync as existsSync4,
   mkdirSync as mkdirSync3,
   readFileSync as readFileSync2,
   realpathSync,
   statSync,
   unlinkSync,
-  writeFileSync as writeFileSync3
+  writeFileSync as writeFileSync4
 } from "node:fs";
 import { dirname, join as join3, resolve as resolve4 } from "node:path";
 var HELP3 = {
@@ -4697,7 +4764,7 @@ var FALLBACK_NOTES = {
 var LOAD_FAILED_HINT = "check manifest.json and the extension build; see chrome://extensions";
 function readManifest(dir) {
   const hint = "pass the built extension directory that contains manifest.json";
-  if (!existsSync2(dir) || !statSync(dir).isDirectory()) {
+  if (!existsSync4(dir) || !statSync(dir).isDirectory()) {
     throw new CliError("USAGE", `extension directory not found: ${dir}`, { hint });
   }
   try {
@@ -4786,7 +4853,7 @@ function sessionFile(ctx) {
 }
 function loadSessionFile(ctx) {
   const file = sessionFile(ctx);
-  if (!existsSync2(file)) {
+  if (!existsSync4(file)) {
     const name = ctx.opts.session;
     throw new CliError("NO_SESSION", `no ext session ${name}`, {
       hint: `run: web ext launch <dist-dir> --session ${name}`
@@ -4815,7 +4882,7 @@ function verifyLoaded(driver, { session, extensionId, name }) {
   throw new CliError("FAILURE", "extension did not load", { hint: LOAD_FAILED_HINT });
 }
 function launch(ctx, distDir) {
-  const { opts, driver, print } = ctx;
+  const { opts, driver, print, recipe } = ctx;
   const abs = resolve4(distDir);
   const manifest = readManifest(abs);
   const surfaces = availableSurfaces(manifest);
@@ -4825,22 +4892,24 @@ function launch(ctx, distDir) {
     session,
     url: "about:blank",
     headed: Boolean(opts.headed),
-    persistent: true,
     cdpPort,
-    config: {
-      browserName: "chromium",
-      launchOptions: {
-        channel: "chromium",
-        args: [`--load-extension=${abs}`, `--disable-extensions-except=${abs}`]
+    ...resolveLaunch(recipe, {
+      persistent: true,
+      config: {
+        browserName: "chromium",
+        launchOptions: {
+          channel: "chromium",
+          args: [`--load-extension=${abs}`, `--disable-extensions-except=${abs}`]
+        }
       }
-    }
+    })
   });
   const extensionId = extensionIdForPath(realpathSync(abs));
   verifyLoaded(driver, { session, extensionId, name: manifest.name });
   const info = { session, extensionId, extensionPath: abs, surfaces, cdpPort };
   const file = artifactPath(opts.output, session, "ext", "session.json");
   mkdirSync3(dirname(file), { recursive: true });
-  writeFileSync3(file, JSON.stringify(info));
+  writeFileSync4(file, JSON.stringify(info));
   print(info);
 }
 function open(ctx, surface) {
@@ -4863,7 +4932,7 @@ function open(ctx, surface) {
 }
 function status({ driver, opts, print }) {
   const file = artifactPath(opts.output, opts.session, "ext", "session.json");
-  const info = existsSync2(file) ? parseSessionFile(file) : null;
+  const info = existsSync4(file) ? parseSessionFile(file) : null;
   const isOpen = driver.list().some((s) => s.name === opts.session && s.status === "open");
   print({
     session: opts.session,
@@ -4876,7 +4945,7 @@ function close(ctx) {
   const { driver, opts, print } = ctx;
   driver.close(opts.session);
   const file = sessionFile(ctx);
-  if (existsSync2(file)) unlinkSync(file);
+  if (existsSync4(file)) unlinkSync(file);
   print({ session: opts.session, status: "closed" });
 }
 function needSession(ctx) {
@@ -4914,7 +4983,7 @@ function registerExt(program2, deps) {
 
 // src/commands/mask.mjs
 import { execFileSync, execSync } from "node:child_process";
-import { mkdtempSync, readFileSync as readFileSync3, rmSync as rmSync3, writeFileSync as writeFileSync4 } from "node:fs";
+import { mkdtempSync, readFileSync as readFileSync3, rmSync as rmSync3, writeFileSync as writeFileSync5 } from "node:fs";
 import { request as httpRequest } from "node:http";
 import { createServer as createHttpsServer, request as httpsRequest } from "node:https";
 import { tmpdir } from "node:os";
@@ -4944,7 +5013,7 @@ function addHostsEntry(hostsFile, entry, log) {
     log(`Hosts entry already exists: ${entry}`);
     return;
   }
-  writeFileSync4(hostsFile, `${hosts.trimEnd()}
+  writeFileSync5(hostsFile, `${hosts.trimEnd()}
 ${entry}
 `);
   log(`Added to ${hostsFile}: ${entry}`);
@@ -4952,7 +5021,7 @@ ${entry}
 function removeHostsEntry(hostsFile, entry, log) {
   try {
     const kept = readFileSync3(hostsFile, "utf8").split("\n").filter((line) => line.trim() !== entry).join("\n");
-    writeFileSync4(hostsFile, kept);
+    writeFileSync5(hostsFile, kept);
     log(`Removed from ${hostsFile}: ${entry}`);
   } catch (err) {
     log(`Warning: could not clean ${hostsFile}: ${err.message}`);
@@ -5108,7 +5177,13 @@ async function runPageCommand(command, deps, { url, fn }) {
   let health;
   const { session, result } = await withSession(
     ctx.driver,
-    { session: ctx.opts.session, url, headed: ctx.opts.headed, recipePath: ctx.opts.recipe },
+    {
+      session: ctx.opts.session,
+      url,
+      headed: ctx.opts.headed,
+      recipePath: ctx.opts.saveRecipe ? void 0 : ctx.recipe,
+      recipeExplicit: ctx.recipeExplicit
+    },
     async (name) => {
       health = ctx.driver.pageHealth(name);
       assertNotBlocked(health);
@@ -5452,11 +5527,11 @@ function registerReduce(group, deps) {
 }
 
 // src/commands/page/collect.mjs
-import { writeFileSync as writeFileSync6 } from "node:fs";
+import { writeFileSync as writeFileSync7 } from "node:fs";
 import { join as join6 } from "node:path";
 
 // src/page/icons.mjs
-import { mkdirSync as mkdirSync4, writeFileSync as writeFileSync5 } from "node:fs";
+import { mkdirSync as mkdirSync4, writeFileSync as writeFileSync6 } from "node:fs";
 import { join as join5 } from "node:path";
 var ICON_MAX_SIZE = 48;
 var KNOWN_PATTERNS = [
@@ -5596,7 +5671,7 @@ function writeIcons(svgs, url, iconsDir) {
     usedNames.add(name);
     const optimized = optimizeSvg(svgContent, classification);
     const filename = `${name}.svg`;
-    writeFileSync5(join5(iconsDir, filename), optimized);
+    writeFileSync6(join5(iconsDir, filename), optimized);
     const context = [
       entry.containerTag ? entry.containerTag.toLowerCase() : "",
       entry.parentTag ? entry.parentTag.toLowerCase() : "",
@@ -5612,7 +5687,7 @@ function writeIcons(svgs, url, iconsDir) {
     });
   }
   const manifest = { url, icons };
-  writeFileSync5(join5(iconsDir, "icons.json"), JSON.stringify(manifest, null, 2));
+  writeFileSync6(join5(iconsDir, "icons.json"), JSON.stringify(manifest, null, 2));
   return manifest;
 }
 
@@ -5626,7 +5701,7 @@ function extract(driver, session, what) {
   return typeof data === "string" ? JSON.parse(data) : data;
 }
 function writeJson(path3, value) {
-  writeFileSync6(path3, `${JSON.stringify(value, null, 2)}
+  writeFileSync7(path3, `${JSON.stringify(value, null, 2)}
 `);
   return path3;
 }
@@ -5698,7 +5773,7 @@ function registerCollect(group, deps) {
 }
 
 // src/page/langs-detect.mjs
-import { existsSync as existsSync3 } from "node:fs";
+import { existsSync as existsSync5 } from "node:fs";
 import { dirname as dirname2, join as join7 } from "node:path";
 import { fileURLToPath } from "node:url";
 var MIN_BLOCK_BYTES = 50;
@@ -5790,7 +5865,7 @@ function detectLanguages(signals, detector) {
 }
 function findPackageDir(start) {
   let dir = start;
-  while (!existsSync3(join7(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
+  while (!existsSync5(join7(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
   return dir;
 }
 async function loadDetector(importer = (m) => import(m)) {
@@ -5971,13 +6046,16 @@ async function fetchEasyList(fetch2 = globalThis.fetch) {
   if (!res.ok) throw new Error(`EasyList fetch failed: ${res.status}`);
   return res.text();
 }
-function buildHideExpression(report, ids) {
+function hideRules(report, ids = ["all"]) {
   const selected = ids.includes("all") ? report.overlays : report.overlays.filter((o) => ids.includes(o.id));
   const rules = selected.flatMap(
     (o) => o.hide?.length ? o.hide : [`${o.selector} { display:none!important }`]
   );
   if (report.scroll_locked && report.scroll_fix) rules.push(report.scroll_fix);
-  const css = JSON.stringify(rules.join("\n"));
+  return rules;
+}
+function buildHideExpression(report, ids) {
+  const css = JSON.stringify(hideRules(report, ids).join("\n"));
   const style = `Object.assign(document.createElement('style'), { textContent: ${css} })`;
   return `document.head.appendChild(${style}) && 'ok'`;
 }
@@ -6132,7 +6210,7 @@ Notes:
   Site headers/navs may appear with role set; filter them rather than hiding every entry.
 `;
 function registerOverlays(group, deps) {
-  group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").addHelpText("after", HELP9).option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "thorough").option("--refresh-db", "refresh the overlay pattern database first").action((url, opts, command) => {
+  group.command("overlays [url]").description("detect cookie banners and modals; optionally dismiss them").addHelpText("after", HELP9).option("--dismiss", "dismiss or hide the detected overlays").option("--mode <mode>", `dismissal mode: ${MODES.join(", ")}`, "thorough").option("--refresh-db", "refresh the overlay pattern database first").option("--save-recipe", "save the hide rules to the recipe (--recipe, default recipe.json)").action((url, opts, command) => {
     if (!MODES.includes(opts.mode)) {
       throw new CliError("USAGE", `unknown mode ${opts.mode}`, {
         hint: `one of: ${MODES.join(", ")}`
@@ -6140,7 +6218,7 @@ function registerOverlays(group, deps) {
     }
     return runPageCommand(command, deps, {
       url,
-      fn: async (driver, session) => {
+      fn: async (driver, session, all) => {
         const patterns = await loadPatterns({
           refresh: opts.refreshDb,
           fetch: deps.fetch,
@@ -6153,6 +6231,10 @@ function registerOverlays(group, deps) {
           scrollLocked: report.scroll_locked,
           scrollFix: report.scroll_fix ?? null
         };
+        if (opts.saveRecipe) {
+          const entry = { rules: hideRules(report) };
+          result.recipe = saveRecipe(all.recipe ?? DEFAULT_RECIPE, "overlays", [entry]);
+        }
         if (!opts.dismiss) return result;
         result.applied = dismissOverlays(driver, session, report, { mode: opts.mode });
         if (report.scroll_locked) result.scrollUnlocked = scrollUnlocked(driver, session);
@@ -6186,7 +6268,7 @@ import { resolve as resolve6 } from "node:path";
 // src/cache/proxy.mjs
 import { createServer } from "node:http";
 import { createHash as createHash2 } from "node:crypto";
-import { existsSync as existsSync4, mkdirSync as mkdirSync5, readdirSync, readFileSync as readFileSync4, writeFileSync as writeFileSync7 } from "node:fs";
+import { existsSync as existsSync6, mkdirSync as mkdirSync5, readdirSync, readFileSync as readFileSync4, writeFileSync as writeFileSync8 } from "node:fs";
 import { dirname as dirname3, extname, join as join8, resolve as resolve5, sep } from "node:path";
 var UNCACHEABLE_REQUEST_HEADERS = [
   "host",
@@ -6297,15 +6379,15 @@ async function startCacheProxy({
   const stats = { hits: 0, misses: 0, errors: 0 };
   const read = (url) => {
     const fp = cachePath(dir, url);
-    if (!existsSync4(fp) || !existsSync4(sidecarPath(fp))) return null;
+    if (!existsSync6(fp) || !existsSync6(sidecarPath(fp))) return null;
     const { headers, status: status2 } = JSON.parse(readFileSync4(sidecarPath(fp), "utf-8"));
     return { body: readFileSync4(fp), headers, status: status2 };
   };
   const write = (url, { body, headers, status: status2 }) => {
     const fp = cachePath(dir, url);
     mkdirSync5(dirname3(fp), { recursive: true });
-    writeFileSync7(fp, body);
-    writeFileSync7(sidecarPath(fp), JSON.stringify({ headers, status: status2 }));
+    writeFileSync8(fp, body);
+    writeFileSync8(sidecarPath(fp), JSON.stringify({ headers, status: status2 }));
   };
   async function fetchAndStore(req, origin, originUrl) {
     log(`[fetch] ${originUrl}`);
@@ -6721,7 +6803,7 @@ ${result.urls.map((u) => u.url).join("\n")}`;
 }
 
 // inline:docs
-var FILES2 = { "extending.md": "# Extending `web` with your own commands\n\n`@adobe/web-cli` is also a library (`dist/lib.mjs`, the package's `exports`). A program\ncan build the stock `web` program, add its own subcommands and ship the result as its own\nbinary. The added commands get the same contract as the built-in ones: one JSON document on\nstdout, `--format text`, `--session` and one-shot browsers, `--output` artifacts, the\nblocked-page gate, JSON errors and exit codes 0/1/2/3.\n\n## Minimal program\n\n```js\n#!/usr/bin/env node\nimport { runCli, runPageCommand, CliError } from '@adobe/web-cli';\n\nconst extend = (program, deps) =>\n  program\n    .command('acme')\n    .command('audit [url]')\n    .option('--strict')\n    .action((url, _opts, command) =>\n      runPageCommand(command, deps, {\n        url,\n        fn: (driver, session, opts) => {\n          const n = driver.run(session, { code: 'document.querySelectorAll(\"h1\").length' });\n          if (opts.strict && n !== 1) throw new CliError('EMPTY_RESULT', `${n} h1 elements`);\n          return { h1: n };\n        },\n      }),\n    );\n\nprocess.exitCode = await runCli(process.argv, { extend });\n```\n\n`acme-web acme audit https://example.com` prints `{ \"h1\": 1, \"url\", \"session\", \"durationMs\" }`;\n`acme-web page tree \u2026` and every other stock command keep working. The skills of the web\nplugin run through the extended binary with `WEB=acme-web`.\n\n## Surface\n\nEverything exported by the library; nothing else is public.\n\n- `runCli(argv, deps)`: build the program, parse, print errors as JSON, return the exit\n  code. `deps.extend(program, deps)` runs after the stock groups are registered.\n- `createProgram(deps)`: the commander root alone, when you need to own parsing; thrown\n  errors are then yours to print (`fail`).\n- `runPageCommand(command, deps, { url, fn })`: run `fn(driver, session, opts)` on a page.\n  Resolves `<url>` or `--session`, applies `--recipe` and `--headed`, rejects blocked\n  pages, adds `url`, `session` and `durationMs`, prints.\n- `createContext(command, deps)`: `{ opts, driver, print }` for commands that are not\n  \"one page\"; `opts` merges the global and the command options.\n- `withSession(driver, { session, url, headed, recipePath }, fn)`: the session rule on\n  its own: opens an ephemeral or named browser, runs `fn(name)`, closes only ephemeral ones.\n- `artifactDir(outputDir, session, command)` and `artifactPath(\u2026, name)`: where to write\n  files, `<output>/<session>-<command>/<name>`, absolute.\n- `emit(result, { format, text, stdout })`: print one result document (JSON, or `text`\n  with `--format text`).\n- `fail(err, { stdout, stderr })`: print an error document, return its exit code.\n- `CliError(code, message, { hint })` and `EXIT`: codes map to exits, `USAGE NO_SESSION\n  SESSION_EXISTS PLAYWRIGHT_CLI UNSUPPORTED` \u2192 2, `BLOCKED` \u2192 3, others \u2192 1.\n- `createDriver({ outputDir, timeoutMs })`: the playwright-cli driver (`open`, `attach`,\n  `goto`, `close`, `closeAll`, `list`, `evaluate`, `run`, `inject`, `cdp`, `screenshot`,\n  `pageHealth`, `requests`, `responseHeaders`). Only this module spawns `playwright-cli`.\n\n`deps` also accepts `env`, `stdout`, `stderr` and `driverFactory` (a fake driver for tests;\nsee `src/lib.test.mjs` in the package for a complete example).\n\n## Rules for added commands\n\n- Print exactly one document on stdout through `emit` or `runPageCommand`; logs go to stderr.\n- Throw `CliError` with a code from the list above and a `hint` that names the next command.\n- Never spawn `playwright-cli` yourself; go through the driver so `WEB_DEBUG=1` and\n  session rules keep working.\n- Never invent a fixed session name; reuse the name `web browser open` returns.\n- Write files under `artifactDir` with stable names so callers can find them without parsing.\n" };
+var FILES2 = { "extending.md": "# Extending `web` with your own commands\n\n`@adobe/web-cli` is also a library (`dist/lib.mjs`, the package's `exports`). A program\ncan build the stock `web` program, add its own subcommands and ship the result as its own\nbinary. The added commands get the same contract as the built-in ones: one JSON document on\nstdout, `--format text`, `--session` and one-shot browsers, `--output` artifacts, the\nblocked-page gate, JSON errors and exit codes 0/1/2/3.\n\n## Minimal program\n\n```js\n#!/usr/bin/env node\nimport { runCli, runPageCommand, CliError } from '@adobe/web-cli';\n\nconst extend = (program, deps) =>\n  program\n    .command('acme')\n    .command('audit [url]')\n    .option('--strict')\n    .action((url, _opts, command) =>\n      runPageCommand(command, deps, {\n        url,\n        fn: (driver, session, opts) => {\n          const n = driver.run(session, { code: 'document.querySelectorAll(\"h1\").length' });\n          if (opts.strict && n !== 1) throw new CliError('EMPTY_RESULT', `${n} h1 elements`);\n          return { h1: n };\n        },\n      }),\n    );\n\nprocess.exitCode = await runCli(process.argv, { extend });\n```\n\n`acme-web acme audit https://example.com` prints `{ \"h1\": 1, \"url\", \"session\", \"durationMs\" }`;\n`acme-web page tree \u2026` and every other stock command keep working. The skills of the web\nplugin run through the extended binary with `WEB=acme-web`.\n\n## Surface\n\nEverything exported by the library; nothing else is public.\n\n- `runCli(argv, deps)`: build the program, parse, print errors as JSON, return the exit\n  code. `deps.extend(program, deps)` runs after the stock groups are registered.\n- `createProgram(deps)`: the commander root alone, when you need to own parsing; thrown\n  errors are then yours to print (`fail`).\n- `runPageCommand(command, deps, { url, fn })`: run `fn(driver, session, opts)` on a page.\n  Resolves `<url>` or `--session`, applies the recipe (`--recipe`, `$WEB_RECIPE` or\n  `./recipe.json`) and `--headed`, rejects blocked\n  pages, adds `url`, `session` and `durationMs`, prints.\n- `createContext(command, deps)`: `{ opts, driver, print, recipe }` (`recipe` is the path to launch\n  browsers with, if any) for commands that are not\n  \"one page\"; `opts` merges the global and the command options.\n- `withSession(driver, { session, url, headed, recipePath }, fn)`: the session rule on\n  its own: opens an ephemeral or named browser, runs `fn(name)`, closes only ephemeral ones.\n- `artifactDir(outputDir, session, command)` and `artifactPath(\u2026, name)`: where to write\n  files, `<output>/<session>-<command>/<name>`, absolute.\n- `emit(result, { format, text, stdout })`: print one result document (JSON, or `text`\n  with `--format text`).\n- `fail(err, { stdout, stderr })`: print an error document, return its exit code.\n- `CliError(code, message, { hint })` and `EXIT`: codes map to exits, `USAGE NO_SESSION\n  SESSION_EXISTS PLAYWRIGHT_CLI UNSUPPORTED` \u2192 2, `BLOCKED` \u2192 3, others \u2192 1.\n- `createDriver({ outputDir, timeoutMs })`: the playwright-cli driver (`open`, `attach`,\n  `goto`, `close`, `closeAll`, `list`, `evaluate`, `run`, `inject`, `cdp`, `screenshot`,\n  `pageHealth`, `requests`, `responseHeaders`). Only this module spawns `playwright-cli`.\n\n`deps` also accepts `env`, `stdout`, `stderr` and `driverFactory` (a fake driver for tests;\nsee `src/lib.test.mjs` in the package for a complete example).\n\n## Rules for added commands\n\n- Print exactly one document on stdout through `emit` or `runPageCommand`; logs go to stderr.\n- Throw `CliError` with a code from the list above and a `hint` that names the next command.\n- Never spawn `playwright-cli` yourself; go through the driver so `WEB_DEBUG=1` and\n  session rules keep working.\n- Never invent a fixed session name; reuse the name `web browser open` returns.\n- Write files under `artifactDir` with stable names so callers can find them without parsing.\n" };
 
 // src/docs/index.mjs
 var listDocs = () => Object.keys(FILES2).map((f) => f.replace(/\.md$/, ""));
@@ -6790,8 +6872,10 @@ Typical flows:
   scripted:  S=$(web browser open <url> | jq -r .session)   # generated name, never a fixed one
              web page overlays --session "$S" --dismiss; web page tree --session "$S";
              web browser close --session "$S"
-  blocked:   web probe <url>, then re-run with --recipe <recipePath>
-             (printed by probe, e.g. .web/probe-<id>/browser-recipe.json)
+  blocked:   web probe <url> --save-recipe, then every browser command (browser open, page *,
+             ext launch) launches with ./recipe.json (or --recipe <file>, or $WEB_RECIPE)
+  overlays:  web page overlays <url> --save-recipe records the cookie banner and modal hide rules
+             into the same recipe, so later browsers start with them hidden
 `;
 function createProgram(deps = {}) {
   const { env = process.env, stdout = process.stdout, stderr = process.stderr } = deps;
@@ -6801,7 +6885,11 @@ function createProgram(deps = {}) {
     env.WEB_SESSION ?? env.PLAYWRIGHT_CLI_SESSION
   ).addOption(
     new Option("--format <format>", "output format: json or text").choices(["json", "text"]).default("json")
-  ).option("--output <dir>", "directory for artifacts", "./.web").option("--headed", "show the browser window").option("--recipe <file>", "browser recipe produced by `web probe`").configureOutput({
+  ).option("--output <dir>", "directory for artifacts", "./.web").option("--headed", "show the browser window").option(
+    "--recipe <file>",
+    "browser recipe (default: $WEB_RECIPE, else ./recipe.json when it exists)",
+    env.WEB_RECIPE
+  ).configureOutput({
     writeOut: (s) => stdout.write(s),
     writeErr: (s) => stderr.write(s)
   }).addHelpText("after", ROOT_HELP).showHelpAfterError().showSuggestionAfterError().exitOverride();

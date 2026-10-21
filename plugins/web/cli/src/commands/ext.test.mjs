@@ -226,3 +226,15 @@ test('ext launch when navigation throws exits FAILURE and closes the session', a
   assert.equal(code, 1);
   assert.deepEqual(calls.at(-1), ['close', 's']);
 });
+
+test('ext launch applies the recipe init scripts but keeps its own browser config', async () => {
+  const { dist, exec, root } = setup();
+  const recipe = join(root, 'recipe.json');
+  const probe = [{ config: { browserName: 'firefox' }, persistent: false }];
+  writeFileSync(recipe, JSON.stringify({ probe, overlays: [{ rules: ['#a{}'] }] }));
+  const { calls } = await exec(['ext', 'launch', dist, '--session', 's', '--recipe', recipe]);
+  const opened = calls.find((c) => c[0] === 'open')[1];
+  assert.equal(opened.config.browserName, 'chromium');
+  assert.equal(opened.persistent, true);
+  assert.equal(opened.initSources.length, 1);
+});

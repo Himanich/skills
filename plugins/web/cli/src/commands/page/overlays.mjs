@@ -1,7 +1,13 @@
 import { CliError } from '#src/errors.mjs';
 import { loadBundle } from '#src/bundles/index.mjs';
 import { runPageCommand } from '#src/page/run.mjs';
-import { buildBundle, buildHideExpression, loadPatterns } from '#src/page/overlay-db.mjs';
+import {
+  buildBundle,
+  buildHideExpression,
+  hideRules,
+  loadPatterns,
+} from '#src/page/overlay-db.mjs';
+import { DEFAULT_RECIPE, saveRecipe } from '#src/recipe.mjs';
 
 const MODES = ['quick', 'thorough'];
 
@@ -143,6 +149,7 @@ export function registerOverlays(group, deps) {
     .option('--dismiss', 'dismiss or hide the detected overlays')
     .option('--mode <mode>', `dismissal mode: ${MODES.join(', ')}`, 'thorough')
     .option('--refresh-db', 'refresh the overlay pattern database first')
+    .option('--save-recipe', 'save the hide rules to the recipe (--recipe, default recipe.json)')
     .action((url, opts, command) => {
       if (!MODES.includes(opts.mode)) {
         throw new CliError('USAGE', `unknown mode ${opts.mode}`, {
@@ -151,7 +158,7 @@ export function registerOverlays(group, deps) {
       }
       return runPageCommand(command, deps, {
         url,
-        fn: async (driver, session) => {
+        fn: async (driver, session, all) => {
           const patterns = await loadPatterns({
             refresh: opts.refreshDb,
             fetch: deps.fetch,
@@ -164,6 +171,10 @@ export function registerOverlays(group, deps) {
             scrollLocked: report.scroll_locked,
             scrollFix: report.scroll_fix ?? null,
           };
+          if (opts.saveRecipe) {
+            const entry = { rules: hideRules(report) };
+            result.recipe = saveRecipe(all.recipe ?? DEFAULT_RECIPE, 'overlays', [entry]);
+          }
           if (!opts.dismiss) return result;
           result.applied = dismissOverlays(driver, session, report, { mode: opts.mode });
           if (report.scroll_locked) result.scrollUnlocked = scrollUnlocked(driver, session);

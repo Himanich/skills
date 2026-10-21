@@ -1,15 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import {
-  artifactPath,
-  generateSessionName,
-  loadRecipe,
-  requireOpenSession,
-  withSession,
-} from './session.mjs';
+import { resolve } from 'node:path';
+import { artifactPath, generateSessionName, requireOpenSession, withSession } from './session.mjs';
 
 const fake = (sessions = []) => {
   const calls = [];
@@ -100,16 +92,6 @@ test('artifactPath prefixes with session and command and is absolute', () => {
   const p = artifactPath('out', 's', 'screenshot', 'a.png');
   assert.equal(p, resolve('out/s-screenshot-a.png'));
   assert.ok(p.startsWith('/'));
-});
-
-test('loadRecipe returns cliConfig.browser and persistent; bad path → USAGE', () => {
-  const file = join(mkdtempSync(join(tmpdir(), 'recipe-')), 'r.json');
-  writeFileSync(file, JSON.stringify({ cliConfig: { browser: { a: 1 } }, persistent: true }));
-  assert.deepEqual(loadRecipe(file), { config: { a: 1 }, persistent: true });
-  assert.throws(
-    () => loadRecipe('/no/such.json'),
-    (e) => e.code === 'USAGE',
-  );
 });
 
 async function signalRun(closeThrows) {
@@ -217,4 +199,23 @@ test('withSession passes explicit launch options, which win over the recipe', as
       initScripts: ['/x.js'],
     },
   );
+});
+
+test('withSession warns when an explicit recipe meets an already open session', async () => {
+  const written = [];
+  const original = process.stderr.write;
+  process.stderr.write = (chunk) => (written.push(String(chunk)), true);
+  try {
+    const open = [{ name: 'mine', status: 'open' }];
+    await withSession(fake(open), { session: 'mine', recipePath: 'r.json' }, () => 1);
+    assert.deepEqual(written, []);
+    await withSession(
+      fake(open),
+      { session: 'mine', recipePath: 'r.json', recipeExplicit: true },
+      () => 1,
+    );
+  } finally {
+    process.stderr.write = original;
+  }
+  assert.match(written.join(''), /--recipe ignored, session mine is already open/);
 });

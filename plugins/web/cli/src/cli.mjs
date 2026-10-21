@@ -45,8 +45,10 @@ Typical flows:
   scripted:  S=$(web browser open <url> | jq -r .session)   # generated name, never a fixed one
              web page overlays --session "$S" --dismiss; web page tree --session "$S";
              web browser close --session "$S"
-  blocked:   web probe <url>, then re-run with --recipe <recipePath>
-             (printed by probe, e.g. .web/probe-<id>/browser-recipe.json)
+  blocked:   web probe <url> --save-recipe, then every browser command (browser open, page *,
+             ext launch) launches with ./recipe.json (or --recipe <file>, or $WEB_RECIPE)
+  overlays:  web page overlays <url> --save-recipe records the cookie banner and modal hide rules
+             into the same recipe, so later browsers start with them hidden
 `;
 
 /**
@@ -71,7 +73,11 @@ export function createProgram(deps = {}) {
     )
     .option('--output <dir>', 'directory for artifacts', './.web')
     .option('--headed', 'show the browser window')
-    .option('--recipe <file>', 'browser recipe produced by `web probe`')
+    .option(
+      '--recipe <file>',
+      'browser recipe (default: $WEB_RECIPE, else ./recipe.json when it exists)',
+      env.WEB_RECIPE,
+    )
     .configureOutput({
       writeOut: (s) => stdout.write(s),
       writeErr: (s) => stderr.write(s),
