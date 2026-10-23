@@ -4,6 +4,39 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.4 — a 2xx denial page is a bot challenge: the capture refuses it, the gate round has no verdict (#137)
+
+Field learning (a recorded hands-off replica run on a site behind a bot wall): the live origin answered the headless
+capture with status 200 and its denial text — about 900 px of "can't process your request … Incident Number" under one
+heading — and the gate accepted it as a normal capture: `stitch-shot.mjs` wrote the PNG and exited 0, no bot signal
+anywhere, and the pixel round measured the denial page as the source. The fail-loud rule (gate doc rule 12) read only
+the response headers, and a vendor wall that answers 200 leaves none to classify.
+
+- **A 2xx denial page is a bot challenge (`diff/scripts/live-session.mjs`).** After the settle `gotoLive` reads the
+  page (`pageDenial`): a vendor signature — a phrase pair such as "Access Denied" + "Reference #" or "can't process
+  your request" + "Incident Number" anywhere in the title and text; a single phrase ("Just a moment…", "Press & Hold",
+  "Incapsula", "DataDome", "Request unsuccessful", "System Down") in the title, the text or an iframe src, only on
+  a page under 2 KB of text — or a page under 2 KB of text under exactly one error heading. A match throws the same
+  `BotChallengeError` the header path throws (marker `HTTP <status> denial page — …`; the message says "origin blocked"
+  and names the `--headed` escalation); a full page that merely mentions a phrase is no denial page. Under `--headed`
+  the solve window reloads up to three times before declaring it, and a reload the probe cannot read keeps the denial.
+  Each probe read races a 10 s deadline; a probe that fails twice is one stderr line (`denial-page check skipped`),
+  never a pass. Every instrument on `gotoLive` inherits the rule.
+- **stitch-shot exits 3 on a denial page and records the check.** The page is read once more after the dismissal
+  sweep(s), before the capture (a denial page a script renders after `domcontentloaded`); a denial leaves no PNG and no
+  record. A written capture now carries `<stem>.capture.json` beside it — `{ writtenBy, url, width, vh, height,
+  chunks, denialCheck, at }`, `denialCheck` = `'ok'` or `'skipped: <reason>'` — so a round whose check could not run
+  says so in its evidence. playwright and pngjs load lazily (`--help` and the pure tests need neither).
+- **gate.sh names the blocked round.** A capture exit 3 ends the round with `… capture BLOCKED (exit 3) — a bot
+  challenge or 2xx denial page …: no verdict for this round; escalate --headed`, never a pixel number; the `--full`
+  probe verdict line says the same. Tests: `diff/live-session` (new — every signature, the 2 KB and one-heading rules,
+  an ordinary page, `gotoLive` on stub pages), `replica/stitch-shot` (new — the re-check, the exit code, the record,
+  `--help`; end to end where playwright is installed).
+- **Live URLs only.** The denial probe runs only where a vendor wall can exist (`isLiveHttpUrl`): a localhost or
+  loopback build side serving a tiny page under an error heading is captured as-is; with a test. A single phrase in the
+  title counts under the same 2 KB bound (an article titled "System Down" is no denial page). Merged with 0.34.3, so
+  the two new test files are one per script (`diff/live-session`, `replica/stitch-shot`).
+
 ## 0.34.3 — consent overlays are dismissed on gate captures; the archetype ledger keeps its shape (#136)
 
 Fixes from a recorded hands-off replica run on a site with a consent manager, verified against its artifacts.

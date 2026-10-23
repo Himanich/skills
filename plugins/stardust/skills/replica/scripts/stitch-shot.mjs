@@ -20,8 +20,14 @@
  *     sites, and UA alone still 403s on Akamai (F-R1) — the standard headers
  *     (Accept / Accept-Language / sec-ch-ua*) are the other half of the fix.
  *   - a bot-management challenge/blocked interstitial FAILS LOUD (exit 3),
- *     never captured as if it were the source (the Access-Denied trap). Escalate
- *     with --headed (stealth real Chrome).
+ *     never captured as if it were the source (the Access-Denied trap). So
+ *     does a 2xx DENIAL PAGE (live-session's pageDenial owns the rule): gotoLive
+ *     reads the entry, and the page is read once more after the dismissal
+ *     sweep(s), before the capture (a denial page a script renders after
+ *     domcontentloaded). The message names the signature and says "origin
+ *     blocked"; a re-check that cannot read the page is one stderr line
+ *     (`denial-page check skipped`), never a pass. Escalate with --headed
+ *     (stealth real Chrome).
  *   - waitUntil 'domcontentloaded' (never 'networkidle'): live sites with
  *     analytics beacons never reach networkidle — hard timeout otherwise.
  *   - TWO overlay classes dismissed: cookie consent (CLICKED accept, not DOM
@@ -78,15 +84,23 @@
  *   node skills/replica/scripts/stitch-shot.mjs https://www.example.com \
  *     stardust/replica/gates/home-1440/live.png --width 1440 --settle
  *
- * Requires: playwright, pngjs (project devDependencies), and the diff skill's
- * scripts dir alongside (live-session.mjs — the replica Setup copies both).
- * Exit codes: 0 written, 1 error, 3 bot challenge (live side blocked — fail
- * loud, never captured).
+ * Writes <out.png> and <stem>.capture.json beside it (live.png →
+ * live.capture.json): { writtenBy, url, width, vh, height (the PNG's),
+ * chunks, denialCheck ('ok' | 'skipped: <reason>' — the denial-page read
+ * after the dismissal sweeps), at }. Removed when a capture starts, written
+ * with the PNG — a failed or refused capture leaves none.
+ *
+ * Requires: playwright, pngjs (project devDependencies; imported lazily, so
+ * --help needs neither), and the diff skill's scripts dir alongside
+ * (live-session.mjs — the replica Setup copies both).
+ * Exit codes: 0 written, 1 error, 3 bot challenge (live side blocked — an edge
+ * interstitial or a 2xx denial page; fail loud, never captured, no PNG and no
+ * capture.json; escalate with --headed).
  */
 
 /* eslint-disable import/no-extraneous-dependencies, import/extensions, no-await-in-loop, no-restricted-syntax, brace-style, object-curly-newline, max-len */
 /* standalone dev tool: sequential page ops use awaited loops by design */
-import { writeFileSync, mkdirSync, existsSync, realpathSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, realpathSync, rmSync } from 'fs';
 import { dirname, resolve as resolvePath } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
@@ -101,7 +115,8 @@ if (!LIVE_SESSION) {
   console.error('stitch-shot error: live-session.mjs not found (looked in ../../diff/scripts/ and ../diff/). Copy the diff skill\'s scripts dir alongside this one (replica SKILL.md § Setup).');
   process.exit(1);
 }
-const { REAL_CHROME_UA, isLiveHttpUrl, launchStealthHeaded, newLiveContext, gotoLive, dismissOverlays } = await import(pathToFileURL(LIVE_SESSION).href);
+const liveSession = await import(pathToFileURL(LIVE_SESSION).href);
+const { REAL_CHROME_UA, isLiveHttpUrl, launchStealthHeaded, newLiveContext, gotoLive, dismissOverlays } = liveSession;
 
 const HELP = `stitch-shot — scroll-and-stitch full-page screenshot (symmetric capture instrument)
 
@@ -119,8 +134,12 @@ Usage: node stitch-shot.mjs <url> <out.png> [options]
   --timeout <ms>    goto timeout (default 60000)
   --help            this text
 
+Writes <out.png> and <stem>.capture.json beside it (live.png → live.capture.json; removed when a capture starts, so a
+failed or refused one leaves none): { writtenBy, url, width, vh, height, chunks, denialCheck, at } — denialCheck = 'ok' |
+'skipped: <reason>' (the denial-page read after the dismissal sweeps).
 Run the SAME command shape against the live page and the served prototype.
-Exit codes: 0 written, 1 error, 3 bot challenge (live side blocked — fail loud).`;
+Exit codes: 0 written, 1 error, 3 bot challenge (live side blocked — an edge interstitial or a 2xx denial page, read by
+live-session's pageDenial at the entry and after the dismissal sweeps; no PNG, no capture.json; escalate --headed).`;
 export { HELP };
 if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log(HELP); process.exit(0); }
 export class UsageError extends Error { constructor(msg) { super(msg); this.name = 'UsageError'; } }
@@ -185,8 +204,34 @@ async function dismissAndLog(page, url, opts) {
   return d;
 }
 
+// <out.png> → the record beside it (live.png → live.capture.json).
+export const sidecarOf = (out) => `${out.replace(/\.png$/i, '')}.capture.json`;
+
+// gotoLive reads the entry for a 2xx denial page; this reads the page once more after the dismissal sweep(s) — a
+// denial page a script renders after domcontentloaded. A marker → BotChallengeError (exit 3), with the entry's
+// status. Returns capture.json's denialCheck: 'ok' (read, no marker) | 'skipped: <reason>' (the probe failed twice,
+// or a live-session.mjs copy that predates pageDenial) — a skip is one stderr line AND on the record, never a
+// silent pass.
+export async function recheckDenial(session, page, url, status) {
+  if (typeof session.pageDenial !== 'function' || typeof session.botChallengeError !== 'function') {
+    console.error('stitch-shot: denial-page check skipped (live-session.mjs predates pageDenial — copy the diff skill\'s live-session.mjs alongside)');
+    return 'skipped: live-session.mjs predates pageDenial';
+  }
+  const { marker, skipped } = await session.pageDenial(page);
+  if (skipped) console.error(`stitch-shot: denial-page check skipped (${skipped})`);
+  if (marker) throw session.botChallengeError(url, `HTTP ${status} ${marker}`, { denial: true });
+  return skipped ? `skipped: ${skipped}` : 'ok';
+}
+
+// exit 3 = bot challenge on the live side — an edge interstitial or a 2xx denial page (distinct from generic errors,
+// so a gate runner can tell "blocked — escalate with --headed" from "capture broke").
+export const exitCodeFor = (e) => (e && e.name === 'BotChallengeError' ? 3 : 1);
+
 async function main() {
   const { url, out, opts } = parseArgs(process.argv);
+  const sidecar = sidecarOf(out);
+  rmSync(sidecar, { force: true }); // a refused or failed capture leaves no record of an earlier one
+  // Lazy: --help and the pure tests need neither playwright nor pngjs.
   let chromium; let PNG;
   try { ({ chromium } = await import('playwright')); ({ PNG } = await import('pngjs')); } catch (e) { throw new Error(`playwright / pngjs not importable from ${HERE} (${e.code || e.message}) — replica SKILL.md § Setup: copy the scripts dir into the project and run the copy`); }
   const browser = opts.headed ? await launchStealthHeaded(chromium) : await chromium.launch();
@@ -201,7 +246,7 @@ async function main() {
     // challenge page must never be stitched as if it were the source.
     // solveWindow only under --headed: headless clearance never lands, and
     // the solve loop would spend the Akamai block budget (1 hit vs up to 4).
-    await gotoLive(page, url, { waitUntil: 'domcontentloaded', timeoutMs: opts.timeout, settleMs: 0, solveWindow: opts.headed });
+    const entry = await gotoLive(page, url, { waitUntil: 'domcontentloaded', timeoutMs: opts.timeout, settleMs: 0, solveWindow: opts.headed });
     await page.waitForTimeout(opts.wait);
     // --no-dismiss: the capture shows whatever the site shows (the gate's --no-dismiss reaches both sides).
     if (opts.noDismiss) console.log('overlays left as the page shows them (--no-dismiss)');
@@ -225,6 +270,9 @@ async function main() {
       // stitched capture (recorded: a fashion retailer's "Sign up, stay updated!").
       if (!opts.noDismiss) await dismissAndLog(page, url, opts);
     }
+
+    // A denial page a script rendered after domcontentloaded (gotoLive read the entry): exit 3, no PNG, no sidecar.
+    const denialCheck = await recheckDenial(liveSession, page, url, entry.status());
 
     // Freeze animations/transitions/carets for stable chunks — AFTER settle.
     await page.addStyleTag({ content: '*,*::before,*::after{animation-play-state:paused!important;transition:none!important;caret-color:transparent!important;scroll-behavior:auto!important;}html{scroll-behavior:auto!important}' });
@@ -341,18 +389,19 @@ async function main() {
     outPng.data = stitchRows(chunks.map(({ y: cy, buf }) => ({ y: cy, img: PNG.sync.read(buf) })), opts.width, totalH);
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, PNG.sync.write(outPng));
+    writeFileSync(sidecar, `${JSON.stringify({ writtenBy: 'skills/replica/scripts/stitch-shot.mjs', url, width: opts.width, vh: opts.vh, height: totalH, chunks: chunks.length, denialCheck, at: new Date().toISOString() }, null, 2)}\n`);
     console.log(`stitched ${out}: ${opts.width}x${totalH} from ${chunks.length} chunks`);
   } finally {
     await browser.close();
   }
 }
 
-// exit 3 = bot challenge on the live side (distinct from generic errors, so a
-// gate runner can tell "blocked — escalate with --headed" from "capture broke").
+// Main-module guard by real path (a symlinked checkout or temp dir must not turn the CLI into a silent no-op): the
+// test imports the helpers above without starting a capture.
 function safeRealpath(p) { try { return realpathSync(p); } catch { return p; } }
 if (process.argv[1] && fileURLToPath(import.meta.url) === safeRealpath(process.argv[1])) {
   main().catch((e) => {
     if (e instanceof UsageError) { console.error(`${e.message}\n\n${HELP}`); process.exit(1); }
-    console.error(`stitch-shot error: ${e.message}`); process.exit(e.name === 'BotChallengeError' ? 3 : 1);
+    console.error(`stitch-shot error: ${e.message}`); process.exit(exitCodeFor(e));
   });
 }
