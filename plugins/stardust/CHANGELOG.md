@@ -4,6 +4,20 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.2 — dynamics: a form's captcha is recorded and rendered, never silently dropped (#135)
+
+Field learning (a newsletter sign-up on a media site): the live form carried a checkbox reCAPTCHA under the email
+field; the replica rendered the field and the button and nothing else. The form definition had no place for it, so
+the parity report read the form as done and the pixel diff saw a shorter card. A captcha is two halves: a public
+site key in the DOM, migratable, and a secret-backed server verify at the endpoint, which is not.
+
+- **`snapshot-forms.mjs`:** the definition gains `protection` — `{ vendor, siteKey, widget }` from any
+  `[data-sitekey]` element or a reCAPTCHA / hCaptcha / Turnstile script (v3 and Enterprise keys read from `render=`),
+  `null` when absent; the per-URL stderr line flags `PROTECTION: <vendor>` next to `REGULATED-PII`.
+- **forms.md § 4:** a recorded `protection` renders the same widget in the same slot with the vendor's published
+  always-pass test key and posts its response field with the data; the owner's real key, domain allowlist and
+  server-side verify are one `needs-backend` decision row. Folded the "53 states / 260 countries" anecdote.
+
 ## 0.34.1 — deploy: CSS never lands in the document — a per-item look is block CSS or a named variant (#134)
 
 Field learning (a Magento marketplace replica): the source home slider is PageBuilder, and each of its three slides
