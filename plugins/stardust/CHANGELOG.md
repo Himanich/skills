@@ -4,6 +4,29 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.6 — the common consent managers are dismissed with no flag (#139)
+
+Field learning (a recorded replica run on a site whose consent manager labels its button "Allow all"): no built-in
+candidate matched, so the bar was stitched into every live viewport chunk. The pixel round read 7.2 % at 1440 and
+15.0 % at 360 (a FAIL) where the same page read 1.0 % / 1.6 % with the banner accepted, every hot band and section
+attribution pointed at the bar, and content-diff reported the banner's heading, link and buttons as 🔴 missing content.
+
+- **`diff/scripts/live-session.mjs` `CONSENT_CANDIDATES`** gains the accept-all controls of CookieHub, Cookiebot
+  (dialog v2 and v1), Didomi, Usercentrics, Osano, Termly, TrustArc, Quantcast Choice, iubenda, Complianz and
+  CookieYes, by vendor id or class, ahead of the text fallbacks, plus an "Allow all" fallback that must start the
+  button text (a `:has-text` substring also hits "Disallow all") and sits before the bare "Accept" substring (which
+  also hits "Accept only necessary"). `--consent` stays the override for a manager the list misses.
+- **`acceptConsent`** (new, `live-session.mjs`) is the one consent pass: each candidate resolves to its first
+  *visible* match (CMPs repeat the accept class in a hidden preference panel), a click is credited only once that
+  control is hidden, else the next candidate is tried, and one union probe makes a page with no consent control a
+  single round trip. `dismissOverlays` (stitch-shot, the diff probes, chrome-parity) runs it, and so do
+  `extract/scripts/crawl.mjs` and `dynamics/scripts/lib.mjs` `settlePage` when `live-session.mjs` resolves beside
+  them, their own lists kept as the fallback.
+- Tests: `test/live-session.test.mjs` pins the vendor entries and the order (vendor selectors before the text
+  fallbacks, "Allow all" before "Accept"); `replica/scripts/test/stitch-shot.test.mjs` captures fixture bars with no
+  flag: an "Allow all" bar (`consent dismissed via .ch2-allow-all-btn`), a vendor class repeated in a hidden panel
+  first, and an unlisted manager whose "Disallow all" and "Accept only necessary" precede "Allow all".
+
 ## 0.34.5 — replica: the source-fidelity gate can measure against a frozen origin baseline (opt-in, default off) (#138)
 
 Field learning (a multi-day hands-off replica): the live site changed between rounds — a hero rotated, a banner
