@@ -4,6 +4,22 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.14 — diff-report names the block a pixel difference belongs to (#147)
+
+Field learning (a recorded replica gate on a home page): the band table says where drift sits, never which block, and
+the diff image is 8–15k px tall; block attribution and crops were built ad hoc.
+
+- **`replica/scripts/diff-report.mjs` (new):** reads a gate dir's `live.png`, `build.png` and diff PNG (the newest
+  `diff-*.png`, or `--diff`), loads the build at the round's width and reads its block boxes (`[data-block-name]` plus
+  each `.default-content-wrapper` as "default content (section N)", else `main > .section`, else `main`'s children, or
+  `--blocks <css>`; nested blocks fold into the outermost). Prints the differing share per block and outside every
+  block. When live and build heights differ it warns; a block below the compared height reads "not compared" (never a
+  false 0 %), one straddling it "partial". Writes `report.html`, a live | build | diff `overview.png` and crops of the
+  `--top` hottest blocks.
+- **Docs:** `source-fidelity-gate.md` § Reading the band breakdown points to it; `scripts-index.md` gains its row.
+- Tests (new): `replica/scripts/test/diff-report.test.mjs` — the pure parts, `--help`, and end-to-end gate dirs (a
+  two-block page; an EDS-shaped page with default content, a nested block and a build taller than live).
+
 ## 0.34.13 — chrome-parity prints real deltas only: an auto-detected header, painted backgrounds, icons by pixels, one line for a shifted region (#146)
 
 Field learnings (two recorded replica gates): on a home page without `<header>`, chrome-parity skipped the header and
