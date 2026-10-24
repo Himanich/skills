@@ -4,6 +4,33 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.35.0 — the gate has two tiers: looks the same, nothing lost; owners accept changes in one file (#148)
+
+Field learning (a recorded home-page replica gate): `gate.sh --full` failed on any structural 🔴, so intentional
+look-neutral changes failed forever, invisible losses were split between 🔴 and buried 🟡, and no instrument read the
+owner's accepted changes. A page without `<main>` was compared at `<body>` against the build's `<main>` (142 🔴
+instead of 53), and gate records cited probe files by hand.
+
+- **Two tiers (`diff/scripts/content-diff.mjs`):** *looks-same* = every 🔴; *nothing-lost* = `MISSING ARIA-LABEL` (now
+  🟡 everywhere), `MISSING SR-ONLY TEXT`, `ROLE DOWNGRADE`; the rest is advisory. A `Tiers: looks-same 🔴 N ·
+  nothing-lost 🟡 L · accepted 🟢 A (owner O, auto P) · advisory M` line follows `Findings:` (unchanged); auto =
+  ROLE UPGRADE / SAME IMAGE / SAME ICON; `--json` findings carry their `tier`.
+- **Accepted list:** `stardust/replica/accepted.json` (or `--accepted <file>`), one owner decision and reason per entry,
+  read by content-diff (`applyAccepted`) and chrome-parity (`markAccepted`): a match prints 🟢 and never counts. `text`
+  matches inside the finding's quoted subject (`subjectOf`), never its wording; an entry without `text` accepts every
+  finding of its kind.
+- **Aligned roots (`alignPrimary`):** when only one side's main root fell back, the other is re-read where that fallback
+  really lands (no `<main>` → both at `<body>`), said once in a `⚠ root "main": …` line. `inventory()` no longer counts
+  its own width probe as copy at a `<body>` root (`diff/` and `deploy/` `content-inventory.mjs`).
+- **`replica/scripts/gate.sh`:** prints the `Tiers:` line on its `content-diff:` verdict line, fails the round on a
+  nothing-lost 🟡 as on a 🔴, and writes `verdict-<label>.json` per `--full` round (every probe's exit code and evidence
+  file, both tiers). **`gate-evidence.mjs`** passes content-count only at 0 🔴 and 0 nothing-lost, both from the
+  last round (`parseFindings`).
+- **Docs:** `source-fidelity-gate.md` § Pass bar item 1 is the one home of the tiers, accepted list and verdict record;
+  `replica/SKILL.md`, `diff/SKILL.md` and `handoff-contract.md` row 4 point to it.
+- Tests: `content-diff`, `chrome-parity`, `gate` and `gate-evidence` `.test.mjs` cover each change, incl. a
+  no-`<main>` page against a `<main>` build.
+
 ## 0.34.14 — diff-report names the block a pixel difference belongs to (#147)
 
 Field learning (a recorded replica gate on a home page): the band table says where drift sits, never which block, and

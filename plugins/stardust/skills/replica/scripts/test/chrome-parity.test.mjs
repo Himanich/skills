@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PROBE_VERSION, cacheKey, collapseOffset, compareRegion, readLiveCache } from '../chrome-parity.mjs';
+import { PROBE_VERSION, cacheKey, collapseOffset, compareRegion, markAccepted, readLiveCache } from '../chrome-parity.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, '..', 'chrome-parity.mjs');
@@ -55,6 +55,19 @@ await check('compareRegion: icons with other file names but the same pixels are 
   assert.deepEqual(same.findings, []);
   const other = compareRegion('footer', probe({ icons: [icon('thumb.webp', logo)] }), probe({ icons: [icon('media_9z.webp', logo.map((v) => 255 - v))] }), 1);
   assert.deepEqual(other.findings.map((f) => f.kind), ['ICON']);
+});
+await check('markAccepted: an accepted-list entry (probe chrome-parity or none, kind, text, region) marks the delta accepted + advisory with its reason; a content-diff entry or another region does not', () => {
+  const region = () => ({ name: 'footer', findings: [{ kind: 'REGION STYLE', msg: 'backgroundColor rgb(18, 23, 55) → rgba(0, 0, 0, 0)' }, { kind: 'MISSING', text: 'Careers', msg: 'live <a> "Careers" has no build element with the same text' }] });
+  const r = markAccepted(region(), [{ probe: 'chrome-parity', kind: 'MISSING', text: 'careers', reason: 'page retired, link dropped by the owner' }, { probe: 'content-diff', kind: 'REGION STYLE', reason: 'x' }, { kind: 'REGION STYLE', root: 'header', reason: 'y' }]);
+  assert.deepEqual(r.findings.map((f) => [f.kind, f.accepted || null, Boolean(f.advisory)]), [['REGION STYLE', null, false], ['MISSING', 'page retired, link dropped by the owner', true]]);
+});
+await check('markAccepted matches text inside the delta\'s own text, never its message wording; a text entry never matches a text-less delta; a kind-only entry accepts every delta of the kind', () => {
+  const region = () => ({ name: 'header', findings: [{ kind: 'MISSING', text: 'Careers', msg: 'live <a> "Careers" has no build element with the same text' }, { kind: 'MISSING', text: 'Blog', msg: 'live <a> "Blog" has no build element with the same text' }, { kind: 'REGION STYLE', msg: 'position sticky → static' }] });
+  const acc = (list) => markAccepted(region(), list).findings.filter((f) => f.accepted).map((f) => f.text || f.kind);
+  assert.deepEqual(acc([{ kind: 'MISSING', text: 'element', reason: 'x' }]), [], 'message wording is not the subject');
+  assert.deepEqual(acc([{ kind: 'REGION STYLE', text: 'sticky', reason: 'x' }]), [], 'no text on the delta → no text match');
+  assert.deepEqual(acc([{ kind: 'MISSING', text: 'blog', reason: 'x' }]), ['Blog']);
+  assert.deepEqual(acc([{ kind: 'MISSING', reason: 'kind-only' }]), ['Careers', 'Blog']);
 });
 await check('compareRegion: a fixed-height header whose links all sit 8 px low → 3 counted PAIR deltas (exit 2); the header and its links all 8 px low → one advisory OFFSET (exit 0)', () => {
   const hdr = (y, links) => probe({ sel: 'header', rect: { x: 0, y, w: 800, h: 64 }, atoms: nav(links) });

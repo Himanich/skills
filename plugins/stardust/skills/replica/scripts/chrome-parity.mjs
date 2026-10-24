@@ -96,6 +96,9 @@ Usage: node chrome-parity.mjs <liveURL> <buildURL> [options]
   --locale <tag>     pin Accept-Language + locale
   --json             machine-readable output
   --live-cache <f>   reuse/write the live side's measurement (JSON) — one live hit per breakpoint
+  --accepted <file>  accepted changes ({ accepted: [{ probe: "chrome-parity", kind, text?, root?: <region>, reason }] });
+                     a matching delta prints as accepted and is not counted (default stardust/replica/accepted.json);
+                     text matches inside the delta's own text, never its message; no text = EVERY delta of that kind
   --help             this text
 
 Exit codes: 0 parity within tolerance, 2 deltas printed, 1 error, 3 bot challenge (live side).`;
@@ -104,7 +107,7 @@ function parseArgs(argv) {
   const rest = argv.slice(2);
   if (rest.includes('--help') || rest.includes('-h')) { console.log(HELP); process.exit(0); }
   const pos = [];
-  const opts = { regions: [], noDefaults: false, width: 1440, tolerance: 1, consent: null, dismiss: [], noDismiss: false, headed: false, locale: null, json: false, liveCache: null };
+  const opts = { regions: [], noDefaults: false, width: 1440, tolerance: 1, consent: null, dismiss: [], noDismiss: false, headed: false, locale: null, json: false, liveCache: null, accepted: null };
   for (let i = 0; i < rest.length; i += 1) {
     const a = rest[i];
     if (a === '--region') {
@@ -123,6 +126,7 @@ function parseArgs(argv) {
     else if (a === '--locale') { opts.locale = rest[i += 1]; }
     else if (a === '--json') { opts.json = true; }
     else if (a === '--live-cache') { opts.liveCache = rest[i += 1]; }
+    else if (a === '--accepted') { opts.accepted = rest[i += 1]; }
     else if (a.startsWith('--')) { console.error(`unknown flag ${a}\n\n${HELP}`); process.exit(1); }
     else pos.push(a);
   }
@@ -295,6 +299,19 @@ export function compareRegion(name, L, B, tol) {
   return r;
 }
 
+// Pure: an owner's accepted list ({ probe?, kind, text?, root?, reason }) marks a matching delta accepted — kind equal,
+// text a case-insensitive substring of the finding's own text (the item it is about — never its message wording, so
+// "link" does not accept every MISSING; a finding without text matches no text entry), root = the region name when
+// given; an entry without text accepts EVERY delta of its kind. Accepted deltas print with their reason and never count.
+export function markAccepted(region, list) {
+  for (const f of region.findings) {
+    const subject = String(f.text || '').toLowerCase();
+    const hit = (list || []).find((a) => a && (!a.probe || a.probe === 'chrome-parity') && a.kind === f.kind && (!a.root || a.root === region.name) && (!a.text || (subject && subject.includes(String(a.text).toLowerCase()))));
+    if (hit) { f.accepted = hit.reason || 'accepted'; f.advisory = true; }
+  }
+  return region;
+}
+
 // Pure: a region whose own box moved by ONE Δy, with EVERY paired text (≥ 2) moved by that Δy (±2 px), is one advisory
 // OFFSET line — the chrome is identical, the page above it is a different height. Texts that moved inside a box that did
 // not (a nav row sitting low in a fixed-height header), or only some of the texts, are real deltas and stay. A pair that
@@ -380,7 +397,9 @@ async function main() {
     }
     const liveNote = cached ? ` (live side from cache ${opts.liveCache}, probed ${cached.probedAt} — delete the file to re-probe)` : '';
     const B = await probeSide(browser, build, opts, false);
-    const regions = opts.regions.map((reg) => compareRegion(reg.name, L[reg.name], B[reg.name], opts.tolerance));
+    const acceptedFile = opts.accepted || (existsSync('stardust/replica/accepted.json') ? 'stardust/replica/accepted.json' : null);
+    const acceptedList = acceptedFile ? (JSON.parse(readFileSync(acceptedFile, 'utf8')).accepted || []) : [];
+    const regions = opts.regions.map((reg) => markAccepted(compareRegion(reg.name, L[reg.name], B[reg.name], opts.tolerance), acceptedList));
     total = regions.reduce((n, r) => n + r.findings.filter((f) => !f.advisory).length, 0);
     if (opts.json) {
       console.log(JSON.stringify({ live, build, width: opts.width, tolerance: opts.tolerance, liveCache: cached ? { file: opts.liveCache, probedAt: cached.probedAt } : null, regions, raw: { live: L, build: B } }, null, 2));
@@ -391,7 +410,7 @@ async function main() {
         const n = r.findings.filter((f) => !f.advisory).length;
         console.log(`\n■ ${r.name}: ${n ? `${n} delta(s)` : '✓ parity'}${inv}`);
         for (const [side, P] of [['live', L], ['build', B]]) if (P[r.name] && P[r.name].autoDetected) console.log(`  (${side} has no <header>: auto-detected ${P[r.name].autoDetected} — pass --region header=<liveSel>|<buildSel> to override)`);
-        for (const f of r.findings) console.log(`  ${f.kind.padEnd(12)} ${f.text ? `"${f.text.slice(0, 40)}"  ` : ''}${f.msg}`);
+        for (const f of r.findings) console.log(`  ${f.accepted ? '🟢 ' : ''}${f.kind.padEnd(12)} ${f.text ? `"${f.text.slice(0, 40)}"  ` : ''}${f.msg}${f.accepted ? `  — accepted: ${f.accepted}` : ''}`);
       }
       console.log(`\n${total ? `✗ ${total} delta(s) — fix these before any pixel iteration on chrome; re-run until quiet, then crop-compare confirms.` : '✓ chrome parity within tolerance — run crop-compare (pass bar item 5) to confirm in pixels.'}`);
     }

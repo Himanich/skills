@@ -141,7 +141,7 @@
 
 /* eslint-disable import/no-extraneous-dependencies, import/extensions, no-await-in-loop, no-restricted-syntax, brace-style, object-curly-newline, max-len, no-plusplus, newline-per-chained-call, no-continue, no-multi-spaces */
 /* standalone dev tool: playwright is a devDependency (imported lazily in main); sequential page ops use awaited loops by design */
-import { realpathSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // NOTE: deploy's gates (#93/#94) now use their OWN synced copies in skills/deploy/scripts/
@@ -175,6 +175,11 @@ const USAGE = `usage: node skills/diff/scripts/content-diff.mjs <sourceURL> <bui
                          sides; optional comma-separated extra selectors
   --headed               headed stealth real Chrome (escalation for bot-managed sites)
   --locale <tag>         pin Accept-Language + locale (e.g. en-GB) for geo determinism
+  --accepted <file>      accepted changes ({ accepted: [{ kind, text?, root?, probe?, reason }] }); a matching
+                         finding is printed as accepted with its reason and never counted
+                         (default stardust/replica/accepted.json when it exists). text matches inside
+                         the finding's first quoted text (the item, value or anchor), never its wording;
+                         an entry without text accepts EVERY finding of its kind
 exit codes: 0 ran (flags advisory; an HTTP-error side, e.g. a 404 build pre-propagation,
             is measured + flagged with a warning, not fatal), 1 error,
             3 bot challenge (live side blocked — fail loud)
@@ -183,11 +188,16 @@ findings:   text/role layer — MISSING CTA|HEADING|EYEBROW|BODY|SR-ONLY TEXT, R
             finding, heading → body/eyebrow 🟡 ROLE DOWNGRADE), EXTRA, FONT FORK,
             EDITABLE COUNT; attribute layer — MISSING|EXTRA PLACEHOLDER|ARIA-LABEL|TITLE,
             MISSING ICON, ICON DIFF, ICON KIND, EXTRA ICON, ICON MOVED (same icon at another
-            anchor, paired by identity + document order). 🔴 = MISSING PLACEHOLDER|ARIA-LABEL,
-            MISSING ICON, ICON DIFF on an interactive element (input, button, link or inside
-            one); MISSING TITLE, ICON MOVED, ICON KIND and every EXTRA are 🟡; else 🟡.
+            anchor, paired by identity + document order). 🔴 = MISSING PLACEHOLDER, MISSING
+            ICON, ICON DIFF on an interactive element (input, button, link or inside one);
+            MISSING ARIA-LABEL, MISSING TITLE, ICON MOVED, ICON KIND and every EXTRA are 🟡.
             Each finding line carries its root — "<sev> <KIND> [<root>]: <msg>"; the
-            Findings: line is unchanged.
+            Findings: line is unchanged. Tiers (the verdict reads both): looks-same = every 🔴
+            (a visible difference); nothing-lost = MISSING ARIA-LABEL, MISSING SR-ONLY TEXT,
+            ROLE DOWNGRADE (invisible, still to fix); the rest is advisory. A side whose main
+            root fell back while the other found it is re-read at the same fallback (aligned;
+            at <body> when the re-read side has no <main>). accepted 🟢 = owner (the
+            accepted list) + auto (ROLE UPGRADE, SAME IMAGE, SAME ICON).
 `;
 
 // ---- attribute + icon layer ----------------------------------------------------------------------
@@ -338,7 +348,7 @@ export function diffAttributes(src, tgt, prof, accepted = []) {
     const i = ta.findIndex((b, j) => !usedA[j] && key(b) === key(a));
     if (i >= 0) { usedA[i] = true; return; }
     const others = ta.filter((b) => b.attr === a.attr && b.tag === a.tag).map((b) => q(b.value, 40)).slice(0, 3);
-    flags.push({ sev: a.attr === 'title' ? '🟡' : sev(a.interactive), kind: `MISSING ${a.attr.toUpperCase()}`, msg: `${S} <${a.tag}> ${a.attr}=${q(a.value)} has no ${T} <${a.tag}> with that ${a.attr}${others.length ? ` (${T} <${a.tag}> ${a.attr}s: ${others.join(', ')})` : ''}. ${H.MISSING_ATTRIBUTE}` });
+    flags.push({ sev: a.attr === 'placeholder' ? sev(a.interactive) : '🟡', kind: `MISSING ${a.attr.toUpperCase()}`, msg: `${S} <${a.tag}> ${a.attr}=${q(a.value)} has no ${T} <${a.tag}> with that ${a.attr}${others.length ? ` (${T} <${a.tag}> ${a.attr}s: ${others.join(', ')})` : ''}. ${H.MISSING_ATTRIBUTE}` });
   });
   ta.forEach((b, j) => { if (!usedA[j]) flags.push({ sev: '🟡', kind: `EXTRA ${b.attr.toUpperCase()}`, msg: `${T} <${b.tag}> ${b.attr}=${q(b.value)} has no ${S} source. ${H.EXTRA_ATTRIBUTE}` }); });
 
@@ -429,6 +439,54 @@ export function diffRoot(root, srcInv, tgtInv, prof) {
   if (accepted.length) lines.push(`  accepted (invisible, nothing lost): ${acceptedLine(accepted)}`);
   return { flags: flags.map((f) => ({ ...f, root: root.name })), lines, accepted: accepted.map((a) => ({ ...a, root: root.name })) };
 }
+// ---- verdict tiers + the accepted list --------------------------------------------------------------
+// looks-same = every 🔴 (a visible difference); nothing-lost = invisible losses still to fix; the rest is advisory.
+export const LOST_KINDS = new Set(['MISSING ARIA-LABEL', 'MISSING SR-ONLY TEXT', 'ROLE DOWNGRADE']);
+export const tierOf = (f) => (f.sev === '🔴' ? 'looks' : (LOST_KINDS.has(f.kind) ? 'lost' : 'advisory'));
+// Pure: a finding's subject — the first quoted text in its message (the item text, the attribute value or the icon's
+// anchor, as printed), never the fixed wording around it ("has no build link"); '' when the message quotes nothing.
+export const subjectOf = (f) => { const m = /"([^"]*)"/.exec(String((f && f.msg) || '')); return m ? m[1] : ''; };
+// Pure: split findings by an accepted list ({ kind, text?, root?, reason }) — kind equal, text a case-insensitive
+// substring of the finding's subject (subjectOf), root equal when given; an entry without text accepts EVERY finding of
+// its kind (on its root). Returns the findings left and the accepted ones with their reason.
+export function applyAccepted(flags, list) {
+  const left = []; const accepted = [];
+  for (const f of flags) {
+    const hit = (list || []).find((a) => a && (!a.probe || a.probe === 'content-diff') && a.kind === f.kind && (!a.root || a.root === f.root) && (!a.text || subjectOf(f).toLowerCase().includes(String(a.text).toLowerCase())));
+    if (hit) accepted.push({ ...f, reason: hit.reason || '' }); else left.push(f);
+  }
+  return { flags: left, accepted };
+}
+// Pure: the tier summary line the gate reads. accepted 🟢 = owner (the accepted list) + auto (the probe's own look-neutral
+// acceptances: ROLE UPGRADE, SAME IMAGE, SAME ICON).
+export function tierLine(flags, { owner = 0, auto = 0 } = {}) {
+  const n = (t) => flags.filter((f) => tierOf(f) === t).length;
+  return `Tiers: looks-same 🔴 ${n('looks')} · nothing-lost 🟡 ${n('lost')} · accepted 🟢 ${owner + auto} (owner ${owner}, auto ${auto}) · advisory ${n('advisory')}`;
+}
+// Align the primary root's scope across the two sides. sF / tF = where each side measured it: null = the selector itself,
+// else the in-page fallback it took ('main' → 'body'). One side found it and the other fell back: the side not at the
+// fallback is re-read there. reread(side, to) re-reads 'src' | 'tgt' at `to` and resolves to where that side was really
+// measured — a side re-read at <main> that has none falls back to <body> in the page — so the scopes are compared again
+// and, while they differ, aligned one step wider (<body> always exists). Pure given reread. Returns null (already the
+// same scope) or { to, note } — the note says what was measured, and which side lacked the first target.
+export async function alignPrimary(name, sF, tF, prof, reread) {
+  if (sF === tF) return null;
+  const at = { src: sF, tgt: tF }; const label = { src: prof.source, tgt: prof.target };
+  const lacks = []; let to = null;
+  for (let pass = 0; pass < 2 && at.src !== at.tgt; pass += 1) {
+    to = [at.src, at.tgt].includes('body') ? 'body' : 'main';
+    for (const side of ['src', 'tgt']) {
+      if (at[side] === to) continue;
+      const got = await reread(side, to);
+      if (got !== to) lacks.push(`${label[side]} has no <${to}>`);
+      at[side] = got;
+    }
+  }
+  const was = (f) => (f ? `fell back to <${f}>` : 'has it');
+  const both = at.src === at.tgt ? `both sides measured at <${at.src}>` : `${prof.source} measured at <${at.src}>, ${prof.target} at <${at.tgt}>`;
+  return { to: at.src === at.tgt ? at.src : null, note: `root "${name}": ${prof.source} ${was(sF)}, ${prof.target} ${was(tF)} — ${both} (aligned${lacks.length ? `; ${lacks.join(', ')}` : ''})` };
+}
+
 // Pure: "23 ROLE UPGRADE body → heading — "a", "b" …; 6 SAME IMAGE — …" — one group per kind, the first four examples each.
 export function acceptedLine(accepted) {
   const kinds = [...new Set(accepted.map((x) => x.kind))];
@@ -458,6 +516,7 @@ function parseArgs(argv) {
     }
     else if (a === '--headed') { opts.headed = true; }
     else if (a === '--locale') { opts.locale = rest[i += 1]; }
+    else if (a === '--accepted') { opts.accepted = rest[i += 1]; }
   }
   return { proto, eds, opts };
 }
@@ -521,20 +580,41 @@ async function main() {
     throw new Error(`playwright is not importable from ${dirname(fileURLToPath(import.meta.url))} (${e.code || e.message}) — copy the diff skill's scripts dir into the project and run the copy`);
   }
   const browser = opts.headed ? await launchStealthHeaded(chromium) : await chromium.launch();
-  let srcInvs; let tgtInvs;
+  let srcInvs; let tgtInvs; let aligned = null;
   try {
     srcInvs = await grab(browser, proto, opts, prof, roots);
     tgtInvs = await grab(browser, eds, opts, prof, roots);
+    // one side found the main root, the other fell back (→ <main> → <body>): re-read the first at the other's
+    // fallback, so both sides inventory the same scope (a page with no <main> read as <body> against a build's <main>
+    // turned its whole mega-menu into missing content) — alignPrimary re-checks where the re-read really landed
+    const pr = roots[0];
+    const reread = async (side, to) => {
+      const invs = await grab(browser, side === 'src' ? proto : eds, opts, prof, [{ ...pr, sel: to, describe: `<${to}> (aligned)` }, ...roots.slice(1)]);
+      if (side === 'src') srcInvs = invs; else tgtInvs = invs;
+      return invs[pr.name].fellBack || to;
+    };
+    const al = await alignPrimary(pr.name, srcInvs[pr.name].fellBack || null, tgtInvs[pr.name].fellBack || null, prof, reread);
+    aligned = al ? al.note : null;
   } finally {
     await browser.close();
   }
 
   process.stdout.write(`\nContent diff @ ${opts.width}px (profile "${prof.name}", roots: ${roots.map((r) => r.name).join(', ')})\n`);
-  const flags = []; const accepted = [];
+  if (aligned) process.stdout.write(`⚠ ${aligned}\n`);
+  let flags = [];
+  const inProbe = []; // the probe's own look-neutral acceptances (ROLE UPGRADE, SAME IMAGE, SAME ICON)
   for (const root of roots) {
     const { flags: rf, lines, accepted: ra } = diffRoot(root, srcInvs[root.name], tgtInvs[root.name], prof);
     lines.forEach((l) => process.stdout.write(`${l}\n`));
-    flags.push(...rf); accepted.push(...ra);
+    flags.push(...rf);
+    inProbe.push(...(ra || []));
+  }
+  // the project's accepted list (an owner's decision per change, with its reason)
+  const acceptedFile = opts.accepted || (existsSync('stardust/replica/accepted.json') ? 'stardust/replica/accepted.json' : null);
+  let byList = [];
+  if (acceptedFile) {
+    const list = JSON.parse(readFileSync(acceptedFile, 'utf8')).accepted || [];
+    ({ flags, accepted: byList } = applyAccepted(flags, list));
   }
 
   const primary = roots[0].name;
@@ -546,13 +626,15 @@ async function main() {
   flags.sort((a, b) => order[a.sev] - order[b.sev]);
   const strong = flags.filter((f) => f.sev === '🔴').length;
   process.stdout.write(`\nFindings: ${flags.length ? `${flags.length} (${strong} structural 🔴)` : 'none — content + roles match'}\n`);
+  process.stdout.write(`${tierLine(flags, { owner: byList.length, auto: inProbe.length })}\n`);
   flags.forEach((f) => process.stdout.write(`${formatFinding(f)}\n`));
+  byList.forEach((f) => process.stdout.write(`  🟢 ${f.kind}${f.root ? ` [${f.root}]` : ''} accepted (${acceptedFile}): ${f.reason}\n`));
 
   if (opts.json) {
     const others = {};
     roots.slice(1).forEach((r) => { others[r.name] = { [prof.source]: srcInvs[r.name], [prof.target]: tgtInvs[r.name] }; });
     process.stdout.write('\nInventories JSON:\n');
-    process.stdout.write(`${JSON.stringify({ primaryRoot: primary, [prof.source]: srcInvs[primary], [prof.target]: tgtInvs[primary], roots: others, findings: flags, accepted }, null, 1)}\n`);
+    process.stdout.write(`${JSON.stringify({ primaryRoot: primary, aligned, [prof.source]: srcInvs[primary], [prof.target]: tgtInvs[primary], roots: others, findings: flags.map((f) => ({ ...f, tier: tierOf(f) })), accepted: inProbe, acceptedByList: byList }, null, 1)}\n`);
   }
 }
 

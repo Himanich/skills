@@ -6,11 +6,6 @@ craft gates entirely: an archetype ships because it measured true, never
 because it looked right. Every fix in the loop comes off the instruments;
 eyeballing is not an input.
 
-Validated (UC1-E1, a typographic retail home page): 8.31% → 2.93% → 1.31% pixel diff across
-exactly 3 iterations, 0 structural 🔴, height Δ 0 — and the two defects the
-capture phase missed (span font fork, hero scrim) were both found only by
-these instruments.
-
 ## The three probes
 
 | Probe | Script | Catches | Blind to |
@@ -78,13 +73,18 @@ The prototype capture is re-taken every iteration.
 
 ## Pass bar (all five per breakpoint, plus the content-cap row)
 
-1. **content-diff: 0 structural 🔴 — across the main root AND the chrome
-   roots (`header`, `footer`), which the default run covers on every gate
-   page; each finding line names its root.** 🟡 (body/EXTRA, a missing
-   `title`, an `ICON MOVED` — the same icon at another anchor, e.g. inside a
-   text-less accordion button) and 🟠 (font fork) confirmed intended — a
-   substituted licensed font is a permanent justified 🟠; record it once in
-   the ledger.
+1. **content-diff, two tiers, on the main and chrome roots** (each finding
+   names its root): *looks the same* = 0 🔴; *nothing lost* = 0
+   nothing-lost 🟡 (a lost aria-label, sr-only text or heading — invisible,
+   still a defect). gate.sh fails on either (`Tiers:`). Look-neutral changes
+   are accepted, never findings; other 🟡 and 🟠 are advisory, confirmed
+   intended (a substituted licensed font is a permanent justified 🟠 —
+   ledger it once). An owner's per-change decision, with its reason, is one
+   entry in `stardust/replica/accepted.json`: content-diff and chrome-parity
+   print it 🟢, uncounted (schema and matching: their `--help`). An entry
+   without `text` accepts EVERY finding of its kind — always give one.
+   Cite the round's `verdict-<label>.json` — it names the evidence file of
+   every verdict.
 2. **visual-diff: flags none or justified** — `HEADING FACE` included: a
    licensed-font substitution is one `×N` line, justified once like the 🟠
    fork. A live page's own quirks are justified when the prototype mirrors
