@@ -4,6 +4,25 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.36.0 — first page first: one page is delivered while the site scope is still being defined (#149)
+
+A recorded hands-off replica run ran every phase in sequence and published no content page in five hours, though
+almost none of the site-wide work changed the home page. Design note: `notes/first-page-first/README.md`.
+
+- **`replica/reference/first-page-first.md` (new):** a full-site run opens with two tracks, one writer per path.
+  Track A takes the first page (replica Input `--first-page <url|home>`; hands-off: home) through the bounded entry
+  to the published origin, in its own workspace `stardust/first-page/`, and owns code and DA; its Phase 2 is always
+  the bounded branch (`preserve-direction.md` § 1). Track B runs Phase 1 `--prep`, the catalogs and the dynamics
+  triage and writes knowledge only. At RECONCILE, Track B's design spec replaces the bounded one, then seven checks (page
+  type, blocks, chrome, dynamics, listings, scope, canon) are recorded `confirmed | corrected (<commit>) | deferred
+  (<why>)` in `stardust/reconcile-first-page.md`; a block or chrome correction re-gates the page. Hand-off to
+  rollout: `update-coverage.mjs --gate <table> --pin`, then `verify.mjs --slug`.
+- **Scripts:** `ledger.mjs` adds replica phases `first-page` and `reconcile-first-page` (alias `reconcile`) and
+  `--track <name>` (start/end pair per track; `last <skill> --track`); `update-coverage.mjs --gate --pin` matches
+  rows by path, pins them and marks them `deployed`; `inventory.mjs` never flags a pinned row `stale`. Tests cover
+  each.
+- **`replica/SKILL.md`** and **`stardust/SKILL.md`** § Hands-off defaults point to the new reference.
+
 ## 0.35.0 — the gate has two tiers: looks the same, nothing lost; owners accept changes in one file (#148)
 
 Field learning (a recorded home-page replica gate): `gate.sh --full` failed on any structural 🔴, so intentional
