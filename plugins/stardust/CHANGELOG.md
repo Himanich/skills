@@ -4,6 +4,26 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.10 — content-diff severity follows visibility: a same-look heading is an improvement, not a swap (#143)
+
+Field learning (a recorded replica gate on a home page): 23 structural 🔴 were ROLE SWAP for footer and mega-menu
+group titles — source `<div>`s, same-look build headings — while the one real loss, a chart's visually hidden
+summary, was a buried 🟡 MISSING BODY.
+
+- **`content-inventory.mjs` (diff + deploy copies):** each item carries its computed `look` (size, weight, colour,
+  text-transform) and `srOnly` (sr-only clip, ≤1 px clipped box or -9999px offset on the element or its 3 nearest
+  ancestors; display:none and off-screen slides excluded). With the same look and face, body/eyebrow → heading is an
+  accepted `ROLE UPGRADE`, heading → body/eyebrow a 🟡 `ROLE DOWNGRADE`; any other role change, a CTA's included, stays
+  🔴 `ROLE SWAP`. Lost sr-only text is 🟡 `MISSING SR-ONLY TEXT`, except a link (a lost skip link stays 🔴
+  `MISSING CTA`). `diff-profiles.mjs` (both copies) gains the `MISSING_SR_ONLY` hint.
+- **`content-diff.mjs`** lists accepted upgrades on each root's block and in `--json` `accepted`, not as findings;
+  header and usage name the new kinds.
+- **Docs:** `diff/SKILL.md` § Reading content-diff grades the outcomes; `replica/reference/recreation-procedure.md`
+  § Role parity now says "mirror the look; semantics may improve" and points there, as do `deploy/SKILL.md`
+  and `replica/SKILL.md`.
+- **Tests:** `content-diff.test.mjs` — each outcome, plus an end-to-end page: same-look `<div>` → `<h3>`, dropped
+  sr-only text, and display:none / off-track-slide text (plain MISSING BODY).
+
 ## 0.34.9 — visual-diff flags what differs from the source, not what the build does alone (#142)
 
 Field learning (a recorded replica gate on a home page): all 8 STRETCHED IMAGE flags at 1440 were stretched the same
