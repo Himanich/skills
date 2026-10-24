@@ -4,6 +4,32 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.12 — stitch-shot captures fixed and sticky layers once: no seam repeats, no content hidden under them (#145)
+
+Field learning (a recorded replica gate on a home page): both captures repeated the sticky header in every viewport
+chunk, covering whatever sat under each seam on both sides — an oversized partner logo under it scored 0.0 %, so a
+defect under a seam was invisible to the pixel gate. The same run stitched an undismissed consent bar into every live
+chunk unwarned.
+
+- **`replica/scripts/stitch-shot.mjs`:** fixed and sticky layers are captured once. Chunk 1 shows them; from chunk 2 a
+  fixed layer, and a sticky one while stuck (displaced from its own in-flow place, top or bottom), is set to
+  `opacity: 0` — layout never moves. A sticky element still in its place mid-page stays. Layers are re-scanned after
+  every scroll, so a header a scroll class makes fixed, or a widget injected later, is hidden from where it appears,
+  with a stderr WARNING. A backdrop (negative z-index, or ≥ 90 % of the viewport) is never hidden. A fixed layer still
+  visible after the dismissal sweeps, ≥ 5 % of the viewport, below the top bar and reading like consent / sign-up
+  copy, is a stderr WARNING naming it and `--consent` / `--dismiss`. `capture.json` records
+  `fixedLayers: { capture: 'once', count, late }`. Shadow-root, iframe and pseudo-element layers are not seen.
+- **`replica/scripts/gate.sh`, `replica/scripts/gate-all.mjs`:** a cached `live.png` (or a gate-all `--skip-existing`
+  origin / eds capture) whose capture record has no `fixedLayers` is re-taken with one line, never compared with a
+  build captured the new way (`staleCapture`). `--freeze-baseline` (0.34.5) records `fixedLayers` in `baseline.json`;
+  a baseline frozen before this change reads as stale (`re-freeze with --force`), so `--gate-against-baseline` never
+  compares the two capture methods.
+- **Docs:** `recreation-procedure.md` § Fixed and sticky chrome describes what the instrument does and does not cover;
+  gate doc rule 11 and the replica SKILL pointer shortened.
+- Tests: `stitch-shot.test.mjs` — `layerAction`, `isBackdrop`, `overlaySuspects`, `layerPassScript` on a stub DOM, and
+  end-to-end fixtures (fixed header, in-place sticky label, undismissable cookie bar, scroll-triggered header,
+  backdrop); `gate.test.mjs` — a stale live capture is re-taken; `gate-all.test.mjs` — `staleCapture`.
+
 ## 0.34.11 — content-diff pairs icons by their pixels: a re-hosted logo or an svg drawn as an image is the same icon (#144)
 
 Field learning (a recorded replica gate on a home page): 6 🔴 ICON DIFF were logos the build re-hosted under
