@@ -4,6 +4,25 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.9 — visual-diff flags what differs from the source, not what the build does alone (#142)
+
+Field learning (a recorded replica gate on a home page): all 8 STRETCHED IMAGE flags at 1440 were stretched the same
+way on the source, burying the one real difference (thumbnails the source crops and the build distorts); heading faces
+could only be compared by hand.
+
+- **`diff/scripts/visual-diff.mjs`:** an image is stretched only under `object-fit: fill`. A build stretch is flagged
+  only when its source twin — same rendered box ±2 px, same natural ratio ±4 %, never by file name — is not stretched
+  the same way, and the flag names the source's fit (`(source: object-fit cover at the same box)`). The reverse — the
+  source distorts an image the build crops — is an informational `IMAGE FIT (info)`.
+- **`HEADING FACE`** (new): a matched heading at another size (> 1 px) or family. Families compare normalised (first
+  in the stack, unquoted, lowercased, without `Variable` / `VF` / weight suffixes); one family pair across every
+  differing heading is one `HEADING FACE ×N` line. Same-text headings pair in document order.
+- `diff-profiles.mjs` (both copies): the STRETCHED hint drops "unless justified"; new `HEADING_FACE` and `IMAGE_FIT`
+  hints. `diff/SKILL.md` and the replica source-fidelity gate's pass bar name the two-sided rule and `HEADING FACE`.
+- Test (new): `diff/scripts/test/visual-diff.test.mjs` — the exported pure helpers (`sourceTwin`, `normFamily`,
+  `pairHeadings`, `headingFaceDiffers`, `redFlags`), the ×N summary, `--help` without a browser, and an end-to-end
+  source-crops / build-distorts fixture.
+
 ## 0.34.8 — the roster is reported against the site: a capped run never reads as the full site (#141)
 
 Field learning (a recorded hands-off replica run): the setup status line said "full site" while the hands-off volume
