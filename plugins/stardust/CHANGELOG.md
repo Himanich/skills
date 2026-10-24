@@ -4,6 +4,28 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.13 — chrome-parity prints real deltas only: an auto-detected header, painted backgrounds, icons by pixels, one line for a shifted region (#146)
+
+Field learnings (two recorded replica gates): on a home page without `<header>`, chrome-parity skipped the header and
+printed 24 invisible footer deltas (`display: contents` titles, re-hosted thumbnails, an `<img>` logo, a background
+painted on another element). On an article page, 67 deltas were one fact: the footer sat 3,526 px lower as a block.
+
+- **`replica/scripts/chrome-parity.mjs`:**
+  - the default `header` region on a page without `<header>` is auto-detected (the outermost full-width, top-anchored
+    bar with a link, 30–400 px) and the region line names it; an explicit `--region` is never second-guessed;
+  - text in a `display: contents` element is measured by its text box;
+  - the region background is the painted one (the region's own, else a child covering ≥ 90 % of it, else the
+    nearest ancestor's);
+  - icons also pair by pixels (`diff/scripts/image-signature.mjs`): a re-hosted file or an svg drawn as `<img>` is no
+    delta;
+  - a tag change alone (same style, same box) is context on a real delta, never a delta;
+  - a region whose box and every paired text (≥ 2) moved by one Δy (±2 px) is one advisory `OFFSET` line, outside the
+    exit code; texts that moved inside a box that did not, or only some of them, stay deltas;
+  - a `--live-cache` written by an older probe (`PROBE_VERSION`) is re-probed.
+- **Docs:** `source-fidelity-gate.md` § chrome-parity — the new behaviour in one sentence.
+- Tests (new): `replica/scripts/test/chrome-parity.test.mjs` — `collapseOffset`, `compareRegion` icons by pixels,
+  `--help`, and an end-to-end page pair with every case above: only the advisory OFFSET remains, exit 0.
+
 ## 0.34.12 — stitch-shot captures fixed and sticky layers once: no seam repeats, no content hidden under them (#145)
 
 Field learning (a recorded replica gate on a home page): both captures repeated the sticky header in every viewport
