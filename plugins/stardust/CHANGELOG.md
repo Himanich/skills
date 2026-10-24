@@ -4,6 +4,25 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.11 — content-diff pairs icons by their pixels: a re-hosted logo or an svg drawn as an image is the same icon (#144)
+
+Field learning (a recorded replica gate on a home page): 6 🔴 ICON DIFF were logos the build re-hosted under
+`media_<hash>` with ≤ 1.2 / 255 mean pixel difference, because identity was the file name; 5 🔴 MISSING ICON were 0×0
+inline svgs or inline-svg logos the build draws as `<img src="*.svg">`.
+
+- **`diff/scripts/image-signature.mjs` (new library):** an icon's signature is its element screenshot averaged to a
+  12×12 RGB grid, so a recoloured shape is another image. `sameImage` = mean |Δ| ≤ 12 / 255 over the drawn cells with
+  boxes within 2 px; a near-uniform grid (an empty box, an unrendered glyph) is never an identity.
+- **`content-diff.mjs`:** visible icons are signed; laid-out 0×0 icons are skipped (`display:none` ones still compare
+  by name). Same pixels are the same icon when pairing anchors and ICON MOVED (two blank boxes never pair). A pair
+  differing only by file or technique is accepted — `SAME IMAGE` / `SAME ICON` on the root's `accepted` line — never a
+  finding; a different logo stays 🔴 ICON DIFF.
+- Docs: `diff/SKILL.md` § Reading content-diff names pixel identity; the `deploy/SKILL.md` Step-10 copy set names
+  every local import.
+- Tests: new `test/image-signature.test.mjs` (blank, a recoloured shape, thin-line icons); `content-diff.test.mjs` —
+  an empty box missing on the build stays MISSING ICON; end to end, a re-hosted file is SAME IMAGE, svg vs `<img>`
+  pairs, a different logo stays 🔴, a 0×0 svg is skipped.
+
 ## 0.34.10 — content-diff severity follows visibility: a same-look heading is an improvement, not a swap (#143)
 
 Field learning (a recorded replica gate on a home page): 23 structural 🔴 were ROLE SWAP for footer and mega-menu

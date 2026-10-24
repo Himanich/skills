@@ -140,6 +140,21 @@ await check('anchor passes come first: swapped flags (de at "english", en at "de
   const empty = diffAttributes({ attrs: [], icons: [icon('glyph', '"\ue911"', 'question 1', true, { family: 'Icons' })] }, { attrs: [], icons: [icon('glyph', '', 'button#1', true, { family: '' })] }, prof);
   assert.deepEqual(kinds(empty), ['🔴 MISSING ICON', '🟡 EXTRA ICON']);
 });
+// signature fixtures (image-signature.mjs): a SIG_SIZE × SIG_SIZE RGB grid — a blank box, and a mark with structure
+const sigGrid = (ink) => Array.from({ length: 144 }, (_, i) => (ink(i % 12, Math.floor(i / 12)) ? [42, 170, 102] : [255, 255, 255])).flat();
+const blankSig = sigGrid(() => false); const markSig = sigGrid((x, y) => (x - 5.5) ** 2 + (y - 5.5) ** 2 <= 16);
+await check('pixels never pair two blank boxes: an empty, unanchored source icon box with no build box at its anchor is 🔴 MISSING ICON, not ICON MOVED onto an empty build box elsewhere', () => {
+  const src = { attrs: [], icons: [icon('glyph', '', 'search', true, { family: '', sig: blankSig })] };
+  const tgt = { attrs: [], icons: [icon('glyph', '', 'button#1', true, { family: '', sig: blankSig })] };
+  assert.deepEqual(kinds(diffAttributes(src, tgt, prof)), ['🔴 MISSING ICON', '🟡 EXTRA ICON']);
+});
+await check('the same signature under another value at the anchor is accepted as SAME IMAGE — no finding', () => {
+  const accepted = [];
+  const src = { attrs: [], icons: [icon('img', 'logo-a.svg', 'alpha', true, { size: '24×16', sig: markSig })] };
+  const tgt = { attrs: [], icons: [icon('img', 'media_1a2b.svg', 'alpha', true, { size: '24×16', sig: markSig })] };
+  assert.deepEqual(diffAttributes(src, tgt, prof, accepted), []);
+  assert.deepEqual(accepted, [{ kind: 'SAME IMAGE', text: 'logo-a.svg ↔ media_1a2b.svg' }]);
+});
 await check('glyphLabel: quotes stripped, private-use and non-ASCII code points as U+XXXX, ASCII kept, empty → no glyph', () => {
   assert.equal(glyphLabel('""'), 'U+F09A'); assert.equal(glyphLabel("'→'"), 'U+2192'); assert.equal(glyphLabel('"+"'), '+');
   assert.equal(glyphLabel('"a b"'), 'aU+00A0b'); assert.equal(glyphLabel(''), 'no glyph'); assert.equal(glyphLabel('""'), 'no glyph');
@@ -256,7 +271,7 @@ await check('eyebrow → heading with the same look is an accepted ROLE UPGRADE,
   assert.deepEqual(kinds(diffInventories([item('heading', 'Company', caps)], [item('eyebrow', 'Company', caps)], prof).flags), ['🟡 ROLE DOWNGRADE']);
   assert.deepEqual(kinds(diffInventories([item('cta', 'Company')], [item('heading', 'Company')], prof).flags), ['🔴 ROLE SWAP']);
   const r = diffRoot({ name: 'footer', sel: 'footer', primary: false, chrome: true, describe: '' }, { items: [item('eyebrow', 'Company', caps), item('body', 'Trending')] }, { items: [item('heading', 'Company', caps), item('heading', 'Trending')] }, prof);
-  assert.ok(r.lines.includes('  accepted (invisible, nothing lost): 2 ROLE UPGRADE eyebrow/body → heading, same look — "Company", "Trending"'), r.lines.join('\n'));
+  assert.ok(r.lines.includes('  accepted (invisible, nothing lost): 2 ROLE UPGRADE eyebrow/body → heading — "Company", "Trending"'), r.lines.join('\n'));
   assert.deepEqual(r.accepted.map((a) => `${a.from} ${a.text} ${a.root}`), ['eyebrow Company footer', 'body Trending footer']);
 });
 await check('a role change that changes the look (size, weight, colour, case or face) stays 🔴 ROLE SWAP (eyebrow ↔ body can\'t keep the look: the same text with the same look classifies the same)', () => {
@@ -282,6 +297,8 @@ if (playwrightOk) {
     .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
     </style></head><body><main>${body}</main></body></html>`;
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="16"><rect width="24" height="16" fill="#888"/></svg>';
+  // a mark with structure (a solid fill is a blank signature — no identity to pair by)
+  const mark = (fill) => `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="16"><rect width="24" height="16" fill="#fff"/><circle cx="8" cy="8" r="6" fill="${fill}"/></svg>`;
   const pages = {
     '/source.html': page('<h1>Welcome</h1><form><input type="search" placeholder="Suche…" aria-label="Suche"></form><p>Body copy here.</p>'
       + '<a href="/de/" class="lang"><img class="flag" src="/flag-de.svg" alt=""> Deutsch</a>'
@@ -309,7 +326,19 @@ if (playwrightOk) {
     // a logo link with sr-only text on the source vs an alt-only logo on the build
     '/logo-source.html': page('<a href="/" class="logo"><img src="/flag-de.svg" width="120" height="40" alt="Brand"><span class="sr-only">Home</span></a><h1>Welcome</h1><p>Body copy here.</p>'),
     '/logo-build.html': page('<a href="/" class="logo"><img src="/flag-de.svg" width="120" height="40" alt="Brand"></a><h1>Welcome</h1><p>Body copy here.</p>'),
-    '/flag-de.svg': svg, '/flag-en.svg': svg,
+    // the same logo re-hosted under a media hash, the same mark drawn as inline svg vs <img>, a genuinely different
+    // logo, and a laid-out 0×0 svg on the source only
+    '/icons-source.html': page('<a href="/a" class="tool"><img src="/logo-a.svg" width="24" height="16" alt=""> Alpha</a>'
+      + `<a href="/b" class="tool">${mark('#888')} Beta</a>`
+      + '<a href="/c" class="tool"><img src="/logo-c.svg" width="24" height="16" alt=""> Gamma</a>'
+      + '<p>Text <svg width="0" height="0"><rect width="1" height="1"/></svg> here.</p>'),
+    '/icons-build.html': page('<a href="/a" class="tool"><img src="/media_1a2b.svg" width="24" height="16" alt=""> Alpha</a>'
+      + '<a href="/b" class="tool"><img src="/media_3c4d.svg" width="24" height="16" alt=""> Beta</a>'
+      + '<a href="/c" class="tool"><img src="/media_5e6f.svg" width="24" height="16" alt=""> Gamma</a>'
+      + '<p>Text here.</p>'),
+    '/logo-a.svg': mark('#2a6'), '/media_1a2b.svg': mark('#2a6'), '/media_3c4d.svg': mark('#888'),
+    '/logo-c.svg': mark('#2a6'), '/media_5e6f.svg': mark('#c00'),
+    '/flag-de.svg': svg, '/flag-en.svg': svg.replace('#888', '#c00'),
   };
   const server = createServer((req, res) => {
     const path = req.url.split('?')[0]; const body = pages[path];
@@ -377,7 +406,7 @@ if (playwrightOk) {
   await check('e2e: a same-look div → heading is accepted (named on the root and in --json, not a finding); dropped sr-only text (own clip or an sr-only wrapper) is 🟡 MISSING SR-ONLY TEXT, a display:none tooltip and an off-track slide caption plain MISSING BODY; 0 structural 🔴', async () => {
     const r = await run([`${base}/role-source.html`, `${base}/role-build.html`, '--profile', 'generic', '--width', '1280', '--json']);
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stdout, /^ {2}accepted \(invisible, nothing lost\): 1 ROLE UPGRADE body → heading, same look — "Trending"$/m, r.stdout);
+    assert.match(r.stdout, /^ {2}accepted \(invisible, nothing lost\): 1 ROLE UPGRADE body → heading — "Trending"$/m, r.stdout);
     assert.doesNotMatch(r.stdout, /ROLE SWAP/, r.stdout);
     assert.match(r.stdout, /🟡 MISSING SR-ONLY TEXT \[main\]: source body "search volume grew from 1K to 9K"/, r.stdout);
     assert.match(r.stdout, /🟡 MISSING SR-ONLY TEXT \[main\]: source body "Opens in a new window"/, r.stdout);
@@ -386,6 +415,14 @@ if (playwrightOk) {
     assert.match(r.stdout, /^Findings: \d+ \(0 structural 🔴\)$/m, r.stdout);
     const j = JSON.parse(r.stdout.slice(r.stdout.indexOf('Inventories JSON:') + 'Inventories JSON:'.length));
     assert.deepEqual(j.accepted, [{ kind: 'ROLE UPGRADE', from: 'body', text: 'Trending', root: 'main' }]);
+  });
+  await check('e2e: icons pair by pixels — a re-hosted file is SAME IMAGE, inline svg vs <img> of the same mark is SAME ICON (both accepted, no finding); a different logo stays 🔴 ICON DIFF; a laid-out 0×0 svg is not an icon', async () => {
+    const r = await run([`${base}/icons-source.html`, `${base}/icons-build.html`, '--profile', 'generic', '--width', '1280']);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /accepted \(invisible, nothing lost\): 1 SAME IMAGE — "logo-a\.svg ↔ media_1a2b\.svg"; 1 SAME ICON — "[^"]+ ↔ media_3c4d\.svg"$/m, r.stdout);
+    assert.match(r.stdout, /^ {2}attributes \(placeholder\/aria-label\/title\): source 0 \/ build 0; icons: source 3 \/ build 3$/m, r.stdout);
+    assert.match(r.stdout, /^Findings: 1 \(1 structural 🔴\)$/m, r.stdout);
+    assert.match(r.stdout, /🔴 ICON DIFF \[main\]: source image logo-c\.svg \(24×16\) vs build image media_5e6f\.svg \(24×16\) at "gamma"/, r.stdout);
   });
   server.close();
 }
