@@ -4,6 +4,25 @@ This file starts at 0.14.0. Prior versions (0.3.0 – 0.13.1) are documented in
 git history only (plus the branch-scoped notes in
 `CHANGELOG-redesign-adobecom.md` and `CHANGELOG-delivery-media-fidelity.md`).
 
+## 0.34.7 — content-diff inventories page copy only: icon links, payloads and consent banners stop reading as missing content (#140)
+
+Field learning (a recorded replica gate on a home page with no `<main>`): 12 of 53 structural 🔴 were MISSING CTA for
+menu links whose icon was `<img>` in the build and `<svg>` on the source; 9 🟡 MISSING BODY were inline payloads.
+
+- **`content-inventory.mjs` (diff + deploy copies):** a link with an icon and text is a text CTA, whatever draws the
+  icon; only a text-less link is skipped. The label leaves out inline-svg `<title>` / `<text>`, and an image link's
+  sr-only text is not a label. A card link — an `<a>` wrapping 2+ text blocks, or a heading beside an image — has its
+  blocks inventoried as heading / body and is a CTA only for its own remaining text, so it pairs with an EDS card.
+- **Not page copy:** `script`, `noscript`, `style`, `template` and the common consent managers' banners (those
+  `CONSENT_CANDIDATES` accepts) are left out of the role inventory, the Experience Workspace editable count and the
+  attribute + icon layer; the root's summary line names a skipped banner (`consent banner skipped (N text nodes)`).
+- **`content-diff.mjs`:** icon anchors use the same label, so an svg-icon vs img-icon link is one 🟡 ICON KIND.
+- Docs: `replica/reference/source-fidelity-gate.md` rule 3 — `--consent` only adds an accept click; verify the banner
+  is actually gone after dismissal.
+- Test: `diff/scripts/test/content-diff.test.mjs` end to end — svg- vs img-icon link, inline payloads, a consent
+  banner with an icon close button, a card link vs an EDS card, an sr-only vs alt-only logo: no 🔴, the banner named in
+  the summary. Every in-page consent list is pinned to `CONSENT_CANDIDATES`.
+
 ## 0.34.6 — the common consent managers are dismissed with no flag (#139)
 
 Field learning (a recorded replica run on a site whose consent manager labels its button "Allow all"): no built-in

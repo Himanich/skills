@@ -15,9 +15,11 @@
  *
  * `inventory` runs IN the page (Playwright-serialized, ONE arg):
  *   page.evaluate(inventory, [rootSelector, eyebrow{maxFontPx,maxLen}])
- * It returns { items: [{role, order, text, key, href?, w, family, loaded}], imgCount }
+ * It returns { items: [{role, order, text, key, href?, w, family, loaded}], imgCount, consentText }
  * with role ∈ heading | eyebrow | cta | body, classified by COMPUTED STYLE +
  * tag so a prototype's .ds-* DOM and an EDS block DOM compare symmetrically.
+ * Not inventoried: script / noscript / style / template payloads, and a consent
+ * manager's banner (counted as consentText — the overlay dismissal's business).
  *
  * `diffInventories(srcItems, tgtItems, prof)` consumes each source item
  * against the first unused same-key target item (duplicates count correctly)
@@ -85,22 +87,68 @@ export function inventory(args) {
     return { w, family: loaded ? named : `${named}→sys`, loaded };
   };
 
+  // Not page copy: inline JSON / tag-manager <noscript> frames / helper CSS, and the
+  // common consent managers' banners (their accept controls: live-session CONSENT_CANDIDATES).
+  const PAYLOAD = 'script, noscript, style, template';
+  // In-page, so not importable: test/content-diff.test.mjs pins every copy to CONSENT_CANDIDATES.
+  const CONSENT_UI = '#onetrust-consent-sdk, #cmpbox, .ch2-container, #CybotCookiebotDialog, #didomi-host, #usercentrics-root, .osano-cm-window, #termly-code-snippet-support, #truste-consent-track, .qc-cmp2-container, #iubenda-cs-banner, .cmplz-cookiebanner, .cky-consent-container';
+  // text under `node` minus inline-svg <title>/<text> and payloads, and minus any node `skip(parent)` rejects
+  const textOf = (node, skip) => {
+    let s = '';
+    const walk = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) if (!n.parentElement.closest(`svg, ${PAYLOAD}`) && !(skip && skip(n.parentElement))) s += ` ${n.textContent}`;
+    return clean(s);
+  };
+  const upTo = (el, a, test) => { for (let e = el; e && e !== a; e = e.parentElement) if (test(e)) return true; return false; };
+  // visually hidden: the sr-only pattern (absolutely positioned, clipped or at most 1px)
+  const srOnly = (e) => { const cs = getComputedStyle(e); return cs.position === 'absolute' && (cs.clip.startsWith('rect') || cs.clipPath.startsWith('inset') || (parseFloat(cs.width) <= 1 && parseFloat(cs.height) <= 1)); };
+  // A CARD LINK wraps blocks — 2+ text-bearing blocks, or a heading beside an image
+  // (<a><img><h3>T</h3><p>D</p></a>): its blocks are inventoried as what they are
+  // (heading / body), never collapsed into one CTA, and the link is a CTA only for
+  // its own text outside them ("Read more").
+  const BLOCKS = 'h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, pre, figcaption, td, th, div, section, article, header, footer';
+  const cards = new Map();
+  const isCard = (a) => {
+    if (!cards.has(a)) {
+      const texty = [...a.querySelectorAll(BLOCKS)].filter((b) => textOf(b));
+      const leaves = texty.filter((b) => !texty.some((o) => o !== b && b.contains(o)));
+      cards.set(a, leaves.length >= 2 || Boolean(a.querySelector('img, picture') && texty.some((b) => /^H[1-6]$/.test(b.tagName))));
+    }
+    return cards.get(a);
+  };
+  const inBlock = (el, a) => upTo(el, a, (e) => e.matches(BLOCKS));
+  // A link's label: its text minus inline-svg <title>/<text> (an <img> icon contributes
+  // nothing either), so an svg-icon link and an img-icon link read the same. A card
+  // link's blocks are left out; so is an image/svg link's sr-only text — a logo's
+  // hidden "Home" is no more a CTA than an alt-only logo is.
+  const labelOf = (a) => {
+    const card = isCard(a); const media = Boolean(a.querySelector('img, picture, svg'));
+    return textOf(a, (p) => (card && inBlock(p, a)) || (media && upTo(p, a, srOnly)));
+  };
+
   const out = [];
   let imgCount = 0;
+  let consentText = 0;
   let order = 0;
   root.querySelectorAll('*').forEach((el) => {
     const tag = el.tagName.toLowerCase();
+    if (el.closest(PAYLOAD)) return;
+    if (el.closest(CONSENT_UI)) {
+      if ([...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) consentText += 1;
+      return;
+    }
 
     // Images are visual-diff's domain (load/stretch/imagery-gap) and their alt
     // text rarely matches verbatim across proto↔EDS — count them, don't diff them.
     if (tag === 'img') { imgCount += 1; return; }
 
-    // A text CTA: an <a> whose label is text (not an image link). Use the FULL
-    // label (textContent) so <strong><a>…</a></strong> and <a><strong>…</strong></a>
-    // both resolve, then skip the link's inner nodes below via closest('a').
+    // A text CTA: an <a> whose label is text. Use the FULL label so
+    // <strong><a>…</a></strong> and <a><strong>…</strong></a> both resolve, then
+    // skip the link's inner nodes below via closest('a'). A link with an icon AND
+    // text is a text CTA whatever draws the icon; a text-less image/logo link is not;
+    // a card link is a CTA only for its own text outside its blocks.
     if (tag === 'a') {
-      if (el.querySelector('img, picture')) return; // image/logo link, not a text CTA
-      const t = clean(el.textContent);
+      const t = labelOf(el);
       if (!t) return;
       out.push({ role: 'cta', order: order++, text: t, key: norm(t), href: el.getAttribute('href') || '', ...face(norm(t), getComputedStyle(el)) });
       return;
@@ -110,7 +158,8 @@ export function inventory(args) {
     // isn't double-counted (the <p> carries the text, the <div> is empty).
     const own = clean([...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' '));
     if (!own) return;
-    if (el.closest('a')) return; // text inside a link — already captured by the <a>
+    const link = el.closest('a');
+    if (link && !(isCard(link) && inBlock(el, link))) return; // text inside a link — captured by the <a>; a card link's blocks are not
 
     const cs = getComputedStyle(el);
     const item = { order: order++, text: own, key: norm(own), ...face(norm(own), cs) };
@@ -120,7 +169,7 @@ export function inventory(args) {
     out.push(item);
   });
   probe.remove();
-  return { items: out, imgCount };
+  return { items: out, imgCount, consentText };
 }
 // Runs IN the page (ONE arg). args = [rootSel]. Outermost editable elements with
 // visible text — the Experience Workspace instrumentation set (see header).
@@ -128,8 +177,10 @@ export function editableInventory(args) {
   const [rootSel] = args;
   const root = document.querySelector(rootSel) || document.querySelector('main') || document.body;
   const SEL = 'h1, h2, h3, h4, h5, h6, p, ul, ol, pre, blockquote';
+  const SKIP = 'script, noscript, style, template, #onetrust-consent-sdk, #cmpbox, .ch2-container, #CybotCookiebotDialog, #didomi-host, #usercentrics-root, .osano-cm-window, #termly-code-snippet-support, #truste-consent-track, .qc-cmp2-container, #iubenda-cs-banner, .cmplz-cookiebanner, .cky-consent-container';
   const items = [];
   root.querySelectorAll(SEL).forEach((el) => {
+    if (el.closest(SKIP)) return; // payloads and consent banners, as in inventory()
     const anc = el.parentElement && el.parentElement.closest(SEL);
     if (anc && anc !== root && root.contains(anc)) return; // nested inside another editable
     const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
@@ -202,5 +253,5 @@ export function diffInventories(srcItems, tgtItems, prof) {
 
 export function summarise(inv) {
   const by = (r) => inv.items.filter((x) => x.role === r).length;
-  return `${inv.items.length} text nodes — ${by('heading')} headings, ${by('eyebrow')} eyebrows, ${by('cta')} CTAs, ${by('body')} body; ${inv.imgCount} img`;
+  return `${inv.items.length} text nodes — ${by('heading')} headings, ${by('eyebrow')} eyebrows, ${by('cta')} CTAs, ${by('body')} body; ${inv.imgCount} img${inv.consentText ? `; consent banner skipped (${inv.consentText} text nodes)` : ''}`;
 }
